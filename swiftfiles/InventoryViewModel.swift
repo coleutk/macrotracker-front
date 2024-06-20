@@ -14,9 +14,6 @@ class InventoryViewModel: ObservableObject {
     }
 
     init() {
-//        UserDefaults.standard.removeObject(forKey: "foods")
-//        UserDefaults.standard.removeObject(forKey: "drinks")
-        
         loadInventory()
     }
 
@@ -61,23 +58,48 @@ class InventoryViewModel: ObservableObject {
 }
 
 
-
+// Food Info
 struct Food: Identifiable, Codable {
-    var id = UUID()
+    var id: UUID
     var name: String
-    var weight: String
-    var calories: String
-    var protein: String
-    var carbs: String
-    var fats: String
+    var weight: Weight
+    var calories: Int
+    var protein: Double
+    var carbs: Int
+    var fats: Double
 }
 
-struct Drink: Identifiable, Codable {
-    var id = UUID()
-    var name: String
-    var volume: String
-    var calories: String
-    var protein: String
-    var carbs: String
-    var fats: String
+struct Weight: Codable {
+    var value: Int
+    var unit: Unit
 }
+
+// Drink Info
+struct Drink: Identifiable, Codable {
+    var id: UUID
+    var name: String
+    var volume: Volume
+    var calories: Int
+    var protein: Double
+    var carbs: Int
+    var fats: Double
+}
+
+struct Volume: Codable {
+    var value: Int
+    var unit: Unit
+}
+
+enum Unit: String, Codable {
+    case g = "g"
+    case kg = "kg"
+    case mg = "mg"
+    case oz = "oz"
+    case floz = "floz"
+    case lb = "lb"
+    case mL = "mL"  // Assuming this was missing for Volume units
+    case L = "L"    // Adding other possible units for volume
+    case c = "c"
+}
+
+

@@ -12,7 +12,8 @@ struct InventoryView: View {
     // For Food Add Sheet
     @State private var isAddFoodSheetPresented = false
     @State private var newFoodName = ""
-    @State private var newFoodWeight = ""
+    @State private var newFoodWeightValue = ""
+    @State private var newFoodWeightUnit = ""
     @State private var newFoodCalories = ""
     @State private var newFoodProtein = ""
     @State private var newFoodCarbs = ""
@@ -21,7 +22,8 @@ struct InventoryView: View {
     // For Drink Add Sheet
     @State private var isAddDrinkSheetPresented = false
     @State private var newDrinkName = ""
-    @State private var newDrinkVolume = ""
+    @State private var newDrinkVolumeValue = ""
+    @State private var newDrinkVolumeUnit = ""
     @State private var newDrinkCalories = ""
     @State private var newDrinkProtein = ""
     @State private var newDrinkCarbs = ""
@@ -29,7 +31,8 @@ struct InventoryView: View {
     
     // For Editing Food
     @State private var foodName = ""
-    @State private var foodWeight = ""
+    @State private var foodWeightValue = ""
+    @State private var foodWeightUnit = ""
     @State private var foodCalories = ""
     @State private var foodProtein = ""
     @State private var foodCarbs = ""
@@ -37,7 +40,8 @@ struct InventoryView: View {
     
     // For Editing Drink
     @State private var drinkName = ""
-    @State private var drinkVolume = ""
+    @State private var drinkVolumeValue = ""
+    @State private var drinkVolumeUnit = ""
     @State private var drinkCalories = ""
     @State private var drinkProtein = ""
     @State private var drinkCarbs = ""
@@ -64,16 +68,17 @@ struct InventoryView: View {
                             ForEach(inventoryViewModel.foods.indices, id: \.self) { index in
                                 let food = inventoryViewModel.foods[index]
                                 NavigationLink(destination:
-                                                EditFoodView(foodName: $foodName, foodWeight: $foodWeight, foodCalories: $foodCalories, foodProtein: $foodProtein, foodCarbs: $foodCarbs, foodFats: $foodFats, foods: $inventoryViewModel.foods, foodIndex: index)
+                                                EditFoodView(foodName: $foodName, foodWeightValue: $foodWeightValue, foodWeightUnit: $foodWeightUnit, foodCalories: $foodCalories, foodProtein: $foodProtein, foodCarbs: $foodCarbs, foodFats: $foodFats, foods: $inventoryViewModel.foods, foodIndex: index)
                                     .environmentObject(inventoryViewModel)
                                     .onAppear {
                                         // Set the values of the selected food item
                                         foodName = food.name
-                                        foodWeight = food.weight
-                                        foodCalories = food.calories
-                                        foodProtein = food.protein
-                                        foodCarbs = food.carbs
-                                        foodFats = food.fats
+                                        foodWeightValue = String(food.weight.value)
+                                        foodWeightUnit = food.weight.unit.rawValue
+                                        foodCalories = String(food.calories)
+                                        foodProtein = String(food.protein)
+                                        foodCarbs = String(food.carbs)
+                                        foodFats = String(food.fats)
                                     }
                                 ) {
                                     Text(food.name)
@@ -86,15 +91,17 @@ struct InventoryView: View {
                             ForEach(inventoryViewModel.drinks.indices, id: \.self) { index in
                                 let drink = inventoryViewModel.drinks[index]
                                 NavigationLink(destination:
-                                                EditDrinkView(drinkName: $drinkName, drinkVolume: $drinkVolume, drinkCalories: $drinkCalories, drinkProtein: $drinkProtein, drinkCarbs: $drinkCarbs, drinkFats: $drinkFats, drinks: $inventoryViewModel.drinks, drinkIndex: index)
+                                                EditDrinkView(drinkName: $drinkName, drinkVolumeValue: $drinkVolumeValue,
+                                                              drinkVolumeUnit: $drinkVolumeUnit, drinkCalories: $drinkCalories, drinkProtein: $drinkProtein, drinkCarbs: $drinkCarbs, drinkFats: $drinkFats, drinks: $inventoryViewModel.drinks, drinkIndex: index)
                                     .environmentObject(inventoryViewModel)
                                     .onAppear {
                                         drinkName = drink.name
-                                        drinkVolume = drink.volume
-                                        drinkCalories = drink.calories
-                                        drinkProtein = drink.protein
-                                        drinkCarbs = drink.carbs
-                                        drinkFats = drink.fats
+                                        drinkVolumeValue = String(drink.volume.value)
+                                        drinkVolumeUnit = drink.volume.unit.rawValue
+                                        drinkCalories = String(drink.calories)
+                                        drinkProtein = String(drink.protein)
+                                        drinkCarbs = String(drink.carbs)
+                                        drinkFats = String(drink.fats)
                                     }
                                 ) {
                                     Text(drink.name)
@@ -174,12 +181,12 @@ struct InventoryView: View {
                     }
                 }
                 .sheet(isPresented: $isAddFoodSheetPresented) {
-                    AddFoodSheet(foodName: $newFoodName, foodWeight: $newFoodWeight, foodCalories: $newFoodCalories, foodProtein: $newFoodProtein, foodCarbs: $newFoodCarbs, foodFats: $newFoodFats, isSheetPresented: $isAddFoodSheetPresented, foods: $inventoryViewModel.foods)
+                    AddFoodSheet(foodName: $newFoodName, foodWeightValue: $newFoodWeightValue, foodWeightUnit: $newFoodWeightUnit, foodCalories: $newFoodCalories, foodProtein: $newFoodProtein, foodCarbs: $newFoodCarbs, foodFats: $newFoodFats, isSheetPresented: $isAddFoodSheetPresented, foods: $inventoryViewModel.foods)
                         .environmentObject(inventoryViewModel)
                 }
                 
                 .sheet(isPresented: $isAddDrinkSheetPresented) {
-                    AddDrinkSheet(drinkName: $newDrinkName, drinkVolume: $newDrinkVolume, drinkCalories: $newDrinkCalories, drinkProtein: $newDrinkProtein, drinkCarbs: $newDrinkCarbs, drinkFats: $newDrinkFats, isSheetPresented: $isAddDrinkSheetPresented, drinks: $inventoryViewModel.drinks)
+                    AddDrinkSheet(drinkName: $newDrinkName, drinkVolumeValue: $newDrinkVolumeValue, drinkVolumeUnit: $newDrinkVolumeUnit, drinkCalories: $newDrinkCalories, drinkProtein: $newDrinkProtein, drinkCarbs: $newDrinkCarbs, drinkFats: $newDrinkFats, isSheetPresented: $isAddDrinkSheetPresented, drinks: $inventoryViewModel.drinks)
                         .environmentObject(inventoryViewModel)
                 }
                 
@@ -200,7 +207,8 @@ struct InventoryView: View {
     // Reset add food fields
     private func resetAddFoodFields() {
         newFoodName = ""
-        newFoodWeight = ""
+        newFoodWeightValue = ""
+        newFoodWeightUnit = ""
         newFoodCalories = ""
         newFoodProtein = ""
         newFoodCarbs = ""
@@ -210,7 +218,8 @@ struct InventoryView: View {
     // Reset add drink fields
     private func resetAddDrinkFields() {
         newDrinkName = ""
-        newDrinkVolume = ""
+        newDrinkVolumeValue = ""
+        newDrinkVolumeUnit = ""
         newDrinkCalories = ""
         newDrinkProtein = ""
         newDrinkCarbs = ""
@@ -228,24 +237,28 @@ struct EditFoodView: View {
     @State private var showAlert = false
     
     @Binding var foodName: String
-    @Binding var foodWeight: String
+    @Binding var foodWeightValue: String
+    @Binding var foodWeightUnit: String
     @Binding var foodCalories: String
     @Binding var foodProtein: String
     @Binding var foodCarbs: String
     @Binding var foodFats: String
-    @Binding var foods: [Food] // Add this line
-    let foodIndex: Int // Add this line
+    @Binding var foods: [Food]
+    let foodIndex: Int
     
-    // Initialize the text fields with default values
-    init(foodName: Binding<String>, foodWeight: Binding<String>, foodCalories: Binding<String>, foodProtein: Binding<String>, foodCarbs: Binding<String>, foodFats: Binding<String>, foods: Binding<[Food]>, foodIndex: Int) {
+    @State private var selectedUnit: String = "g"
+
+    init(foodName: Binding<String>, foodWeightValue: Binding<String>, foodWeightUnit: Binding<String>, foodCalories: Binding<String>, foodProtein: Binding<String>, foodCarbs: Binding<String>, foodFats: Binding<String>, foods: Binding<[Food]>, foodIndex: Int) {
         _foodName = foodName
-        _foodWeight = foodWeight
+        _foodWeightValue = foodWeightValue
+        _foodWeightUnit = foodWeightUnit
         _foodCalories = foodCalories
         _foodProtein = foodProtein
         _foodCarbs = foodCarbs
         _foodFats = foodFats
         _foods = foods
         self.foodIndex = foodIndex
+        _selectedUnit = State(initialValue: foodWeightUnit.wrappedValue)
     }
     
     var body: some View {
@@ -266,12 +279,29 @@ struct EditFoodView: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Weight", text: $foodWeight)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
+                HStack {
+                    TextField("Weight Value", text: $foodWeightValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("g").tag("g")
+                        Text("kg").tag("kg")
+                        Text("mg").tag("mg")
+                        Text("oz").tag("oz")
+                        Text("lb").tag("lb")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
                 
                 TextField("Calories", text: $foodCalories)
                     .padding(14)
@@ -280,32 +310,80 @@ struct EditFoodView: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Protein", text: $foodProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Protein", text: $foodProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Carbs", text: $foodCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Carbs", text: $foodCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Fats", text: $foodFats)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Fat", text: $foodFats)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                // Save Changes Button
                 Button(action: {
-                    // Save changes
-                    // For example:
-                    saveChanges()
+                    guard let weightValue = Int(foodWeightValue),
+                          let calories = Int(foodCalories),
+                          let protein = Double(foodProtein),
+                          let carbs = Int(foodCarbs),
+                          let fats = Double(foodFats) else {
+                        print("Invalid input")
+                        return
+                    }
+                    
+                    let editedFood = Food(id: UUID(), name: foodName, weight: Weight(value: weightValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
+                    inventoryViewModel.foods[foodIndex] = editedFood
+                    
+                    inventoryViewModel.saveInventory()
+                    
+                    // Print a message to indicate that changes are saved
+                    print("Changes saved!")
+                    
+                    // Display an alert
+                    showAlert = true
                     
                     // Dismiss the view and go back to inventory
                     presentationMode.wrappedValue.dismiss()
@@ -322,9 +400,16 @@ struct EditFoodView: View {
                 
                 // Delete Item Button
                 Button(action: {
-                    // Save changes
-                    // For example:
-                    deleteItem()
+                    // Remove the current food item from the list using the index
+                    inventoryViewModel.foods.remove(at: foodIndex)
+                    
+                    inventoryViewModel.saveInventory()
+                    
+                    // Print a message to indicate that the item is deleted
+                    print("Food item deleted!")
+                    
+                    // Display an alert or perform any other actions as needed
+                    showAlert = true
                     
                     // Dismiss the view and go back to inventory
                     presentationMode.wrappedValue.dismiss()
@@ -341,38 +426,10 @@ struct EditFoodView: View {
             }
             .foregroundColor(.white.opacity(0.70))
             .padding(.bottom, 50)
-            .alert(isPresented: $showAlert) {
-                Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
-            }
         }
-    }
-    
-    func saveChanges() {
-        // Update the food item in the foods array with the edited values
-        let editedFood = Food(name: foodName, weight: foodWeight, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats)
-        inventoryViewModel.foods[foodIndex] = editedFood
-        
-        inventoryViewModel.saveInventory()
-        
-        // Print a message to indicate that changes are saved
-        print("Changes saved!")
-        
-        // Display an alert
-        showAlert = true
-    }
-    
-    func deleteItem() {
-        // Remove the current food item from the list using the index
-        inventoryViewModel.foods.remove(at: foodIndex)
-        
-        inventoryViewModel.saveInventory()
-        
-        // Implement logic to delete the item
-        // For example:
-        print("Food item deleted!") // for Xcode console
-        
-        // Display an alert or perform any other actions as needed
-        showAlert = true
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
+        }
     }
 }
 
@@ -384,7 +441,8 @@ struct EditDrinkView: View {
     @State private var showAlert = false
     
     @Binding var drinkName: String
-    @Binding var drinkVolume: String
+    @Binding var drinkVolumeValue: String
+    @Binding var drinkVolumeUnit: String
     @Binding var drinkCalories: String
     @Binding var drinkProtein: String
     @Binding var drinkCarbs: String
@@ -392,16 +450,19 @@ struct EditDrinkView: View {
     @Binding var drinks: [Drink]
     let drinkIndex: Int
     
-    // Initialize the text fields with default values
-    init(drinkName: Binding<String>, drinkVolume: Binding<String>, drinkCalories: Binding<String>, drinkProtein: Binding<String>, drinkCarbs: Binding<String>, drinkFats: Binding<String>, drinks: Binding<[Drink]>, drinkIndex: Int) {
+    @State private var selectedUnit: String = "mL"
+
+    init(drinkName: Binding<String>, drinkVolumeValue: Binding<String>, drinkVolumeUnit: Binding<String>, drinkCalories: Binding<String>, drinkProtein: Binding<String>, drinkCarbs: Binding<String>, drinkFats: Binding<String>, drinks: Binding<[Drink]>, drinkIndex: Int) {
         _drinkName = drinkName
-        _drinkVolume = drinkVolume
+        _drinkVolumeValue = drinkVolumeValue
+        _drinkVolumeUnit = drinkVolumeUnit
         _drinkCalories = drinkCalories
         _drinkProtein = drinkProtein
         _drinkCarbs = drinkCarbs
         _drinkFats = drinkFats
         _drinks = drinks
         self.drinkIndex = drinkIndex
+        _selectedUnit = State(initialValue: drinkVolumeUnit.wrappedValue)
     }
     
     var body: some View {
@@ -422,12 +483,28 @@ struct EditDrinkView: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Volume", text: $drinkVolume)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
+                HStack {
+                    TextField("Volume Value", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("mL").tag("mL")
+                        Text("L").tag("L")
+                        Text("floz").tag("floz")
+                        Text("c").tag("c")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
                 
                 TextField("Calories", text: $drinkCalories)
                     .padding(14)
@@ -436,31 +513,80 @@ struct EditDrinkView: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Protein", text: $drinkProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Protein", text: $drinkProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Carbs", text: $drinkCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Carbs", text: $drinkCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Fats", text: $drinkFats)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Fat", text: $drinkFats)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
                 Button(action: {
-                    // Save changes
-                    // For example:
-                    saveChanges()
+                    guard let volumeValue = Int(drinkVolumeValue),
+                          let calories = Int(drinkCalories),
+                          let protein = Double(drinkProtein),
+                          let carbs = Int(drinkCarbs),
+                          let fats = Double(drinkFats) else {
+                        print("Invalid input")
+                        return
+                    }
+                    
+                    let editedDrink = Drink(id: UUID(), name: drinkName, volume: Volume(value: volumeValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
+                    inventoryViewModel.drinks[drinkIndex] = editedDrink
+                    
+                    inventoryViewModel.saveInventory()
+                    
+                    // Print a message to indicate that changes are saved
+                    print("Changes saved!")
+                    
+                    // Display an alert
+                    showAlert = true
                     
                     // Dismiss the view and go back to inventory
                     presentationMode.wrappedValue.dismiss()
@@ -477,9 +603,16 @@ struct EditDrinkView: View {
                 
                 // Delete Item Button
                 Button(action: {
-                    // Save changes
-                    // For example:
-                    deleteItem()
+                    // Remove the current drink item from the list using the index
+                    inventoryViewModel.drinks.remove(at: drinkIndex)
+                    
+                    inventoryViewModel.saveInventory()
+                    
+                    // Print a message to indicate that the item is deleted
+                    print("Drink item deleted!")
+                    
+                    // Display an alert or perform any other actions as needed
+                    showAlert = true
                     
                     // Dismiss the view and go back to inventory
                     presentationMode.wrappedValue.dismiss()
@@ -501,33 +634,6 @@ struct EditDrinkView: View {
             Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
         }
     }
-    
-    func saveChanges() {
-        // Update the food item in the foods array with the edited values
-        let editedDrink = Drink(name: drinkName, volume: drinkVolume, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats)
-        inventoryViewModel.drinks[drinkIndex] = editedDrink
-        
-        inventoryViewModel.saveInventory()
-        // Print a message to indicate that changes are saved
-        print("Changes saved!")
-        
-        // Display an alert
-        showAlert = true
-    }
-    
-    
-    func deleteItem() {
-        // Remove the current food item from the list using the index
-        inventoryViewModel.drinks.remove(at: drinkIndex)
-        
-        inventoryViewModel.saveInventory()
-        // Implement logic to delete the item
-        // For example:
-        print("Food item deleted!") // for Xcode console
-        
-        // Display an alert or perform any other actions as needed
-        showAlert = true
-    }
 }
 
 
@@ -536,13 +642,16 @@ struct AddFoodSheet: View {
     @EnvironmentObject var inventoryViewModel: InventoryViewModel
     
     @Binding var foodName: String
-    @Binding var foodWeight: String
+    @Binding var foodWeightValue: String
+    @Binding var foodWeightUnit: String
     @Binding var foodCalories: String
     @Binding var foodProtein: String
     @Binding var foodCarbs: String
     @Binding var foodFats: String
     @Binding var isSheetPresented: Bool
     @Binding var foods: [Food]
+    
+    @State private var selectedUnit: String = "g"
     
     var body: some View {
         ZStack {
@@ -561,12 +670,29 @@ struct AddFoodSheet: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Weight", text: $foodWeight)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
+                HStack {
+                    TextField("Weight Value", text: $foodWeightValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("g").tag("g")
+                        Text("kg").tag("kg")
+                        Text("mg").tag("mg")
+                        Text("oz").tag("oz")
+                        Text("lb").tag("lb")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
                 
                 TextField("Calories", text: $foodCalories)
                     .padding(14)
@@ -575,29 +701,71 @@ struct AddFoodSheet: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Protein", text: $foodProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Protein", text: $foodProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Carbs", text: $foodCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Carbs", text: $foodCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Fats", text: $foodFats)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Fat", text: $foodFats)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
                 Button(action: {
-                    let newFood = Food(name: foodName, weight: foodWeight, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats)
+                    guard let weightValue = Int(foodWeightValue),
+                          let calories = Int(foodCalories),
+                          let protein = Double(foodProtein),
+                          let carbs = Int(foodCarbs),
+                          let fats = Double(foodFats) else {
+                        print("Invalid input")
+                        return
+                    }
+                    
+                    let newFood = Food(id: UUID(), name: foodName, weight: Weight(value: weightValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
                     inventoryViewModel.foods.append(newFood)
                     inventoryViewModel.saveInventory()
                     isSheetPresented = false
@@ -621,13 +789,16 @@ struct AddDrinkSheet: View {
     @EnvironmentObject var inventoryViewModel: InventoryViewModel
     
     @Binding var drinkName: String
-    @Binding var drinkVolume: String
+    @Binding var drinkVolumeValue: String
+    @Binding var drinkVolumeUnit: String
     @Binding var drinkCalories: String
     @Binding var drinkProtein: String
     @Binding var drinkCarbs: String
     @Binding var drinkFats: String
     @Binding var isSheetPresented: Bool
     @Binding var drinks: [Drink]
+    
+    @State private var selectedUnit: String = "mL"
     
     var body: some View {
         ZStack {
@@ -646,12 +817,28 @@ struct AddDrinkSheet: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Volume", text: $drinkVolume)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
+                HStack {
+                    TextField("Volume Value", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("mL").tag("mL")
+                        Text("L").tag("L")
+                        Text("floz").tag("floz")
+                        Text("c").tag("c")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
                 
                 TextField("Calories", text: $drinkCalories)
                     .padding(14)
@@ -660,29 +847,71 @@ struct AddDrinkSheet: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Protein", text: $drinkProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Protein", text: $drinkProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Carbs", text: $drinkCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Carbs", text: $drinkCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Fats", text: $drinkFats)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Fat", text: $drinkFats)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
                 Button(action: {
-                    let newDrink = Drink(name: drinkName, volume: drinkVolume, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats)
+                    guard let volumeValue = Int(drinkVolumeValue),
+                          let calories = Int(drinkCalories),
+                          let protein = Double(drinkProtein),
+                          let carbs = Int(drinkCarbs),
+                          let fats = Double(drinkFats) else {
+                        print("Invalid input")
+                        return
+                    }
+                    
+                    let newDrink = Drink(id: UUID(), name: drinkName, volume: Volume(value: volumeValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
                     inventoryViewModel.drinks.append(newDrink)
                     inventoryViewModel.saveInventory()
                     isSheetPresented = false
