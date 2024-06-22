@@ -92,7 +92,7 @@ struct LoginView: View {
                     HomeView(username: username)
                         .environmentObject(inventoryViewModel) // So I can see saved data across tabs
                         .onAppear {
-                            inventoryViewModel.loadInventory()
+                            //inventoryViewModel.loadInventory()
                         }
                 }
 

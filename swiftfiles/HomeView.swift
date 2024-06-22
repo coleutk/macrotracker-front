@@ -210,7 +210,7 @@ struct HomeView: View {
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            inventoryViewModel.loadInventory()
+//            inventoryViewModel.loadInventory()
         }
     }
 
@@ -393,25 +393,25 @@ struct InventorySelectionSheet: View {
 
                 List {
                     if selectedItem == .Food {
-                        ForEach(inventoryViewModel.foods) { food in
-                            Text(food.name)
-                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
-                                .foregroundColor(.white.opacity(0.70))
-//                                .onTapGesture {
-//                                    // Handle food item selection
-//                                    // Add food to the current total or perform other actions
-//                                }
-                        }
+//                        ForEach(inventoryViewModel.foods) { food in
+//                            Text(food.name)
+//                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+//                                .foregroundColor(.white.opacity(0.70))
+////                                .onTapGesture {
+////                                    // Handle food item selection
+////                                    // Add food to the current total or perform other actions
+////                                }
+//                        }
                     } else {
-                        ForEach(inventoryViewModel.drinks) { drink in
-                            Text(drink.name)
-                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
-                                .foregroundColor(.white.opacity(0.70))
-//                                .onTapGesture {
-//                                    // Handle drink item selection
-//                                    // Add drink to the current total or perform other actions
-//                                }
-                        }
+//                        ForEach(inventoryViewModel.drinks) { drink in
+//                            Text(drink.name)
+//                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+//                                .foregroundColor(.white.opacity(0.70))
+////                                .onTapGesture {
+////                                    // Handle drink item selection
+////                                    // Add drink to the current total or perform other actions
+////                                }
+//                        }
                     }
                 }
                 .listStyle(PlainListStyle())
