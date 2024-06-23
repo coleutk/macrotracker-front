@@ -240,13 +240,12 @@ struct InventoryView: View {
 
 
 
-
-import SwiftUI
-
 struct EditFoodView: View {
     @Environment(\.presentationMode) var presentationMode
 
+    // Saving Food Details
     @State private var showAlert = false
+    @State private var alertMessage = "Changes saved!"
     
     @Binding var food: Food
     
@@ -391,8 +390,21 @@ struct EditFoodView: View {
                     food.carbs = Int(foodCarbs) ?? food.carbs
                     food.fat = Int(foodFat) ?? food.fat
                     
-                    print("Changes saved!")
-                    showAlert = true
+                    // Call the editFood function
+                    editFood(food) { result in
+                        switch result {
+                        case .success(let updatedFood):
+                            print("Changes saved: \(updatedFood)")
+                            alertMessage = "Changes saved!"
+                            showAlert = true
+                            food = updatedFood // Update the food with the returned updatedFood
+                        case .failure(let error):
+                            print("Failed to save changes: \(error)")
+                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
+                            showAlert = true
+                        }
+                    }
+                    
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Confirm Changes")

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     var username: String
-    @EnvironmentObject var inventoryViewModel: InventoryViewModel
+    @State private var foods: [Food] = []
 
     @State var calorieProgress: Float = 0.0
     @State var proteinProgress: Float = 0.0
@@ -150,7 +150,6 @@ struct HomeView: View {
                             .padding(.horizontal, 10)
                             .sheet(isPresented: $isInventorySelectionSheetPresented) {
                                 InventorySelectionSheet()
-                                    .environmentObject(inventoryViewModel)
                             }
                         }
                     }
@@ -373,8 +372,8 @@ struct ManualWriteSheet: View {
 
 // Inventory Selection Sheet when click PLUS ICON
 struct InventorySelectionSheet: View {
-    @EnvironmentObject var inventoryViewModel: InventoryViewModel
     @State private var selectedItem: Item = .Food
+    @State private var foods: [Food] = []
 
     var body: some View {
         ZStack {
@@ -393,15 +392,15 @@ struct InventorySelectionSheet: View {
 
                 List {
                     if selectedItem == .Food {
-//                        ForEach(inventoryViewModel.foods) { food in
-//                            Text(food.name)
-//                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
-//                                .foregroundColor(.white.opacity(0.70))
-////                                .onTapGesture {
-////                                    // Handle food item selection
-////                                    // Add food to the current total or perform other actions
-////                                }
-//                        }
+                        ForEach(foods, id: \.id) { food in
+                            //let food = inventoryViewModel.foods[index]
+                            NavigationLink(destination: Text("EG")) {
+                                Text(food.name)
+                                    .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                     } else {
 //                        ForEach(inventoryViewModel.drinks) { drink in
 //                            Text(drink.name)
@@ -414,10 +413,27 @@ struct InventorySelectionSheet: View {
 //                        }
                     }
                 }
-                .listStyle(PlainListStyle())
+                .listStyle(.plain)
                 .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                .foregroundColor(.white)
+                .onAppear {
+                    loadFoods()
+                }
             }
             .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+        }
+    }
+    
+    private func loadFoods() {
+        print("loadFoods called")
+        getAllFoods { result in
+            switch result {
+            case .success(let foods):
+                print("Foods loaded: \(foods)") // Debug print
+                self.foods = foods
+            case .failure(let error):
+                print("Failed to load foods: \(error.localizedDescription)")
+            }
         }
     }
 }

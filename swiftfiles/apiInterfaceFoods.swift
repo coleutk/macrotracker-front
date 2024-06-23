@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Food: Identifiable, Decodable {
+struct Food: Identifiable, Codable {
     var id: String
     var name: String
     var weight: Weight
@@ -17,18 +17,19 @@ struct Food: Identifiable, Decodable {
     var fat: Int
 }
 
-struct Weight: Decodable {
+struct Weight: Codable {
     var value: Int
     var unit: WeightUnit
 }
 
-enum WeightUnit: String, Decodable, CaseIterable {
+enum WeightUnit: String, Codable, CaseIterable {
     case g
     case kg
     case oz
     case mg
 }
 
+// Retrieving All Foods
 func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/foods/")!)
@@ -56,8 +57,8 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
                        let unit = weightDict["unit"] as? String,
                        let weightUnit = WeightUnit(rawValue: unit),
                        let calories = currFood["calories"] as? Int,
-                        let protein = currFood["protein"] as? Int,
-                    let carbs = currFood["carbs"] as? Int,
+                       let protein = currFood["protein"] as? Int,
+                       let carbs = currFood["carbs"] as? Int,
                        let fat = currFood["fat"] as? Int
                     {
                         
@@ -82,6 +83,60 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
             completion(.success(foods))
         } else if let error {
             print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+        }
+    }
+    
+    task.resume()
+}
+
+
+// Editing Food
+func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void) {
+    // Build request
+    var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "PATCH"
+    
+    // Create the array of objects as expected by the backend
+    let updateOps: [[String: Any]] = [
+        ["propName": "name", "value": food.name],
+        ["propName": "weight", "value": ["value": food.weight.value, "unit": food.weight.unit.rawValue]],
+        ["propName": "calories", "value": food.calories],
+        ["propName": "protein", "value": food.protein],
+        ["propName": "carbs", "value": food.carbs],
+        ["propName": "fat", "value": food.fat]
+    ]
+    
+    do {
+        let jsonData = try JSONSerialization.data(withJSONObject: updateOps, options: [])
+        request.httpBody = jsonData
+    } catch {
+        print("Error encoding food data: \(error)")
+        completion(.failure(error))
+        return
+    }
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let data = data else {
+            let error = NSError(domain: "DataError", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+            print("No data received")
+            completion(.failure(error))
+            return
+        }
+        
+        do {
+            let updatedFood = try JSONDecoder().decode(Food.self, from: data)
+            print("Data received and parsed: \(updatedFood)")
+            completion(.success(updatedFood))
+        } catch {
+            print("Error decoding response data: \(error)")
             completion(.failure(error))
         }
     }
