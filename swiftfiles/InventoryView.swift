@@ -71,7 +71,7 @@ struct InventoryView: View {
                         if selectedItem == .Food {
                             ForEach(foods, id: \.id) { food in
                                 //let food = inventoryViewModel.foods[index]
-                                NavigationLink(destination: Text("G")) {
+                                NavigationLink(destination: EditFoodView(food: binding(for: food))) {
                                     Text(food.name)
                                         .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                                         .foregroundColor(.white.opacity(0.70))
@@ -229,215 +229,209 @@ struct InventoryView: View {
             }
         }
     }
+    
+    private func binding(for food: Food) -> Binding<Food> {
+        guard let index = foods.firstIndex(where: { $0.id == food.id }) else {
+            fatalError("Food not found")
+        }
+        return $foods[index]
+    }
 }
 
 
 
 
-//struct EditFoodView: View {
-//    @EnvironmentObject var inventoryViewModel: InventoryViewModel
-//    @Environment(\.presentationMode) var presentationMode
-//
-//    @State private var showAlert = false
-//    
-//    @Binding var foodName: String
-//    @Binding var foodWeightValue: String
-//    @Binding var foodWeightUnit: String
-//    @Binding var foodCalories: String
-//    @Binding var foodProtein: String
-//    @Binding var foodCarbs: String
-//    @Binding var foodFats: String
-//    @Binding var foods: [Food]
-//    let foodIndex: Int
-//    
-//    @State private var selectedUnit: String = "g"
-//
-//    init(foodName: Binding<String>, foodWeightValue: Binding<String>, foodWeightUnit: Binding<String>, foodCalories: Binding<String>, foodProtein: Binding<String>, foodCarbs: Binding<String>, foodFats: Binding<String>, foods: Binding<[Food]>, foodIndex: Int) {
-//        _foodName = foodName
-//        _foodWeightValue = foodWeightValue
-//        _foodWeightUnit = foodWeightUnit
-//        _foodCalories = foodCalories
-//        _foodProtein = foodProtein
-//        _foodCarbs = foodCarbs
-//        _foodFats = foodFats
-//        _foods = foods
-//        self.foodIndex = foodIndex
-//        _selectedUnit = State(initialValue: foodWeightUnit.wrappedValue)
-//    }
-//    
-//    var body: some View {
-//        ZStack {
-//            Color(red: 20/255, green: 20/255, blue: 30/255)
-//                .ignoresSafeArea()
-//            
-//            VStack {
-//                Text("Edit Details:")
-//                    .font(.title2)
-//                    .bold()
-//                    .foregroundColor(.white.opacity(0.70))
-//                
-//                TextField("Food Name", text: $foodName)
-//                    .padding(14)
-//                    .frame(maxWidth: .infinity)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.horizontal, 22)
-//                
-//                HStack {
-//                    TextField("Weight Value", text: $foodWeightValue)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Picker("Unit", selection: $selectedUnit) {
-//                        Text("g").tag("g")
-//                        Text("kg").tag("kg")
-//                        Text("mg").tag("mg")
-//                        Text("oz").tag("oz")
-//                        Text("lb").tag("lb")
-//                    }
-//                    .padding(8)
-//                    .pickerStyle(MenuPickerStyle())
-//                    .frame(width: 90)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.leading, -20)
-//                    .padding(.trailing, 22)
-//                }
-//                
-//                TextField("Calories", text: $foodCalories)
-//                    .padding(14)
-//                    .frame(maxWidth: .infinity)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.horizontal, 22)
-//                
-//                HStack {
-//                    TextField("Protein", text: $foodProtein)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                HStack {
-//                    TextField("Carbs", text: $foodCarbs)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                HStack {
-//                    TextField("Fat", text: $foodFats)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                Button(action: {
-////                    guard let weightValue = Int(foodWeightValue),
-////                          let calories = Int(foodCalories),
-////                          let protein = Double(foodProtein),
-////                          let carbs = Int(foodCarbs),
-////                          let fats = Double(foodFats) else {
-////                        print("Invalid input")
-////                        return
-//                    }
-//                    
-////                    let editedFood = Food(id: UUID(), name: foodName, weight: Weight(value: weightValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
-////                    inventoryViewModel.foods[foodIndex] = editedFood
-////                    
-////                    inventoryViewModel.saveInventory()
-//                    
-//                    // Print a message to indicate that changes are saved
-//                    print("Changes saved!")
-//                    
-//                    // Display an alert
-//                    showAlert = true
-//                    
-//                    // Dismiss the view and go back to inventory
-//                    presentationMode.wrappedValue.dismiss()
-//                }) {
-//                    Text("Confirm Changes")
-//                        .foregroundColor(.white.opacity(0.70))
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.blue.opacity(0.50))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                        .padding(.top, 20)
-//                }
-//                
-//                // Delete Item Button
-//                Button(action: {
-//                    // Remove the current food item from the list using the index
-////                    inventoryViewModel.foods.remove(at: foodIndex)
-////                    
-////                    inventoryViewModel.saveInventory()
-//                    
-//                    // Print a message to indicate that the item is deleted
-//                    print("Food item deleted!")
-//                    
-//                    // Display an alert or perform any other actions as needed
-//                    showAlert = true
-//                    
-//                    // Dismiss the view and go back to inventory
-//                    presentationMode.wrappedValue.dismiss()
-//                }) {
-//                    Text("Delete \(foodName)")
-//                        .foregroundColor(.white.opacity(0.70))
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.red.opacity(0.50))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                        .padding(.top, 20)
-//                }
-//            }
-//            .foregroundColor(.white.opacity(0.70))
-//            .padding(.bottom, 50)
-//        }
-//        .alert(isPresented: $showAlert) {
-//            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
-//        }
-//    }
-//}
-//
-//
+import SwiftUI
+
+struct EditFoodView: View {
+    @Environment(\.presentationMode) var presentationMode
+
+    @State private var showAlert = false
+    
+    @Binding var food: Food
+    
+    @State private var selectedUnit: String
+    
+    // Intermediate variables for TextField binding
+    @State private var foodName: String
+    @State private var foodWeightValue: String
+    @State private var foodCalories: String
+    @State private var foodProtein: String
+    @State private var foodCarbs: String
+    @State private var foodFat: String
+
+    init(food: Binding<Food>) {
+        _food = food
+        _selectedUnit = State(initialValue: food.wrappedValue.weight.unit.rawValue)
+        
+        // Initialize intermediate variables
+        _foodName = State(initialValue: food.wrappedValue.name)
+        _foodWeightValue = State(initialValue: String(food.wrappedValue.weight.value))
+        _foodCalories = State(initialValue: String(food.wrappedValue.calories))
+        _foodProtein = State(initialValue: String(food.wrappedValue.protein))
+        _foodCarbs = State(initialValue: String(food.wrappedValue.carbs))
+        _foodFat = State(initialValue: String(food.wrappedValue.fat))
+    }
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            
+            VStack {
+                Text("Edit Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                TextField("Food Name", text: $foodName)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Weight Value", text: $foodWeightValue)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        ForEach(WeightUnit.allCases, id: \.self) { unit in
+                            Text(unit.rawValue).tag(unit.rawValue)
+                        }
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                    .onChange(of: selectedUnit) { oldValue, newValue in
+                        food.weight.unit = WeightUnit(rawValue: newValue) ?? .g
+                    }
+                }
+                
+                TextField("Calories", text: $foodCalories)
+                    .keyboardType(.numberPad)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Protein", text: $foodProtein)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Carbs", text: $foodCarbs)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Fat", text: $foodFat)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                Button(action: {
+                    // Save changes here
+                    food.name = foodName
+                    food.weight.value = Int(foodWeightValue) ?? food.weight.value
+                    food.calories = Int(foodCalories) ?? food.calories
+                    food.protein = Int(foodProtein) ?? food.protein
+                    food.carbs = Int(foodCarbs) ?? food.carbs
+                    food.fat = Int(foodFat) ?? food.fat
+                    
+                    print("Changes saved!")
+                    showAlert = true
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Confirm Changes")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+                
+                // Delete Item Button
+                Button(action: {
+                    // Handle deletion here
+                    print("Food item deleted!")
+                    showAlert = true
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Delete \(food.name)")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+            .padding(.bottom, 50)
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
+        }
+    }
+}
+
+
 //struct EditDrinkView: View {
 //    @EnvironmentObject var inventoryViewModel: InventoryViewModel
 //    @Environment(\.presentationMode) var presentationMode

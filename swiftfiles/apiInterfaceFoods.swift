@@ -7,22 +7,22 @@
 
 import Foundation
 
-struct Food: Decodable {
-    let id: String
-    let name: String
-    let weight: Weight
-    let calories: Int
-    let protein: Int
-    let carbs: Int
-    let fat: Int
+struct Food: Identifiable, Decodable {
+    var id: String
+    var name: String
+    var weight: Weight
+    var calories: Int
+    var protein: Int
+    var carbs: Int
+    var fat: Int
 }
 
 struct Weight: Decodable {
-    let value: Int
-    let unit: WeightUnit
+    var value: Int
+    var unit: WeightUnit
 }
 
-enum WeightUnit: String, Decodable {
+enum WeightUnit: String, Decodable, CaseIterable {
     case g
     case kg
     case oz
@@ -88,15 +88,5 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
     
     task.resume()
 }
-
-
-//weight: Weight(
-//    value: (currFood["weight"] as! [String: Any])["value"] as! Int,
-//    unit: WeightUnit(rawValue: (currFood["weight"] as! [String: Any])["unit"] as! String)!
-//),
-//calories: foodDict["calories"] as! Int,
-//protein: foodDict["protein"] as! Int,
-//carbs: foodDict["carbs"] as! Int,
-//fats: foodDict["fats"] as! Int
 
 

@@ -425,6 +425,5 @@ struct InventorySelectionSheet: View {
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
         HomeView(username: "cratik")
-            .environmentObject(InventoryViewModel())
     }
 }

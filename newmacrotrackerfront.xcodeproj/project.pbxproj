@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		296083EA2C28B60C001EFCF7 /* apiInterfaceDrinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296083E92C28B60C001EFCF7 /* apiInterfaceDrinks.swift */; };
 		29A437442C2279C200F73DBA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 29A437432C2279C200F73DBA /* Assets.xcassets */; };
 		29A437472C2279C200F73DBA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 29A437462C2279C200F73DBA /* Preview Assets.xcassets */; };
 		29A437512C2279C200F73DBA /* newmacrotrackerfrontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437502C2279C200F73DBA /* newmacrotrackerfrontTests.swift */; };
@@ -19,7 +20,7 @@
 		29A437782C227A0200F73DBA /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A4376D2C227A0200F73DBA /* ProfileView.swift */; };
 		29A437792C227A0200F73DBA /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A4376E2C227A0200F73DBA /* WelcomeView.swift */; };
 		29A4377A2C227A0200F73DBA /* macrotrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A4376F2C227A0200F73DBA /* macrotrackerApp.swift */; };
-		29A4377B2C227A0200F73DBA /* apiInterface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437702C227A0200F73DBA /* apiInterface.swift */; };
+		29A4377B2C227A0200F73DBA /* apiInterfaceFoods.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437702C227A0200F73DBA /* apiInterfaceFoods.swift */; };
 		29A4377C2C227A0200F73DBA /* GoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437712C227A0200F73DBA /* GoalView.swift */; };
 		29A4377D2C227A0200F73DBA /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437722C227A0200F73DBA /* LoginView.swift */; };
 		29A4377E2C227A0200F73DBA /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437732C227A0200F73DBA /* SignUpView.swift */; };
@@ -43,6 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		296083E92C28B60C001EFCF7 /* apiInterfaceDrinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceDrinks.swift; sourceTree = "<group>"; };
 		29A4373C2C2279C000F73DBA /* newmacrotrackerfront.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = newmacrotrackerfront.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29A437432C2279C200F73DBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		29A437462C2279C200F73DBA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -58,7 +60,7 @@
 		29A4376D2C227A0200F73DBA /* ProfileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileView.swift; path = swiftfiles/ProfileView.swift; sourceTree = SOURCE_ROOT; };
 		29A4376E2C227A0200F73DBA /* WelcomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WelcomeView.swift; path = swiftfiles/WelcomeView.swift; sourceTree = SOURCE_ROOT; };
 		29A4376F2C227A0200F73DBA /* macrotrackerApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = macrotrackerApp.swift; path = swiftfiles/macrotrackerApp.swift; sourceTree = SOURCE_ROOT; };
-		29A437702C227A0200F73DBA /* apiInterface.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = apiInterface.swift; path = swiftfiles/apiInterface.swift; sourceTree = SOURCE_ROOT; };
+		29A437702C227A0200F73DBA /* apiInterfaceFoods.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = apiInterfaceFoods.swift; path = swiftfiles/apiInterfaceFoods.swift; sourceTree = SOURCE_ROOT; };
 		29A437712C227A0200F73DBA /* GoalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GoalView.swift; path = swiftfiles/GoalView.swift; sourceTree = SOURCE_ROOT; };
 		29A437722C227A0200F73DBA /* LoginView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LoginView.swift; path = swiftfiles/LoginView.swift; sourceTree = SOURCE_ROOT; };
 		29A437732C227A0200F73DBA /* SignUpView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SignUpView.swift; path = swiftfiles/SignUpView.swift; sourceTree = SOURCE_ROOT; };
@@ -112,7 +114,8 @@
 		29A4373E2C2279C000F73DBA /* newmacrotrackerfront */ = {
 			isa = PBXGroup;
 			children = (
-				29A437702C227A0200F73DBA /* apiInterface.swift */,
+				29A437702C227A0200F73DBA /* apiInterfaceFoods.swift */,
+				296083E92C28B60C001EFCF7 /* apiInterfaceDrinks.swift */,
 				29A437712C227A0200F73DBA /* GoalView.swift */,
 				29A4376A2C227A0200F73DBA /* HomeView.swift */,
 				29A4376B2C227A0200F73DBA /* InventoryView.swift */,
@@ -285,7 +288,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				29A4377B2C227A0200F73DBA /* apiInterface.swift in Sources */,
+				29A4377B2C227A0200F73DBA /* apiInterfaceFoods.swift in Sources */,
+				296083EA2C28B60C001EFCF7 /* apiInterfaceDrinks.swift in Sources */,
 				29A437762C227A0200F73DBA /* InventoryView.swift in Sources */,
 				29A437792C227A0200F73DBA /* WelcomeView.swift in Sources */,
 				29A437772C227A0200F73DBA /* InventoryViewModel.swift in Sources */,
