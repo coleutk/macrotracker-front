@@ -27,6 +27,7 @@ enum WeightUnit: String, Codable, CaseIterable {
     case kg
     case oz
     case mg
+    case lb
 }
 
 // Get All Foods
@@ -166,6 +167,45 @@ func deleteFood(_ food: Food, completion: @escaping (Result<Void, Error>) -> Voi
         }
         
         completion(.success(()))
+    }
+    
+    task.resume()
+}
+
+// Add Food
+func addFood(_id: String, name: String, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int) {
+    guard let url = URL(string: "http://localhost:3000/foods") else {
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = [
+        "_id": _id,
+        "name": name,
+        "weight": [
+            "value": weightValue,
+            "unit": weightUnit
+        ],
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fats": fats
+    ]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+        guard let data = data, error == nil else {
+            return
+        }
+        
+        do {
+            let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            print("SUCCESS: \(response)")
+        } catch {
+            print(error)
+        }
     }
     
     task.resume()

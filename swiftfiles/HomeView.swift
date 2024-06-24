@@ -315,26 +315,62 @@ struct ManualWriteSheet: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
 
-                TextField("Protein", text: $manualProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Protein", text: $manualProtein)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
 
-                TextField("Carbs", text: $manualCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Carbs", text: $manualCarbs)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
 
-                TextField("Fats", text: $manualFats)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Fats", text: $manualFats)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
 
                 Button(action: {
                     // Add manually entered values to total values

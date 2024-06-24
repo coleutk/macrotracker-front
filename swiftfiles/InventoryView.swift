@@ -33,23 +33,6 @@ struct InventoryView: View {
     @State private var newDrinkCarbs = ""
     @State private var newDrinkFats = ""
     
-    // For Editing Food
-    @State private var foodName = ""
-    @State private var foodWeightValue = ""
-    @State private var foodWeightUnit = ""
-    @State private var foodCalories = ""
-    @State private var foodProtein = ""
-    @State private var foodCarbs = ""
-    @State private var foodFats = ""
-    
-    // For Editing Drink
-    @State private var drinkName = ""
-    @State private var drinkVolumeValue = ""
-    @State private var drinkVolumeUnit = ""
-    @State private var drinkCalories = ""
-    @State private var drinkProtein = ""
-    @State private var drinkCarbs = ""
-    @State private var drinkFats = ""
     
     var body: some View {
         NavigationStack {
@@ -179,11 +162,13 @@ struct InventoryView: View {
                         }
                     }
                 }
-//                .sheet(isPresented: $isAddFoodSheetPresented) {
-//                    AddFoodSheet(foodName: $newFoodName, foodWeightValue: $newFoodWeightValue, foodWeightUnit: $newFoodWeightUnit, foodCalories: $newFoodCalories, foodProtein: $newFoodProtein, foodCarbs: $newFoodCarbs, foodFats: $newFoodFats, isSheetPresented: $isAddFoodSheetPresented, foods: $inventoryViewModel.foods)
-//                        .environmentObject(inventoryViewModel)
-//                }
-//                
+                .sheet(isPresented: $isAddFoodSheetPresented) {
+                    AddFoodSheet(foodName: $newFoodName, foodWeightValue: $newFoodWeightValue, foodWeightUnit: $newFoodWeightUnit, foodCalories: $newFoodCalories, foodProtein: $newFoodProtein, foodCarbs: $newFoodCarbs, foodFats: $newFoodFats, isSheetPresented: $isAddFoodSheetPresented, foods: $foods)
+                        .onDisappear {
+                            loadFoods()
+                        }
+                }
+//
 //                .sheet(isPresented: $isAddDrinkSheetPresented) {
 //                    AddDrinkSheet(drinkName: $newDrinkName, drinkVolumeValue: $newDrinkVolumeValue, drinkVolumeUnit: $newDrinkVolumeUnit, drinkCalories: $newDrinkCalories, drinkProtein: $newDrinkProtein, drinkCarbs: $newDrinkCarbs, drinkFats: $newDrinkFats, isSheetPresented: $isAddDrinkSheetPresented, drinks: $inventoryViewModel.drinks)
 //                        .environmentObject(inventoryViewModel)
@@ -672,156 +657,153 @@ struct EditFoodView: View {
 //        }
 //    }
 //}
-//
-//
-//
-//struct AddFoodSheet: View {
-//    @EnvironmentObject var inventoryViewModel: InventoryViewModel
-//    
-//    @Binding var foodName: String
-//    @Binding var foodWeightValue: String
-//    @Binding var foodWeightUnit: String
-//    @Binding var foodCalories: String
-//    @Binding var foodProtein: String
-//    @Binding var foodCarbs: String
-//    @Binding var foodFats: String
-//    @Binding var isSheetPresented: Bool
-//    @Binding var foods: [Food]
-//    
-//    @State private var selectedUnit: String = "g"
-//    
-//    var body: some View {
-//        ZStack {
-//            Color(red: 20/255, green: 20/255, blue: 30/255)
-//                .ignoresSafeArea()
-//            VStack {
-//                Text("Details:")
-//                    .font(.title2)
-//                    .bold()
-//                    .foregroundColor(.white.opacity(0.70))
-//                
-//                TextField("Food Name", text: $foodName)
-//                    .padding(14)
-//                    .frame(maxWidth: .infinity)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.horizontal, 22)
-//                
-//                HStack {
-//                    TextField("Weight Value", text: $foodWeightValue)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Picker("Unit", selection: $selectedUnit) {
-//                        Text("g").tag("g")
-//                        Text("kg").tag("kg")
-//                        Text("mg").tag("mg")
-//                        Text("oz").tag("oz")
-//                        Text("lb").tag("lb")
-//                    }
-//                    .padding(8)
-//                    .pickerStyle(MenuPickerStyle())
-//                    .frame(width: 90)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.leading, -20)
-//                    .padding(.trailing, 22)
-//                }
-//                
-//                TextField("Calories", text: $foodCalories)
-//                    .padding(14)
-//                    .frame(maxWidth: .infinity)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.horizontal, 22)
-//                
-//                HStack {
-//                    TextField("Protein", text: $foodProtein)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                HStack {
-//                    TextField("Carbs", text: $foodCarbs)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                HStack {
-//                    TextField("Fat", text: $foodFats)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                Button(action: {
-//                    guard let weightValue = Int(foodWeightValue),
-//                          let calories = Int(foodCalories),
-//                          let protein = Double(foodProtein),
-//                          let carbs = Int(foodCarbs),
-//                          let fats = Double(foodFats) else {
-//                        print("Invalid input")
-//                        return
-//                    }
-//                    
-//                    let newFood = Food(id: UUID(), name: foodName, weight: Weight(value: weightValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
-//                    inventoryViewModel.foods.append(newFood)
-//                    inventoryViewModel.saveInventory()
-//                    isSheetPresented = false
-//                }) {
-//                    Text("Add Food")
-//                        .foregroundColor(.white.opacity(0.70))
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.blue.opacity(0.50))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                        .padding(.top, 20)
-//                }
-//            }
-//            .foregroundColor(.white.opacity(0.70))
-//        }
-//    }
-//}
-//
+
+
+
+struct AddFoodSheet: View {
+    @Binding var foodName: String
+    @Binding var foodWeightValue: String
+    @Binding var foodWeightUnit: String
+    @Binding var foodCalories: String
+    @Binding var foodProtein: String
+    @Binding var foodCarbs: String
+    @Binding var foodFats: String
+    @Binding var isSheetPresented: Bool
+    @Binding var foods: [Food]
+    
+    @State private var selectedUnit: String = "g"
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack {
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                TextField("Food Name", text: $foodName)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Weight Value", text: $foodWeightValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("g").tag("g")
+                        Text("kg").tag("kg")
+                        Text("mg").tag("mg")
+                        Text("oz").tag("oz")
+                        Text("lb").tag("lb")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
+                
+                TextField("Calories", text: $foodCalories)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Protein", text: $foodProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Carbs", text: $foodCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Fat", text: $foodFats)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                Button(action: {
+                    guard let foodWeightValue = Int(foodWeightValue),
+                          let foodCalories = Int(foodCalories),
+                          let foodProtein = Int(foodProtein),
+                          let foodCarbs = Int(foodCarbs),
+                          let foodFats = Int(foodFats) else {
+                        print("Invalid input")
+                        return
+                    }
+                    
+                    addFood(_id: UUID().uuidString, name: foodName, weightValue: foodWeightValue, weightUnit: selectedUnit, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats)
+                    
+                    isSheetPresented = false
+                }) {
+                    Text("Add Food")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+        }
+    }
+}
+
 //struct AddDrinkSheet: View {
 //    @EnvironmentObject var inventoryViewModel: InventoryViewModel
 //    
