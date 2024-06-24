@@ -6,9 +6,8 @@ enum Item: String, CaseIterable, Identifiable {
 }
 
 struct InventoryView: View {
-    @State private var foods: [Food] = []
-    
-    //@State private var drinks: [Drink] = []
+    @State private var foods: [Food] = []    
+    @State private var drinks: [Drink] = []
     
     @EnvironmentObject var inventoryViewModel: InventoryViewModel
     @State private var selectedItem: Item = .Food
@@ -53,9 +52,8 @@ struct InventoryView: View {
                     List {
                         if selectedItem == .Food {
                             ForEach(foods, id: \.id) { food in
-                                //let food = inventoryViewModel.foods[index]
                                 NavigationLink(destination: EditFoodView(
-                                    food: binding(for: food),
+                                    food: bindingFood(for: food),
                                     onSave: {
                                         loadFoods()
                                     },
@@ -70,28 +68,22 @@ struct InventoryView: View {
                             }
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         } else {
-//                            ForEach(inventoryViewModel.drinks.indices, id: \.self) { index in
-//                                let drink = inventoryViewModel.drinks[index]
-//                                NavigationLink(destination:
-////                                                EditDrinkView(drinkName: $drinkName, drinkVolumeValue: $drinkVolumeValue,
-////                                                              drinkVolumeUnit: $drinkVolumeUnit, drinkCalories: $drinkCalories, drinkProtein: $drinkProtein, drinkCarbs: $drinkCarbs, drinkFats: $drinkFats, drinks: $inventoryViewModel.drinks, drinkIndex: index)
-//                                    .environmentObject(inventoryViewModel)
-//                                    .onAppear {
-//                                        drinkName = drink.name
-//                                        drinkVolumeValue = String(drink.volume.value)
-//                                        drinkVolumeUnit = drink.volume.unit.rawValue
-//                                        drinkCalories = String(drink.calories)
-//                                        drinkProtein = String(drink.protein)
-//                                        drinkCarbs = String(drink.carbs)
-//                                        drinkFats = String(drink.fats)
-//                                    }
-//                                ) {
-//                                    Text(drink.name)
-//                                        .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
-//                                        .foregroundColor(.white.opacity(0.70))
-//                                }
-//                            }
-//                            .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            ForEach(drinks, id: \.id) { drink in
+                                NavigationLink(destination: EditDrinkView(
+                                    drink: bindingDrink(for: drink),
+                                    onSave: {
+                                        loadDrinks()
+                                    },
+                                    onDelete: {
+                                        loadDrinks()
+                                    }
+                                )) {
+                                    Text(drink.name)
+                                        .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                                        .foregroundColor(.white.opacity(0.70))
+                                }
+                            }
+                            .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         }
                     }
                     .listStyle(.plain)
@@ -99,6 +91,9 @@ struct InventoryView: View {
                     .foregroundColor(.white)
                     .onAppear {
                             loadFoods()
+                    }
+                    .onAppear {
+                            loadDrinks()
                     }
                     
                 }
@@ -223,11 +218,31 @@ struct InventoryView: View {
         }
     }
     
-    private func binding(for food: Food) -> Binding<Food> {
+    private func loadDrinks() {
+        print("loadDrinks called")
+        getAllDrinks { result in
+            switch result {
+            case .success(let drinks):
+                print("Drinks loaded: \(drinks)") // Debug print
+                self.drinks = drinks
+            case .failure(let error):
+                print("Failed to load drinks: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func bindingFood(for food: Food) -> Binding<Food> {
         guard let index = foods.firstIndex(where: { $0.id == food.id }) else {
             fatalError("Food not found")
         }
         return $foods[index]
+    }
+    
+    private func bindingDrink(for drink: Drink) -> Binding<Drink> {
+        guard let index = drinks.firstIndex(where: { $0.id == drink.id }) else {
+            fatalError("Drink not found")
+        }
+        return $drinks[index]
     }
 }
 
@@ -451,212 +466,208 @@ struct EditFoodView: View {
             Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
         }
     }
-    
-    
 }
 
 
-//struct EditDrinkView: View {
-//    @EnvironmentObject var inventoryViewModel: InventoryViewModel
-//    @Environment(\.presentationMode) var presentationMode
-//
-//    @State private var showAlert = false
-//    
-//    @Binding var drinkName: String
-//    @Binding var drinkVolumeValue: String
-//    @Binding var drinkVolumeUnit: String
-//    @Binding var drinkCalories: String
-//    @Binding var drinkProtein: String
-//    @Binding var drinkCarbs: String
-//    @Binding var drinkFats: String
-//    @Binding var drinks: [Drink]
-//    let drinkIndex: Int
-//    
-//    @State private var selectedUnit: String = "mL"
-//
-//    init(drinkName: Binding<String>, drinkVolumeValue: Binding<String>, drinkVolumeUnit: Binding<String>, drinkCalories: Binding<String>, drinkProtein: Binding<String>, drinkCarbs: Binding<String>, drinkFats: Binding<String>, drinks: Binding<[Drink]>, drinkIndex: Int) {
-//        _drinkName = drinkName
-//        _drinkVolumeValue = drinkVolumeValue
-//        _drinkVolumeUnit = drinkVolumeUnit
-//        _drinkCalories = drinkCalories
-//        _drinkProtein = drinkProtein
-//        _drinkCarbs = drinkCarbs
-//        _drinkFats = drinkFats
-//        _drinks = drinks
-//        self.drinkIndex = drinkIndex
-//        _selectedUnit = State(initialValue: drinkVolumeUnit.wrappedValue)
-//    }
-//    
-//    var body: some View {
-//        ZStack {
-//            Color(red: 20/255, green: 20/255, blue: 30/255)
-//                .ignoresSafeArea()
-//            
-//            VStack {
-//                Text("Edit Details:")
-//                    .font(.title2)
-//                    .bold()
-//                    .foregroundColor(.white.opacity(0.70))
-//                
-//                TextField("Drink Name", text: $drinkName)
-//                    .padding(14)
-//                    .frame(maxWidth: .infinity)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.horizontal, 22)
-//                
-//                HStack {
-//                    TextField("Volume Value", text: $drinkVolumeValue)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Picker("Unit", selection: $selectedUnit) {
-//                        Text("mL").tag("mL")
-//                        Text("L").tag("L")
-//                        Text("floz").tag("floz")
-//                        Text("c").tag("c")
+struct EditDrinkView: View {
+    @Environment(\.presentationMode) var presentationMode
+
+    // Saving Food Details
+    @State private var showAlert = false
+    @State private var alertMessage = "Changes saved!"
+    
+    @Binding var drink: Drink
+    var onSave: (() -> Void)?
+    var onDelete: (() -> Void)? // Callback for deletion
+    
+    @State private var selectedUnit: String
+    
+    // Intermediate variables for TextField binding
+    @State private var drinkName: String
+    @State private var drinkVolumeValue: String
+    @State private var drinkCalories: String
+    @State private var drinkProtein: String
+    @State private var drinkCarbs: String
+    @State private var drinkFat: String
+
+    init(drink: Binding<Drink>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
+        _drink = drink
+        _selectedUnit = State(initialValue: drink.wrappedValue.volume.unit.rawValue)
+
+        
+        // Initialize intermediate variables
+        _drinkName = State(initialValue: drink.wrappedValue.name)
+        _drinkVolumeValue = State(initialValue: String(drink.wrappedValue.volume.value))
+        _drinkCalories = State(initialValue: String(drink.wrappedValue.calories))
+        _drinkProtein = State(initialValue: String(drink.wrappedValue.protein))
+        _drinkCarbs = State(initialValue: String(drink.wrappedValue.carbs))
+        _drinkFat = State(initialValue: String(drink.wrappedValue.fat))
+    }
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            
+            VStack {
+                Text("Edit Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                TextField("Drink Name", text: $drinkName)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Volume Value", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("mL").tag("mL")
+                        Text("L").tag("L")
+                        Text("floz").tag("floz")
+                        Text("c").tag("c")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
+                
+                TextField("Calories", text: $drinkCalories)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Protein", text: $drinkProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Carbs", text: $drinkCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Fat", text: $drinkFat)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                Button(action: {
+                    // Save changes here
+                    drink.name = drinkName
+                    drink.volume.value = Int(drinkVolumeValue) ?? drink.volume.value
+                    drink.calories = Int(drinkCalories) ?? drink.calories
+                    drink.protein = Int(drinkProtein) ?? drink.protein
+                    drink.carbs = Int(drinkCarbs) ?? drink.carbs
+                    drink.fat = Int(drinkFat) ?? drink.fat
+                    
+                    // Call the editFood function
+//                    editFood(food) { result in
+//                        switch result {
+//                        case .success(let updatedFood):
+//                            onSave?()
+//                            print("Changes saved: \(updatedFood)")
+//                            alertMessage = "Changes saved!"
+//                            showAlert = true
+//                            food = updatedFood // Update the food with the returned updatedFood
+//                        case .failure(let error):
+//                            print("Failed to save changes: \(error)")
+//                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
+//                            showAlert = true
+//                        }
 //                    }
-//                    .padding(8)
-//                    .pickerStyle(MenuPickerStyle())
-//                    .frame(width: 90)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.leading, -20)
-//                    .padding(.trailing, 22)
-//                }
-//                
-//                TextField("Calories", text: $drinkCalories)
-//                    .padding(14)
-//                    .frame(maxWidth: .infinity)
-//                    .background(Color.black.opacity(0.20))
-//                    .cornerRadius(15)
-//                    .padding(.horizontal, 22)
-//                
-//                HStack {
-//                    TextField("Protein", text: $drinkProtein)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                HStack {
-//                    TextField("Carbs", text: $drinkCarbs)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                HStack {
-//                    TextField("Fat", text: $drinkFats)
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                    
-//                    Text("g")
-//                        .padding(14)
-//                        .frame(width: 90)
-//                        .background(Color.black.opacity(0.20))
-//                        .cornerRadius(15)
-//                        .padding(.leading, -20)
-//                        .padding(.trailing, 22)
-//                        .foregroundColor(.white.opacity(0.50))
-//                }
-//                
-//                Button(action: {
-//                    guard let volumeValue = Int(drinkVolumeValue),
-//                          let calories = Int(drinkCalories),
-//                          let protein = Double(drinkProtein),
-//                          let carbs = Int(drinkCarbs),
-//                          let fats = Double(drinkFats) else {
-//                        print("Invalid input")
-//                        return
-//                    }
-//                    
-//                    let editedDrink = Drink(id: UUID(), name: drinkName, volume: Volume(value: volumeValue, unit: Unit(rawValue: selectedUnit)!), calories: calories, protein: protein, carbs: carbs, fats: fats)
-//                    inventoryViewModel.drinks[drinkIndex] = editedDrink
-//                    
-//                    inventoryViewModel.saveInventory()
-//                    
-//                    // Print a message to indicate that changes are saved
-//                    print("Changes saved!")
-//                    
-//                    // Display an alert
-//                    showAlert = true
-//                    
-//                    // Dismiss the view and go back to inventory
-//                    presentationMode.wrappedValue.dismiss()
-//                }) {
-//                    Text("Confirm Changes")
-//                        .foregroundColor(.white.opacity(0.70))
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.blue.opacity(0.50))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                        .padding(.top, 20)
-//                }
-//                
-//                // Delete Item Button
-//                Button(action: {
-//                    // Remove the current drink item from the list using the index
-//                    inventoryViewModel.drinks.remove(at: drinkIndex)
-//                    
-//                    inventoryViewModel.saveInventory()
-//                    
-//                    // Print a message to indicate that the item is deleted
-//                    print("Drink item deleted!")
-//                    
-//                    // Display an alert or perform any other actions as needed
-//                    showAlert = true
-//                    
-//                    // Dismiss the view and go back to inventory
-//                    presentationMode.wrappedValue.dismiss()
-//                }) {
-//                    Text("Delete \(drinkName)")
-//                        .foregroundColor(.white.opacity(0.70))
-//                        .padding(14)
-//                        .frame(maxWidth: .infinity)
-//                        .background(Color.red.opacity(0.50))
-//                        .cornerRadius(15)
-//                        .padding(.horizontal, 22)
-//                        .padding(.top, 20)
-//                }
-//            }
-//            .foregroundColor(.white.opacity(0.70))
-//            .padding(.bottom, 50)
-//        }
-//        .alert(isPresented: $showAlert) {
-//            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
-//        }
-//    }
-//}
+                    
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Confirm Changes")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+                
+                // Delete Item Button
+                Button(action: {
+
+                    showAlert = true
+                    // Dismiss the view and go back to inventory
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Delete \(drinkName)")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+            .padding(.bottom, 50)
+        }
+        .alert(isPresented: $showAlert) {
+            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
+        }
+    }
+}
 
 
 
