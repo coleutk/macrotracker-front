@@ -71,7 +71,15 @@ struct InventoryView: View {
                         if selectedItem == .Food {
                             ForEach(foods, id: \.id) { food in
                                 //let food = inventoryViewModel.foods[index]
-                                NavigationLink(destination: EditFoodView(food: binding(for: food))) {
+                                NavigationLink(destination: EditFoodView(
+                                    food: binding(for: food),
+                                    onSave: {
+                                        loadFoods()
+                                    },
+                                    onDelete: {
+                                        loadFoods()
+                                    }
+                                )) {
                                     Text(food.name)
                                         .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                                         .foregroundColor(.white.opacity(0.70))
@@ -107,7 +115,7 @@ struct InventoryView: View {
                     .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                     .foregroundColor(.white)
                     .onAppear {
-                        loadFoods()
+                            loadFoods()
                     }
                     
                 }
@@ -248,6 +256,8 @@ struct EditFoodView: View {
     @State private var alertMessage = "Changes saved!"
     
     @Binding var food: Food
+    var onSave: (() -> Void)?
+    var onDelete: (() -> Void)? // Callback for deletion
     
     @State private var selectedUnit: String
     
@@ -259,9 +269,10 @@ struct EditFoodView: View {
     @State private var foodCarbs: String
     @State private var foodFat: String
 
-    init(food: Binding<Food>) {
+    init(food: Binding<Food>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
         _food = food
         _selectedUnit = State(initialValue: food.wrappedValue.weight.unit.rawValue)
+        self.onDelete = onDelete
         
         // Initialize intermediate variables
         _foodName = State(initialValue: food.wrappedValue.name)
@@ -394,6 +405,7 @@ struct EditFoodView: View {
                     editFood(food) { result in
                         switch result {
                         case .success(let updatedFood):
+                            onSave?()
                             print("Changes saved: \(updatedFood)")
                             alertMessage = "Changes saved!"
                             showAlert = true
@@ -420,8 +432,21 @@ struct EditFoodView: View {
                 // Delete Item Button
                 Button(action: {
                     // Handle deletion here
-                    print("Food item deleted!")
-                    showAlert = true
+                    deleteFood(food) { result in
+                        switch result {
+                        case .success:
+                            onDelete?() // Call the onDelete callback
+                            print("Food item deleted!")
+                            alertMessage = "Food item deleted!"
+                            showAlert = true
+                            presentationMode.wrappedValue.dismiss()
+                        case .failure(let error):
+                            print("Failed to delete food item: \(error)")
+                            alertMessage = "Failed to delete food item: \(error.localizedDescription)"
+                            showAlert = true
+                        }
+                    }
+                    
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Delete \(food.name)")
@@ -441,6 +466,8 @@ struct EditFoodView: View {
             Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
         }
     }
+    
+    
 }
 
 

@@ -29,7 +29,7 @@ enum WeightUnit: String, Codable, CaseIterable {
     case mg
 }
 
-// Retrieving All Foods
+// Get All Foods
 func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/foods/")!)
@@ -91,7 +91,7 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
 }
 
 
-// Editing Food
+// Edit Food
 func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void) {
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
@@ -143,5 +143,33 @@ func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void)
     
     task.resume()
 }
+
+
+// Delete Food
+func deleteFood(_ food: Food, completion: @escaping (Result<Void, Error>) -> Void) {
+    var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "DELETE"
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
+            print("Unexpected response")
+            completion(.failure(error))
+            return
+        }
+        
+        completion(.success(()))
+    }
+    
+    task.resume()
+}
+
 
 
