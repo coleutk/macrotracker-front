@@ -142,3 +142,29 @@ func editDrink(_ drink: Drink, completion: @escaping (Result<Drink, Error>) -> V
     task.resume()
 }
 
+// Delete Drink
+func deleteDrink(_ drink: Drink, completion: @escaping (Result<Void, Error>) -> Void) {
+    var request = URLRequest(url: URL(string: "http://localhost:3000/drinks/\(drink.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "DELETE"
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
+            print("Unexpected response")
+            completion(.failure(error))
+            return
+        }
+        
+        completion(.success(()))
+    }
+    
+    task.resume()
+}
+

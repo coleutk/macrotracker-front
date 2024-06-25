@@ -493,6 +493,7 @@ struct EditDrinkView: View {
     init(drink: Binding<Drink>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
         _drink = drink
         _selectedUnit = State(initialValue: drink.wrappedValue.volume.unit.rawValue)
+        self.onDelete = onDelete
 
         
         // Initialize intermediate variables
@@ -648,8 +649,21 @@ struct EditDrinkView: View {
                 
                 // Delete Item Button
                 Button(action: {
-
-                    showAlert = true
+                    // Handle deletion here
+                    deleteDrink(drink) { result in
+                        switch result {
+                        case .success:
+                            onDelete?() // Call the onDelete callback
+                            print("Drinkitem deleted!")
+                            alertMessage = "Drink item deleted!"
+                            showAlert = true
+                            presentationMode.wrappedValue.dismiss()
+                        case .failure(let error):
+                            print("Failed to delete drink item: \(error)")
+                            alertMessage = "Failed to delete drink item: \(error.localizedDescription)"
+                            showAlert = true
+                        }
+                    }
                     // Dismiss the view and go back to inventory
                     presentationMode.wrappedValue.dismiss()
                 }) {
