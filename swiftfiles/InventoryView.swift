@@ -524,6 +524,7 @@ struct EditDrinkView: View {
                 
                 HStack {
                     TextField("Volume Value", text: $drinkVolumeValue)
+                        .keyboardType(.numberPad)
                         .padding(14)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
@@ -531,10 +532,9 @@ struct EditDrinkView: View {
                         .padding(.horizontal, 22)
                     
                     Picker("Unit", selection: $selectedUnit) {
-                        Text("mL").tag("mL")
-                        Text("L").tag("L")
-                        Text("floz").tag("floz")
-                        Text("c").tag("c")
+                        ForEach(VolumeUnit.allCases, id: \.self) { unit in
+                            Text(unit.rawValue).tag(unit.rawValue)
+                        }
                     }
                     .padding(8)
                     .pickerStyle(MenuPickerStyle())
@@ -543,6 +543,9 @@ struct EditDrinkView: View {
                     .cornerRadius(15)
                     .padding(.leading, -20)
                     .padding(.trailing, 22)
+                    .onChange(of: selectedUnit) { oldValue, newValue in
+                        drink.volume.unit = VolumeUnit(rawValue: newValue) ?? .mL
+                    }
                 }
                 
                 TextField("Calories", text: $drinkCalories)
@@ -615,21 +618,21 @@ struct EditDrinkView: View {
                     drink.carbs = Int(drinkCarbs) ?? drink.carbs
                     drink.fat = Int(drinkFat) ?? drink.fat
                     
-                    // Call the editFood function
-//                    editFood(food) { result in
-//                        switch result {
-//                        case .success(let updatedFood):
-//                            onSave?()
-//                            print("Changes saved: \(updatedFood)")
-//                            alertMessage = "Changes saved!"
-//                            showAlert = true
-//                            food = updatedFood // Update the food with the returned updatedFood
-//                        case .failure(let error):
-//                            print("Failed to save changes: \(error)")
-//                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
-//                            showAlert = true
-//                        }
-//                    }
+                    // Call the editDrink function
+                    editDrink(drink) { result in
+                        switch result {
+                        case .success(let updatedDrink):
+                            onSave?()
+                            print("Changes saved: \(updatedDrink)")
+                            alertMessage = "Changes saved!"
+                            showAlert = true
+                            drink = updatedDrink // Update the food with the returned updatedFood
+                        case .failure(let error):
+                            print("Failed to save changes: \(error)")
+                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
+                            showAlert = true
+                        }
+                    }
                     
                     presentationMode.wrappedValue.dismiss()
                 }) {

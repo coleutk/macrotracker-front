@@ -89,3 +89,56 @@ func getAllDrinks(_ completion: @escaping (Result<[Drink], Error>) -> Void) {
     task.resume()
 }
 
+// Edit Drink
+func editDrink(_ drink: Drink, completion: @escaping (Result<Drink, Error>) -> Void) {
+    // Build request
+    var request = URLRequest(url: URL(string: "http://localhost:3000/drinks/\(drink.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "PATCH"
+    
+    // Create the array of objects as expected by the backend
+    let updateOps: [[String: Any]] = [
+        ["propName": "name", "value": drink.name],
+        ["propName": "volume", "value": ["value": drink.volume.value, "unit": drink.volume.unit.rawValue]],
+        ["propName": "calories", "value": drink.calories],
+        ["propName": "protein", "value": drink.protein],
+        ["propName": "carbs", "value": drink.carbs],
+        ["propName": "fat", "value": drink.fat]
+    ]
+    
+    do {
+        let jsonData = try JSONSerialization.data(withJSONObject: updateOps, options: [])
+        request.httpBody = jsonData
+    } catch {
+        print("Error encoding food data: \(error)")
+        completion(.failure(error))
+        return
+    }
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let data = data else {
+            let error = NSError(domain: "DataError", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])
+            print("No data received")
+            completion(.failure(error))
+            return
+        }
+        
+        do {
+            let updatedDrink = try JSONDecoder().decode(Drink.self, from: data)
+            print("Data received and parsed: \(updatedDrink)")
+            completion(.success(updatedDrink))
+        } catch {
+            print("Error decoding response data: \(error)")
+            completion(.failure(error))
+        }
+    }
+    
+    task.resume()
+}
+
