@@ -51,7 +51,7 @@ func getAllDrinks(_ completion: @escaping (Result<[Drink], Error>) -> Void) {
                 if let currDrink = object as? [AnyHashable: Any] {
                     if let id = currDrink["_id"] as? String,
                        let name = currDrink["name"] as? String,
-                       // For pulling weight object values
+                       // For pulling volume object values
                        let volumeDict = currDrink["volume"] as? [String: Any],
                        let value = volumeDict["value"] as? Int,
                        let unit = volumeDict["unit"] as? String,
@@ -110,7 +110,7 @@ func editDrink(_ drink: Drink, completion: @escaping (Result<Drink, Error>) -> V
         let jsonData = try JSONSerialization.data(withJSONObject: updateOps, options: [])
         request.httpBody = jsonData
     } catch {
-        print("Error encoding food data: \(error)")
+        print("Error encoding drink data: \(error)")
         completion(.failure(error))
         return
     }
@@ -163,6 +163,45 @@ func deleteDrink(_ drink: Drink, completion: @escaping (Result<Void, Error>) -> 
         }
         
         completion(.success(()))
+    }
+    
+    task.resume()
+}
+
+// Add Drink
+func addDrink(_id: String, name: String, volumeValue: Int, volumeUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int) {
+    guard let url = URL(string: "http://localhost:3000/drinks") else {
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = [
+        "_id": _id,
+        "name": name,
+        "volume": [
+            "value": volumeValue,
+            "unit": volumeUnit
+        ],
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fats": fats
+    ]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+        guard let data = data, error == nil else {
+            return
+        }
+        
+        do {
+            let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            print("SUCCESS: \(response)")
+        } catch {
+            print(error)
+        }
     }
     
     task.resume()
