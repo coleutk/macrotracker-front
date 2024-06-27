@@ -18,21 +18,22 @@ struct HomeView: View {
     @State private var manualCarbs = ""
     @State private var manualFats = ""
 
-    @State private var totalCalories: Float = 0.0
-    @State private var totalProtein: Float = 0.0
-    @State private var totalCarbs: Float = 0.0
-    @State private var totalFats: Float = 0.0
+    @State private var totalCalories: Int = 0
+    @State private var totalProtein: Int = 0
+    @State private var totalCarbs: Int = 0
+    @State private var totalFats: Int = 0
 
-    let goalCalories: Float = 2300.0
-    let goalProtein: Float = 160.0
-    let goalCarbs: Float = 250.0
-    let goalFats: Float = 70.0
+    let goalCalories: Int = 2300
+    let goalProtein: Int = 160
+    let goalCarbs: Int = 250
+    let goalFats: Int = 70
+
 
     func updateProgress() {
-        calorieProgress = totalCalories / goalCalories
-        proteinProgress = totalProtein / goalProtein
-        carbProgress = totalCarbs / goalCarbs
-        fatProgress = totalFats / goalFats
+        calorieProgress = min(Float(totalCalories) / Float(goalCalories), 1.0)
+        proteinProgress = min(Float(totalProtein) / Float(goalProtein), 1.0)
+        carbProgress = min(Float(totalCarbs) / Float(goalCarbs), 1.0)
+        fatProgress = min(Float(totalFats) / Float(goalFats), 1.0)
     }
 
     var body: some View {
@@ -69,12 +70,12 @@ struct HomeView: View {
                     VStack(spacing: 20) {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
                             GridRow {
-                                NutrientView(nutrient: "Calories", curValue: totalCalories, goalValue: goalCalories, color: Color(red: 10/255, green: 211/255, blue: 255/255))
-                                NutrientView(nutrient: "Protein", curValue: totalProtein, goalValue: goalProtein, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                                NutrientView(nutrient: "Calories", curValue: Int(totalCalories), goalValue: goalCalories, color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                                NutrientView(nutrient: "Protein", curValue: Int(totalProtein), goalValue: goalProtein, color: Color(red: 46/255, green: 94/255, blue: 170/255))
                             }
                             GridRow {
-                                NutrientView(nutrient: "Carbs", curValue: totalCarbs, goalValue: goalCarbs, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                NutrientView(nutrient: "Fat", curValue: totalFats, goalValue: goalFats, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                NutrientView(nutrient: "Carbs", curValue: Int(totalCarbs), goalValue: goalCarbs, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                NutrientView(nutrient: "Fat", curValue: Int(totalFats), goalValue: goalFats, color: Color(red: 171/255, green: 169/255, blue: 195/255))
                             }
                         }
                     }
@@ -150,7 +151,13 @@ struct HomeView: View {
                             .buttonStyle(MyButtonStyle())
                             .padding(.horizontal, 10)
                             .sheet(isPresented: $isInventorySelectionSheetPresented) {
-                                InventorySelectionSheet()
+                                InventorySelectionSheet(
+                                    totalCalories: $totalCalories,
+                                    totalProtein: $totalProtein,
+                                    totalCarbs: $totalCarbs,
+                                    totalFats: $totalFats,
+                                    updateProgress: updateProgress
+                                )
                             }
                         }
                     }
@@ -223,8 +230,8 @@ struct HomeView: View {
 
 struct NutrientView: View {
     var nutrient: String
-    var curValue: Float
-    var goalValue: Float
+    var curValue: Int
+    var goalValue: Int
     var color: Color
 
     var body: some View {
@@ -247,7 +254,7 @@ struct NutrientView: View {
                 }
             }
 
-            Text("\(String(format: "%.0f", curValue))\(nutrient == "Calories" ? "" : "g") / \(String(format: "%.0f", floor(goalValue)))\(nutrient == "Calories" ? "" : "g")")
+            Text("\(String(curValue))\(nutrient == "Calories" ? "" : "g") / \(String((goalValue)))\(nutrient == "Calories" ? "" : "g")")
                 .foregroundColor(.white.opacity(0.70))
                 .bold()
                 .font(.system(size: 14)) // Adjusted font size
@@ -271,7 +278,7 @@ struct ProgressBar : View {
                 .foregroundColor(.white.opacity(0.70))
 
             Circle()
-                .trim(from: 0.0, to: CGFloat(min(self.progress, 1.0)))
+                .trim(from: 0, to: CGFloat(min(self.progress, 1)))
                 .stroke(style: StrokeStyle(lineWidth: fillerWidth, lineCap:
                         .round, lineJoin: .round))
                 .foregroundColor(color)
@@ -289,10 +296,10 @@ struct ManualWriteSheet: View {
     @Binding var manualFats: String
     @Binding var isSheetPresented: Bool
 
-    @Binding var totalCalories: Float
-    @Binding var totalProtein: Float
-    @Binding var totalCarbs: Float
-    @Binding var totalFats: Float
+    @Binding var totalCalories: Int
+    @Binding var totalProtein: Int
+    @Binding var totalCarbs: Int
+    @Binding var totalFats: Int
 
     var updateProgress: () -> Void
 
@@ -372,10 +379,10 @@ struct ManualWriteSheet: View {
 
                 Button(action: {
                     // Add manually entered values to total values
-                    totalCalories += Float(manualCalories) ?? 0.0
-                    totalProtein += Float(manualProtein) ?? 0.0
-                    totalCarbs += Float(manualCarbs) ?? 0.0
-                    totalFats += Float(manualFats) ?? 0.0
+                    totalCalories += Int(manualCalories) ?? 0
+                    totalProtein += Int(manualProtein) ?? 0
+                    totalCarbs += Int(manualCarbs) ?? 0
+                    totalFats += Int(manualFats) ?? 0
 
                     // Clear the text fields
                     manualCalories = ""
@@ -413,6 +420,13 @@ struct InventorySelectionSheet: View {
     @State private var isDrinkInputSheetPresented = false
     @State private var selectedFood: Food? = nil
     @State private var selectedDrink: Drink? = nil
+    
+    @Binding var totalCalories: Int
+    @Binding var totalProtein: Int
+    @Binding var totalCarbs: Int
+    @Binding var totalFats: Int
+
+    var updateProgress: () -> Void
     
     
     class SheetMananger: ObservableObject{
@@ -482,11 +496,18 @@ struct InventorySelectionSheet: View {
                             switch whichSheet {
                             case .Food:
                                 if let selectedFood = selectedFood {
-                                    FoodInputSheet(food: bindingFood(for: selectedFood))
+                                    FoodInputSheet(
+                                        food: bindingFood(for: selectedFood),
+                                        totalCalories: $totalCalories,
+                                        totalProtein: $totalProtein,
+                                        totalCarbs: $totalCarbs,
+                                        totalFats: $totalFats,
+                                        updateProgress: updateProgress
+                                    )
                                 }
                             case .Drink:
                                 if let selectedDrink = selectedDrink {
-                                    // BlueSheetView(drink: bindingDrink(for: selectedDrink))
+                                    DrinkInputSheet(drink: bindingDrink(for: selectedDrink))
                                 }
                             }
                         }
@@ -538,15 +559,23 @@ struct InventorySelectionSheet: View {
     }
 }
 
+// For User to input Food Item Consumption
 
 struct FoodInputSheet: View {
     @Environment(\.presentationMode) var presentationMode
     
     @Binding var food: Food
     
+    // For Adding Input to totals
+    @Binding var totalCalories: Int
+    @Binding var totalProtein: Int
+    @Binding var totalCarbs: Int
+    @Binding var totalFats: Int
+
+    var updateProgress: () -> Void
+    
     @State private var selectedUnit: String
     @State private var servingSize: String
-    
     // Intermediate variables for TextField binding
     @State private var foodName: String
     @State private var foodWeightValue: String
@@ -555,11 +584,19 @@ struct FoodInputSheet: View {
     @State private var foodCarbs: String
     @State private var foodFat: String
 
-    init(food: Binding<Food>) {
+    @FocusState private var isServingSizeFocused: Bool
+    @FocusState private var isWeightValueFocused: Bool
+
+    init(food: Binding<Food>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void) {
         _food = food
-        _selectedUnit = State(initialValue: food.wrappedValue.weight.unit.rawValue)
-        _servingSize = State(initialValue: "1")
+        _totalCalories = totalCalories
+        _totalProtein = totalProtein
+        _totalCarbs = totalCarbs
+        _totalFats = totalFats
+        self.updateProgress = updateProgress
         
+        _selectedUnit = State(initialValue: food.wrappedValue.weight.unit.rawValue)
+        _servingSize = State(initialValue: String(format: "%.2f", 1.0))
         // Initialize intermediate variables
         _foodName = State(initialValue: food.wrappedValue.name)
         _foodWeightValue = State(initialValue: String(food.wrappedValue.weight.value))
@@ -567,6 +604,16 @@ struct FoodInputSheet: View {
         _foodProtein = State(initialValue: String(food.wrappedValue.protein))
         _foodCarbs = State(initialValue: String(food.wrappedValue.carbs))
         _foodFat = State(initialValue: String(food.wrappedValue.fat))
+    }
+    
+    func recalculateMacronutrients() {
+        guard let foodWeightValue = Float(foodWeightValue) else { return }
+        
+        let weightFactor = foodWeightValue / Float(food.weight.value)
+        foodCalories = String(Int(Float(food.calories) * weightFactor))
+        foodProtein = String(Int(Float(food.protein) * weightFactor))
+        foodCarbs = String(Int(Float(food.carbs) * weightFactor))
+        foodFat = String(Int(Float(food.fat) * weightFactor))
     }
     
     var body: some View {
@@ -579,12 +626,18 @@ struct FoodInputSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Servings Size", text: $servingSize)
+                TextField("Serving Size", text: $servingSize)
                     .padding(14)
                     .frame(maxWidth: .infinity)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
+                    .focused($isServingSizeFocused)
+                    .onSubmit {
+                        let newServingSize = Float(servingSize) ?? 1.0
+                        foodWeightValue = String(Float(food.weight.value) * newServingSize)
+                        recalculateMacronutrients()
+                    }
                 
                 HStack {
                     TextField("Weight Value", text: $foodWeightValue)
@@ -593,6 +646,12 @@ struct FoodInputSheet: View {
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.horizontal, 22)
+                        .focused($isWeightValueFocused)
+                        .onSubmit {
+                            guard let weightValue = Float(foodWeightValue), weightValue != 0 else { return }
+                            servingSize = String(format: "%.2f", weightValue / Float(food.weight.value))
+                            recalculateMacronutrients()
+                        }
                     
                     Picker("Unit", selection: $selectedUnit) {
                         Text("g").tag("g")
@@ -616,6 +675,8 @@ struct FoodInputSheet: View {
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
+                    .foregroundColor(.white.opacity(0.50))
+                    .disabled(true)
                 
                 HStack {
                     TextField("Protein", text: $foodProtein)
@@ -624,6 +685,8 @@ struct FoodInputSheet: View {
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.horizontal, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                        .disabled(true)
                     
                     Text("g")
                         .padding(14)
@@ -642,6 +705,8 @@ struct FoodInputSheet: View {
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.horizontal, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                        .disabled(true)
                     
                     Text("g")
                         .padding(14)
@@ -655,6 +720,169 @@ struct FoodInputSheet: View {
                 
                 HStack {
                     TextField("Fat", text: $foodFat)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                        .disabled(true)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                Button(action: {
+                    // Update total values
+                    totalCalories += Int(foodCalories) ?? 0
+                    totalProtein += Int(foodProtein) ?? 0
+                    totalCarbs += Int(foodCarbs) ?? 0
+                    totalFats += Int(foodFat) ?? 0
+
+                    // Update progress bars
+                    updateProgress()
+
+                    // Close the sheet
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Add to user's goal")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+        }
+    }
+}
+
+
+// For User to input Drink Item Consumption
+struct DrinkInputSheet: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    @Binding var drink: Drink
+    
+    @State private var selectedUnit: String
+    @State private var servingSize: String
+    
+    // Intermediate variables for TextField binding
+    @State private var drinkName: String
+    @State private var drinkVolumeValue: String
+    @State private var drinkCalories: String
+    @State private var drinkProtein: String
+    @State private var drinkCarbs: String
+    @State private var drinkFat: String
+
+    init(drink: Binding<Drink>) {
+        _drink = drink
+        _selectedUnit = State(initialValue: drink.wrappedValue.volume.unit.rawValue)
+        _servingSize = State(initialValue: "1")
+        
+        // Initialize intermediate variables
+        _drinkName = State(initialValue: drink.wrappedValue.name)
+        _drinkVolumeValue = State(initialValue: String(drink.wrappedValue.volume.value))
+        _drinkCalories = State(initialValue: String(drink.wrappedValue.calories))
+        _drinkProtein = State(initialValue: String(drink.wrappedValue.protein))
+        _drinkCarbs = State(initialValue: String(drink.wrappedValue.carbs))
+        _drinkFat = State(initialValue: String(drink.wrappedValue.fat))
+    }
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack {
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                TextField("Servings Size", text: $servingSize)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Volume Value", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Picker("Unit", selection: $selectedUnit) {
+                        Text("mL").tag("mL")
+                        Text("L").tag("L")
+                        Text("oz").tag("oz")
+                        Text("c").tag("c")
+                    }
+                    .padding(8)
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 90)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.leading, -20)
+                    .padding(.trailing, 22)
+                }
+                
+                TextField("Calories", text: $drinkCalories)
+                    .padding(14)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.20))
+                    .cornerRadius(15)
+                    .padding(.horizontal, 22)
+                
+                HStack {
+                    TextField("Protein", text: $drinkProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Carbs", text: $drinkCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                
+                HStack {
+                    TextField("Fat", text: $drinkFat)
                         .padding(14)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
@@ -675,7 +903,7 @@ struct FoodInputSheet: View {
                     // Add your logic to save the food item
                     presentationMode.wrappedValue.dismiss()
                 }) {
-                    Text("Save")
+                    Text("Add to user's goal")
                         .foregroundColor(.white.opacity(0.70))
                         .padding(14)
                         .frame(maxWidth: .infinity)
