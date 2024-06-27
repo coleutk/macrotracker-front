@@ -12,13 +12,6 @@ struct GoalView: View {
     
     @State private var goals: [Goal] = []
     
-    // For Editing Goal
-    @State private var goalName = ""
-    @State private var goalCalories = ""
-    @State private var goalProtein = ""
-    @State private var goalCarbs = ""
-    @State private var goalFats = ""
-    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -27,19 +20,18 @@ struct GoalView: View {
                 
                 VStack {
                     List {
-                        ForEach(goals.indices, id: \.self) { index in
-                            let goal = goals[index]
-                            NavigationLink(destination: EditGoalView(goalName: $goalName, goalCalories: $goalCalories, goalProtein: $goalProtein, goalCarbs: $goalCarbs, goalFats: $goalFats, goals: $goals, goalIndex: index)
-                                           
-                                .onAppear {
-                                    goalName = goal.name
-                                    goalCalories = goal.calories
-                                    goalProtein = goal.protein
-                                    goalCarbs = goal.carbs
-                                    goalFats = goal.fats
+                        ForEach(goals, id: \.id) { goal in
+                            NavigationLink(destination: EditGoalView(
+                                goal: bindingGoal(for: goal),
+                                onSave: {
+                                    loadGoals()
+                                },
+                                onDelete: {
+                                    loadGoals()
                                 }
-                            ) {
+                            )) {
                                 Text(goal.name)
+                                    .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                                     .foregroundColor(.white.opacity(0.70))
                             }
                         }
@@ -49,6 +41,9 @@ struct GoalView: View {
                     .listStyle(PlainListStyle())
                     .background(Color(red: 44/255, green: 44/255, blue: 53/255))
                     .foregroundColor(.white)
+                    .onAppear {
+                        loadGoals()
+                    }
                     
                     Button(action: {
                         resetAddGoalFields()
@@ -75,7 +70,10 @@ struct GoalView: View {
                     .buttonStyle(MyButtonStyle())
                 }
                 .sheet(isPresented: $isAddGoalSheetPresented) {
-                    AddGoalSheet(goalName: $newGoalName, goalCalories: $newGoalCalories, goalProtein: $newGoalProtein, goalCarbs: $newGoalCarbs, goalFats: $newGoalFats, isSheetPresented: $isAddGoalSheetPresented, goals: $goals)
+                    AddGoalSheet(goalName: $newGoalName, goalCalories: $newGoalCalories, goalProtein: $newGoalProtein, goalCarbs: $newGoalCarbs, goalFat: $newGoalFats, isSheetPresented: $isAddGoalSheetPresented, goals: $goals)
+                        .onDisappear {
+                            loadGoals()
+                        }
                 }
                 .background(Color(red: 20/255, green: 20/255, blue: 30/255))
             }
@@ -98,39 +96,57 @@ struct GoalView: View {
         newGoalCarbs = ""
         newGoalFats = ""
     }
-}
-
-struct Goal: Identifiable, Hashable {
-    let id = UUID()
-    let name: String
-    let calories: String
-    let protein: String
-    let carbs: String
-    let fats: String
-}
-
-struct EditGoalView: View {
-    @Binding var goalName: String
-    @Binding var goalCalories: String
-    @Binding var goalProtein: String
-    @Binding var goalCarbs: String
-    @Binding var goalFats: String
-    @Binding var goals: [Goal] // Add this line
-    let goalIndex: Int // Add this line
     
-    // Initialize the text fields with default values
-    init(goalName: Binding<String>, goalCalories: Binding<String>, goalProtein: Binding<String>, goalCarbs: Binding<String>, goalFats: Binding<String>, goals: Binding<[Goal]>, goalIndex: Int) {
-        _goalName = goalName
-        _goalCalories = goalCalories
-        _goalProtein = goalProtein
-        _goalCarbs = goalCarbs
-        _goalFats = goalFats
-        _goals = goals
-        self.goalIndex = goalIndex
+    private func loadGoals() {
+        print("loadGoals called")
+        getAllGoals { result in
+            switch result {
+            case .success(let goals):
+                print("Foods loaded: \(goals)") // Debug print
+                self.goals = goals
+            case .failure(let error):
+                print("Failed to load foods: \(error.localizedDescription)")
+            }
+        }
     }
     
-    @Environment(\.presentationMode) var presentationMode // To dismiss the view
-    @State private var showAlert = false // State variable to control alert presentation
+    private func bindingGoal(for goal: Goal) -> Binding<Goal> {
+        guard let index = goals.firstIndex(where: { $0.id == goal.id }) else {
+            fatalError("Goal not found")
+        }
+        return $goals[index]
+    }
+}
+
+
+struct EditGoalView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    // Saving Goal Details
+    @State private var showAlert = false
+    @State private var alertMessage = "Changes saved!"
+    
+    @Binding var goal: Goal
+    var onSave: (() -> Void)?
+    var onDelete: (() -> Void)? // Callback for deletion
+    
+    @State var goalName: String
+    @State var goalCalories: String
+    @State var goalProtein: String
+    @State var goalCarbs: String
+    @State var goalFat: String
+    
+    // Initialize the text fields with default values
+    init(goal: Binding<Goal>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
+        _goal = goal
+        self.onDelete = onDelete
+        
+        _goalName = State(initialValue: goal.wrappedValue.name)
+        _goalCalories = State(initialValue: String(goal.wrappedValue.calorieGoal))
+        _goalProtein = State(initialValue: String(goal.wrappedValue.proteinGoal))
+        _goalCarbs = State(initialValue: String(goal.wrappedValue.carbGoal))
+        _goalFat = State(initialValue: String(goal.wrappedValue.fatGoal))
+    }
     
     var body: some View {
         ZStack {
@@ -171,7 +187,7 @@ struct EditGoalView: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Fats", text: $goalFats)
+                TextField("Fats", text: $goalFat)
                     .padding(14)
                     .frame(maxWidth: .infinity)
                     .background(Color.black.opacity(0.20))
@@ -180,11 +196,29 @@ struct EditGoalView: View {
                 
                 // Save Changes Button
                 Button(action: {
-                    // Save changes
-                    // For example:
-                    saveChanges()
+                    // Save changes here
+                    goal.name = goalName
+                    goal.calorieGoal = Int(goalCalories) ?? goal.calorieGoal
+                    goal.proteinGoal = Int(goalProtein) ?? goal.proteinGoal
+                    goal.carbGoal = Int(goalCarbs) ?? goal.carbGoal
+                    goal.fatGoal = Int(goalFat) ?? goal.fatGoal
                     
-                    // Dismiss the view and go back to inventory
+                    // Call the editFood function
+                    editGoal(goal) { result in
+                        switch result {
+                        case .success(let updatedGoal):
+                            onSave?()
+                            print("Changes saved: \(updatedGoal)")
+                            alertMessage = "Changes saved!"
+                            showAlert = true
+                            goal = updatedGoal // Update the food with the returned updatedFood
+                        case .failure(let error):
+                            print("Failed to save changes: \(error)")
+                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
+                            showAlert = true
+                        }
+                    }
+                    
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Confirm Changes")
@@ -199,10 +233,21 @@ struct EditGoalView: View {
                 
                 // Delete Item Button
                 Button(action: {
-                    // Save changes
-                    // For example:
-                    deleteItem()
-                    
+                    // Handle deletion here
+                    deleteGoal(goal) { result in
+                        switch result {
+                        case .success:
+                            onDelete?() // Call the onDelete callback
+                            print("Goal deleted!")
+                            alertMessage = "Goal deleted!"
+                            showAlert = true
+                            presentationMode.wrappedValue.dismiss()
+                        case .failure(let error):
+                            print("Failed to delete goal: \(error)")
+                            alertMessage = "Failed to delete goal: \(error.localizedDescription)"
+                            showAlert = true
+                        }
+                    }
                     // Dismiss the view and go back to inventory
                     presentationMode.wrappedValue.dismiss()
                 }) {
@@ -225,20 +270,13 @@ struct EditGoalView: View {
     }
     
     func saveChanges() {
-        // Update the food item in the foods array with the edited values
-        let editedGoal = Goal(name: goalName, calories: goalCalories, protein: goalProtein, carbs: goalCarbs, fats: goalFats)
-        goals[goalIndex] = editedGoal
-        
-        // Print a message to indicate that changes are saved
-        print("Changes saved!")
+
         
         // Display an alert
         showAlert = true
     }
     
     func deleteItem() {
-        // Remove the current food item from the list using the index
-        goals.remove(at: goalIndex)
 
         // Implement logic to delete the item
         // For example:
@@ -255,7 +293,7 @@ struct AddGoalSheet: View {
     @Binding var goalCalories: String
     @Binding var goalProtein: String
     @Binding var goalCarbs: String
-    @Binding var goalFats: String
+    @Binding var goalFat: String
     @Binding var isSheetPresented: Bool
     @Binding var goals: [Goal]
     
@@ -283,30 +321,71 @@ struct AddGoalSheet: View {
                     .cornerRadius(15)
                     .padding(.horizontal, 22)
                 
-                TextField("Protein", text: $goalProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Protein", text: $goalProtein)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Carbs", text: $goalCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Carbs", text: $goalCarbs)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
-                TextField("Fats", text: $goalFats)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    TextField("Fat", text: $goalFat)
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 90)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
                 
                 Button(action: {
-                    let newGoal = Goal(name: goalName, calories: goalCalories, protein: goalProtein, carbs: goalCarbs, fats: goalFats)
-                    goals.append(newGoal)
+                    guard let goalCalories = Int(goalCalories),
+                          let goalProtein = Int(goalProtein),
+                          let goalCarbs = Int(goalCarbs),
+                          let goalFat = Int(goalFat) else {
+                        print("Invalid input")
+                        return
+                    }
+                    
+                    addGoal(_id: UUID().uuidString, name: goalName, calorieGoal: goalCalories, proteinGoal: goalProtein, carbGoal: goalCarbs, fatGoal: goalFat)
+                    
                     isSheetPresented = false
                 }) {
                     Text("Add Goal")

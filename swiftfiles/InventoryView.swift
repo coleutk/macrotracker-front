@@ -90,10 +90,8 @@ struct InventoryView: View {
                     .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                     .foregroundColor(.white)
                     .onAppear {
-                            loadFoods()
-                    }
-                    .onAppear {
-                            loadDrinks()
+                        loadFoods()
+                        loadDrinks()
                     }
                     
                 }
