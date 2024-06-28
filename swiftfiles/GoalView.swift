@@ -260,6 +260,29 @@ struct EditGoalView: View {
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
                 }
+                
+                // Make Goal = Selected
+                Button(action: {
+                    makeNewSelectedGoal(
+                        _id: goal.id,
+                        name: goal.name,
+                        calorieGoal: goal.calorieGoal,
+                        proteinGoal: goal.proteinGoal,
+                        carbGoal: goal.carbGoal,
+                        fatGoal: goal.fatGoal
+                    )
+                    // Dismiss the view and go back to inventory
+                    presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Switch \(goalName) to Current")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.yellow.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
             }
             .foregroundColor(.white.opacity(0.70))
             .padding(.bottom, 50)
@@ -267,23 +290,6 @@ struct EditGoalView: View {
                 Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
             }
         }
-    }
-    
-    func saveChanges() {
-
-        
-        // Display an alert
-        showAlert = true
-    }
-    
-    func deleteItem() {
-
-        // Implement logic to delete the item
-        // For example:
-        print("Goal deleted!") // for Xcode console
-
-        // Display an alert or perform any other actions as needed
-        showAlert = true
     }
 }
 

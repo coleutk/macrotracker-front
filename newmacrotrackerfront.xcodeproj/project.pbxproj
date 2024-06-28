@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		296083EA2C28B60C001EFCF7 /* apiInterfaceDrinks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 296083E92C28B60C001EFCF7 /* apiInterfaceDrinks.swift */; };
 		2965B6212C2E03CA00DB870C /* apiInterfaceGoals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2965B6202C2E03CA00DB870C /* apiInterfaceGoals.swift */; };
+		2965B6232C2E330000DB870C /* apiInterfaceUsers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2965B6222C2E330000DB870C /* apiInterfaceUsers.swift */; };
 		29A437442C2279C200F73DBA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 29A437432C2279C200F73DBA /* Assets.xcassets */; };
 		29A437472C2279C200F73DBA /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 29A437462C2279C200F73DBA /* Preview Assets.xcassets */; };
 		29A437512C2279C200F73DBA /* newmacrotrackerfrontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A437502C2279C200F73DBA /* newmacrotrackerfrontTests.swift */; };
@@ -47,6 +48,7 @@
 /* Begin PBXFileReference section */
 		296083E92C28B60C001EFCF7 /* apiInterfaceDrinks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceDrinks.swift; sourceTree = "<group>"; };
 		2965B6202C2E03CA00DB870C /* apiInterfaceGoals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceGoals.swift; sourceTree = "<group>"; };
+		2965B6222C2E330000DB870C /* apiInterfaceUsers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceUsers.swift; sourceTree = "<group>"; };
 		29A4373C2C2279C000F73DBA /* newmacrotrackerfront.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = newmacrotrackerfront.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29A437432C2279C200F73DBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		29A437462C2279C200F73DBA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 				29A437712C227A0200F73DBA /* GoalView.swift */,
 				29A437432C2279C200F73DBA /* Assets.xcassets */,
 				29A437452C2279C200F73DBA /* Preview Content */,
+				2965B6222C2E330000DB870C /* apiInterfaceUsers.swift */,
 			);
 			path = newmacrotrackerfront;
 			sourceTree = "<group>";
@@ -304,6 +307,7 @@
 				29A4377C2C227A0200F73DBA /* GoalView.swift in Sources */,
 				29A4377D2C227A0200F73DBA /* LoginView.swift in Sources */,
 				29A437752C227A0200F73DBA /* HomeView.swift in Sources */,
+				2965B6232C2E330000DB870C /* apiInterfaceUsers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

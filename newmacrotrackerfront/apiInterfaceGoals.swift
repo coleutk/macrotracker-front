@@ -183,3 +183,38 @@ func addGoal(_id: String, name: String, calorieGoal: Int, proteinGoal: Int, carb
     task.resume()
 }
 
+// Make Different Goal = Selected Goal
+func makeNewSelectedGoal(_id: String, name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fatGoal: Int) {
+    guard let url = URL(string: "http://localhost:3000/goal/\(_id)") else { // Hardcoded to update it for the specific user, fix this to do it for the user that is logged in (stored in backend under userId = )
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = [
+        "_id": _id,
+        "name": name,
+        "calorieGoal": calorieGoal,
+        "proteinGoal": proteinGoal,
+        "carbGoal": carbGoal,
+        "fatGoal": fatGoal
+    ]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+        guard let data = data, error == nil else {
+            return
+        }
+        
+        do {
+            let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            print("SUCCESS: \(response)")
+        } catch {
+            print(error)
+        }
+    }
+    
+    task.resume()
+}
+
