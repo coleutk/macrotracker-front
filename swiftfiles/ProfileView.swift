@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// Implement apiInterfaceUser so that you can pull the current Goal from /:userId
-
 struct ProfileView: View {
     var username: String
     @State private var selectedGoal: SelectedGoal? = nil

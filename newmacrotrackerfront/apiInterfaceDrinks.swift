@@ -187,7 +187,7 @@ func addDrink(_id: String, name: String, volumeValue: Int, volumeUnit: String, c
         "calories": calories,
         "protein": protein,
         "carbs": carbs,
-        "fats": fats
+        "fat": fats
     ]
     request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
     

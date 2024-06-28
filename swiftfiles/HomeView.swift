@@ -313,69 +313,91 @@ struct ManualWriteSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
 
-                TextField("Calories", text: $manualCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-
                 HStack {
-                    TextField("Protein", text: $manualProtein)
-                        .keyboardType(.numberPad)
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $manualCalories)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $manualProtein)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
 
                 HStack {
-                    TextField("Carbs", text: $manualCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $manualCarbs)
                         .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
 
                 HStack {
-                    TextField("Fats", text: $manualFats)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $manualFats)
                         .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
 
                 Button(action: {
                     // Add manually entered values to total values
@@ -410,6 +432,7 @@ struct ManualWriteSheet: View {
         }
     }
 }
+
 
 struct InventorySelectionSheet: View {
     @State private var selectedItem: Item = .Food
@@ -507,7 +530,14 @@ struct InventorySelectionSheet: View {
                                 }
                             case .Drink:
                                 if let selectedDrink = selectedDrink {
-                                    DrinkInputSheet(drink: bindingDrink(for: selectedDrink))
+                                    DrinkInputSheet(
+                                        drink: bindingDrink(for: selectedDrink),
+                                        totalCalories: $totalCalories,
+                                        totalProtein: $totalProtein,
+                                        totalCarbs: $totalCarbs,
+                                        totalFats: $totalFats,
+                                        updateProgress: updateProgress
+                                    )
                                 }
                             }
                         }
@@ -560,7 +590,6 @@ struct InventorySelectionSheet: View {
 }
 
 // For User to input Food Item Consumption
-
 struct FoodInputSheet: View {
     @Environment(\.presentationMode) var presentationMode
     
@@ -626,26 +655,52 @@ struct FoodInputSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Serving Size", text: $servingSize)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                    .focused($isServingSizeFocused)
-                    .onSubmit {
-                        let newServingSize = Float(servingSize) ?? 1.0
-                        foodWeightValue = String(Float(food.weight.value) * newServingSize)
-                        recalculateMacronutrients()
-                    }
+                HStack {
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $foodName)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
                 
                 HStack {
-                    TextField("Weight Value", text: $foodWeightValue)
+                    MacroDisplayVertical(nutrient: "Serving", color: Color(.white))
+                    
+                    TextField("Serving Size", text: $servingSize)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isServingSizeFocused)
+                        .onSubmit {
+                            let newServingSize = Float(servingSize) ?? 1.0
+                            foodWeightValue = String(Float(food.weight.value) * newServingSize)
+                            recalculateMacronutrients()
+                        }
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Weight", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $foodWeightValue)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                         .focused($isWeightValueFocused)
                         .onSubmit {
                             guard let weightValue = Float(foodWeightValue), weightValue != 0 else { return }
@@ -653,90 +708,107 @@ struct FoodInputSheet: View {
                             recalculateMacronutrients()
                         }
                     
-                    Picker("Unit", selection: $selectedUnit) {
-                        Text("g").tag("g")
-                        Text("kg").tag("kg")
-                        Text("mg").tag("mg")
-                        Text("oz").tag("oz")
-                        Text("lb").tag("lb")
-                    }
-                    .padding(8)
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 90)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.leading, -20)
-                    .padding(.trailing, 22)
-                }
-                
-                TextField("Calories", text: $foodCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                    .foregroundColor(.white.opacity(0.50))
-                    .disabled(true)
-                
-                HStack {
-                    TextField("Protein", text: $foodProtein)
-                        .padding(14)
-                        .frame(maxWidth: .infinity)
+                    Text(selectedUnit)
+                        .padding(8)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                        .opacity(0.70)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $foodCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $foodProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                         .disabled(true)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $foodCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $foodCarbs)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
+                        .opacity(0.70)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                         .disabled(true)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $foodFat)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $foodFat)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
+                        .opacity(0.70)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                         .disabled(true)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
                     // Update total values
@@ -767,11 +839,20 @@ struct FoodInputSheet: View {
 }
 
 
+
 // For User to input Drink Item Consumption
 struct DrinkInputSheet: View {
     @Environment(\.presentationMode) var presentationMode
     
     @Binding var drink: Drink
+    
+    // For Adding Input to totals
+    @Binding var totalCalories: Int
+    @Binding var totalProtein: Int
+    @Binding var totalCarbs: Int
+    @Binding var totalFats: Int
+
+    var updateProgress: () -> Void
     
     @State private var selectedUnit: String
     @State private var servingSize: String
@@ -783,11 +864,20 @@ struct DrinkInputSheet: View {
     @State private var drinkProtein: String
     @State private var drinkCarbs: String
     @State private var drinkFat: String
+    
+    @FocusState private var isServingSizeFocused: Bool
+    @FocusState private var isVolumeValueFocused: Bool
 
-    init(drink: Binding<Drink>) {
+    init(drink: Binding<Drink>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void) {
         _drink = drink
+        _totalCalories = totalCalories
+        _totalProtein = totalProtein
+        _totalCarbs = totalCarbs
+        _totalFats = totalFats
+        self.updateProgress = updateProgress
+        
         _selectedUnit = State(initialValue: drink.wrappedValue.volume.unit.rawValue)
-        _servingSize = State(initialValue: "1")
+        _servingSize = State(initialValue: String(format: "%.2f", 1.0))
         
         // Initialize intermediate variables
         _drinkName = State(initialValue: drink.wrappedValue.name)
@@ -796,6 +886,16 @@ struct DrinkInputSheet: View {
         _drinkProtein = State(initialValue: String(drink.wrappedValue.protein))
         _drinkCarbs = State(initialValue: String(drink.wrappedValue.carbs))
         _drinkFat = State(initialValue: String(drink.wrappedValue.fat))
+    }
+    
+    func recalculateMacronutrients() {
+        guard let drinkVolumeValue = Float(drinkVolumeValue) else { return }
+        
+        let volumeFactor = drinkVolumeValue / Float(drink.volume.value)
+        drinkCalories = String(Int(Float(drink.calories) * volumeFactor))
+        drinkProtein = String(Int(Float(drink.protein) * volumeFactor))
+        drinkCarbs = String(Int(Float(drink.carbs) * volumeFactor))
+        drinkFat = String(Int(Float(drink.fat) * volumeFactor))
     }
     
     var body: some View {
@@ -808,99 +908,172 @@ struct DrinkInputSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Servings Size", text: $servingSize)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
                 HStack {
-                    TextField("Volume Value", text: $drinkVolumeValue)
-                        .padding(14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
                     
-                    Picker("Unit", selection: $selectedUnit) {
-                        Text("mL").tag("mL")
-                        Text("L").tag("L")
-                        Text("oz").tag("oz")
-                        Text("c").tag("c")
-                    }
-                    .padding(8)
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 90)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.leading, -20)
-                    .padding(.trailing, 22)
+                    TextField("Type Here...", text: $drinkName)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                 }
-                
-                TextField("Calories", text: $drinkCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                .padding(3)
                 
                 HStack {
-                    TextField("Protein", text: $drinkProtein)
+                    MacroDisplayVertical(nutrient: "Serving", color: Color(.white))
+                    
+                    TextField("Serving Size", text: $servingSize)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isServingSizeFocused)
+                        .onSubmit {
+                            let newServingSize = Float(servingSize) ?? 1.0
+                            drinkVolumeValue = String(Float(drink.volume.value) * newServingSize)
+                            recalculateMacronutrients()
+                        }
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Volume", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isVolumeValueFocused)
+                        .onSubmit {
+                            guard let volumeValue = Float(drinkVolumeValue), volumeValue != 0 else { return }
+                            servingSize = String(format: "%.2f", volumeValue / Float(drink.volume.value))
+                            recalculateMacronutrients()
+                        }
+                    
+                    Text(selectedUnit)
+                        .padding(8)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .opacity(0.70)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $drinkProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $drinkCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCarbs)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
+                        .opacity(0.70)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $drinkFat)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $drinkFat)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
+                        .opacity(0.70)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
-                    // Add your logic to save the food item
+                    // Update total values
+                    totalCalories += Int(drinkCalories) ?? 0
+                    totalProtein += Int(drinkProtein) ?? 0
+                    totalCarbs += Int(drinkCarbs) ?? 0
+                    totalFats += Int(drinkFat) ?? 0
+
+                    // Update progress bars
+                    updateProgress()
+
+                    // Close the sheet
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Add to user's goal")

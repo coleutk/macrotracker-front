@@ -11,6 +11,7 @@ struct GoalView: View {
     @State private var newGoalFats = ""
     
     @State private var goals: [Goal] = []
+    @State private var selectedGoalId: String?
     
     var body: some View {
         NavigationStack {
@@ -23,6 +24,7 @@ struct GoalView: View {
                         ForEach(goals, id: \.id) { goal in
                             NavigationLink(destination: EditGoalView(
                                 goal: bindingGoal(for: goal),
+                                selectedGoalId: selectedGoalId,
                                 onSave: {
                                     loadGoals()
                                 },
@@ -102,10 +104,19 @@ struct GoalView: View {
         getAllGoals { result in
             switch result {
             case .success(let goals):
-                print("Foods loaded: \(goals)") // Debug print
+                print("Goals loaded: \(goals)") // Debug print
                 self.goals = goals
+                // Fetch the selected goal's ID
+                getUserSelectedGoal { result in
+                    switch result {
+                    case .success(let selectedGoal):
+                        self.selectedGoalId = selectedGoal.id
+                    case .failure(let error):
+                        print("Failed to load selected goal: \(error.localizedDescription)")
+                    }
+                }
             case .failure(let error):
-                print("Failed to load foods: \(error.localizedDescription)")
+                print("Failed to load goals: \(error.localizedDescription)")
             }
         }
     }
@@ -127,6 +138,7 @@ struct EditGoalView: View {
     @State private var alertMessage = "Changes saved!"
     
     @Binding var goal: Goal
+    var selectedGoalId: String?
     var onSave: (() -> Void)?
     var onDelete: (() -> Void)? // Callback for deletion
     
@@ -137,8 +149,9 @@ struct EditGoalView: View {
     @State var goalFat: String
     
     // Initialize the text fields with default values
-    init(goal: Binding<Goal>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
+    init(goal: Binding<Goal>, selectedGoalId: String?, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
         _goal = goal
+        self.selectedGoalId = selectedGoalId
         self.onDelete = onDelete
         
         _goalName = State(initialValue: goal.wrappedValue.name)
@@ -262,26 +275,28 @@ struct EditGoalView: View {
                 }
                 
                 // Make Goal = Selected
-                Button(action: {
-                    makeNewSelectedGoal(
-                        _id: goal.id,
-                        name: goal.name,
-                        calorieGoal: goal.calorieGoal,
-                        proteinGoal: goal.proteinGoal,
-                        carbGoal: goal.carbGoal,
-                        fatGoal: goal.fatGoal
-                    )
-                    // Dismiss the view and go back to inventory
-                    presentationMode.wrappedValue.dismiss()
-                }) {
-                    Text("Switch \(goalName) to Current")
-                        .foregroundColor(.white.opacity(0.70))
-                        .padding(14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.yellow.opacity(0.50))
-                        .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .padding(.top, 20)
+                if goal.id != selectedGoalId {
+                    Button(action: {
+                        makeNewSelectedGoal(
+                            _id: goal.id,
+                            name: goal.name,
+                            calorieGoal: goal.calorieGoal,
+                            proteinGoal: goal.proteinGoal,
+                            carbGoal: goal.carbGoal,
+                            fatGoal: goal.fatGoal
+                        )
+                        // Dismiss the view and go back to inventory
+                        presentationMode.wrappedValue.dismiss()
+                    }) {
+                        Text("Switch \(goalName) to Current")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.yellow.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
+                    }
                 }
             }
             .foregroundColor(.white.opacity(0.70))

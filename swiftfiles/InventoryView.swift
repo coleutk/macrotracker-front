@@ -246,7 +246,29 @@ struct InventoryView: View {
     }
 }
 
+struct MacroDisplayVertical: View {
+    var nutrient: String
+    var color: Color
 
+    var body: some View {
+        VStack {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .foregroundColor(color.opacity(0.30))
+                    .frame(width: 55, height: 28) // Outer colored rounded rectangle
+
+                HStack {
+                    Text("\(nutrient)")
+                        .foregroundColor(.white.opacity(0.50))
+                        .bold()
+                        .font(.system(size: 11)) // Adjusted font size
+                }
+            }
+        }
+        .rotationEffect(.degrees(-90))
+        .padding(.leading, 5)
+    }
+}
 
 struct EditFoodView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -294,21 +316,32 @@ struct EditFoodView: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Food Name", text: $foodName)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
                 HStack {
-                    TextField("Weight Value", text: $foodWeightValue)
-                        .keyboardType(.numberPad)
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $foodName)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Weight", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $foodWeightValue)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Picker("Unit", selection: $selectedUnit) {
                         ForEach(WeightUnit.allCases, id: \.self) { unit in
@@ -317,7 +350,7 @@ struct EditFoodView: View {
                     }
                     .padding(8)
                     .pickerStyle(MenuPickerStyle())
-                    .frame(width: 90)
+                    .frame(width: 80, height: 60)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
                     .padding(.leading, -20)
@@ -326,71 +359,94 @@ struct EditFoodView: View {
                         food.weight.unit = WeightUnit(rawValue: newValue) ?? .g
                     }
                 }
-                
-                TextField("Calories", text: $foodCalories)
-                    .keyboardType(.numberPad)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                .padding(3)
                 
                 HStack {
-                    TextField("Protein", text: $foodProtein)
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $foodCalories)
                         .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $foodProtein)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $foodCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $foodCarbs)
                         .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $foodFat)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $foodFat)
                         .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
                     // Save changes here
@@ -472,7 +528,7 @@ struct EditFoodView: View {
 struct EditDrinkView: View {
     @Environment(\.presentationMode) var presentationMode
 
-    // Saving Food Details
+    // Saving Drink Details
     @State private var showAlert = false
     @State private var alertMessage = "Changes saved!"
     
@@ -516,21 +572,32 @@ struct EditDrinkView: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Drink Name", text: $drinkName)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
                 HStack {
-                    TextField("Volume Value", text: $drinkVolumeValue)
-                        .keyboardType(.numberPad)
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $drinkName)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Volume", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $drinkVolumeValue)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Picker("Unit", selection: $selectedUnit) {
                         ForEach(VolumeUnit.allCases, id: \.self) { unit in
@@ -539,7 +606,7 @@ struct EditDrinkView: View {
                     }
                     .padding(8)
                     .pickerStyle(MenuPickerStyle())
-                    .frame(width: 90)
+                    .frame(width: 80, height: 60)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
                     .padding(.leading, -20)
@@ -548,67 +615,94 @@ struct EditDrinkView: View {
                         drink.volume.unit = VolumeUnit(rawValue: newValue) ?? .mL
                     }
                 }
-                
-                TextField("Calories", text: $drinkCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                .padding(3)
                 
                 HStack {
-                    TextField("Protein", text: $drinkProtein)
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCalories)
+                        .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $drinkProtein)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $drinkCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCarbs)
+                        .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $drinkFat)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $drinkFat)
+                        .keyboardType(.numberPad)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
                     // Save changes here
@@ -627,7 +721,7 @@ struct EditDrinkView: View {
                             print("Changes saved: \(updatedDrink)")
                             alertMessage = "Changes saved!"
                             showAlert = true
-                            drink = updatedDrink // Update the food with the returned updatedFood
+                            drink = updatedDrink // Update the drink with the returned updatedDrink
                         case .failure(let error):
                             print("Failed to save changes: \(error)")
                             alertMessage = "Failed to save changes: \(error.localizedDescription)"
@@ -654,7 +748,7 @@ struct EditDrinkView: View {
                         switch result {
                         case .success:
                             onDelete?() // Call the onDelete callback
-                            print("Drinkitem deleted!")
+                            print("Drink item deleted!")
                             alertMessage = "Drink item deleted!"
                             showAlert = true
                             presentationMode.wrappedValue.dismiss()
@@ -664,7 +758,7 @@ struct EditDrinkView: View {
                             showAlert = true
                         }
                     }
-                    // Dismiss the view and go back to inventory
+                    
                     presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Delete \(drinkName)")
@@ -685,7 +779,6 @@ struct EditDrinkView: View {
         }
     }
 }
-
 
 
 struct AddFoodSheet: View {
@@ -711,20 +804,31 @@ struct AddFoodSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Food Name", text: $foodName)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
                 HStack {
-                    TextField("Weight Value", text: $foodWeightValue)
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $foodName)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Weight", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $foodWeightValue)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Picker("Unit", selection: $selectedUnit) {
                         Text("g").tag("g")
@@ -735,73 +839,96 @@ struct AddFoodSheet: View {
                     }
                     .padding(8)
                     .pickerStyle(MenuPickerStyle())
-                    .frame(width: 90)
+                    .frame(width: 80, height: 60)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
                     .padding(.leading, -20)
                     .padding(.trailing, 22)
                 }
-                
-                TextField("Calories", text: $foodCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                .padding(3)
                 
                 HStack {
-                    TextField("Protein", text: $foodProtein)
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $foodCalories)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $foodProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $foodCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $foodCarbs)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $foodFats)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $foodFats)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
                     guard let foodWeightValue = Int(foodWeightValue),
@@ -832,6 +959,8 @@ struct AddFoodSheet: View {
     }
 }
 
+
+
 struct AddDrinkSheet: View {
     @Binding var drinkName: String
     @Binding var drinkVolumeValue: String
@@ -855,20 +984,31 @@ struct AddDrinkSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Drink Name", text: $drinkName)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
                 HStack {
-                    TextField("Volume Value", text: $drinkVolumeValue)
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $drinkName)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Volume", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Picker("Unit", selection: $selectedUnit) {
                         Text("mL").tag("mL")
@@ -878,73 +1018,96 @@ struct AddDrinkSheet: View {
                     }
                     .padding(8)
                     .pickerStyle(MenuPickerStyle())
-                    .frame(width: 90)
+                    .frame(width: 80, height: 60)
                     .background(Color.black.opacity(0.20))
                     .cornerRadius(15)
                     .padding(.leading, -20)
                     .padding(.trailing, 22)
                 }
-                
-                TextField("Calories", text: $drinkCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                .padding(3)
                 
                 HStack {
-                    TextField("Protein", text: $drinkProtein)
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCalories)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $drinkProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $drinkCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCarbs)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $drinkFats)
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $drinkFats)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
                     guard let drinkVolumeValue = Int(drinkVolumeValue),
@@ -974,6 +1137,7 @@ struct AddDrinkSheet: View {
         }
     }
 }
+
 
 
 struct InventoryView_Previews: PreviewProvider {

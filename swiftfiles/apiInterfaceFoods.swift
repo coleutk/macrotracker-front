@@ -191,7 +191,7 @@ func addFood(_id: String, name: String, weightValue: Int, weightUnit: String, ca
         "calories": calories,
         "protein": protein,
         "carbs": carbs,
-        "fats": fats
+        "fat": fats
     ]
     request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
     
