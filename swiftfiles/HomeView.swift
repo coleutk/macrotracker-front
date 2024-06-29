@@ -811,6 +811,18 @@ struct FoodInputSheet: View {
                 .padding(3)
                 
                 Button(action: {
+                    addFoodToDaily(
+                        _id: food.id,
+                        name: food.name,
+                        weightValue: Int(foodWeightValue) ?? 0,
+                        weightUnit: selectedUnit,
+                        calories: Int(foodProtein) ?? 0,
+                        protein: Int(foodProtein) ?? 0,
+                        carbs: Int(foodCarbs) ?? 0,
+                        fats: Int(foodFat) ?? 0
+                    )
+
+                    
                     // Update total values
                     totalCalories += Int(foodCalories) ?? 0
                     totalProtein += Int(foodProtein) ?? 0
