@@ -811,10 +811,12 @@ struct FoodInputSheet: View {
                 .padding(3)
                 
                 Button(action: {
+                    guard let flooredWeightValue = Float(foodWeightValue) else { return }
                     addFoodToDaily(
                         _id: food.id,
                         name: food.name,
-                        weightValue: Int(foodWeightValue) ?? 0,
+                        servings: Float(servingSize) ?? 0,
+                        weightValue: Int(floor(flooredWeightValue)),
                         weightUnit: selectedUnit,
                         calories: Int(foodProtein) ?? 0,
                         protein: Int(foodProtein) ?? 0,
@@ -1076,6 +1078,19 @@ struct DrinkInputSheet: View {
                 .padding(3)
                 
                 Button(action: {
+                    guard let flooredVolumeValue = Float(drinkVolumeValue) else { return }
+                    addDrinkToDaily(
+                        _id: drink.id,
+                        name: drink.name,
+                        servings: Float(servingSize) ?? 0,
+                        volumeValue: Int(floor(flooredVolumeValue)),
+                        volumeUnit: selectedUnit,
+                        calories: Int(drinkCalories) ?? 0,
+                        protein: Int(drinkProtein) ?? 0,
+                        carbs: Int(drinkCarbs) ?? 0,
+                        fats: Int(drinkFat) ?? 0
+                    )
+                    
                     // Update total values
                     totalCalories += Int(drinkCalories) ?? 0
                     totalProtein += Int(drinkProtein) ?? 0
