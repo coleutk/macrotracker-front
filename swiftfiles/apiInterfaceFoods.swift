@@ -72,7 +72,6 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
                             protein: protein,
                             carbs: carbs,
                             fat: fat
-                            
                         ))
                         
                     } else {
