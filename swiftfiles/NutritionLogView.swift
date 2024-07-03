@@ -6,6 +6,7 @@ struct NutritionLogView: View {
     @State private var dailyRecord: DailyRecord?
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var needsRefresh = false
     
     var body: some View {
         NavigationStack {
@@ -48,26 +49,12 @@ struct NutritionLogView: View {
                             .foregroundColor(.red)
                     } else if let dailyRecord = dailyRecord {
                         List {
-                            NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord)) {
+                            NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh)) {
                                 VStack(alignment: .leading) {
                                     let formattedDate = formattedDate(from: dailyRecord.date)
                                     Text(formattedDate)
                                         .font(.headline)
                                         .foregroundColor(.white.opacity(0.80))
-                                    // Summary of the day's nutrition info
-                                    //                                    HStack {
-                                    //                                        Text("Calories: \(dailyRecord.calories)")
-                                    //                                            .font(.subheadline)
-                                    //                                        Spacer()
-                                    //                                        Text("Protein: \(dailyRecord.protein)g")
-                                    //                                            .font(.subheadline)
-                                    //                                        Spacer()
-                                    //                                        Text("Fats: \(dailyRecord.fat)g")
-                                    //                                            .font(.subheadline)
-                                    //                                        Spacer()
-                                    //                                        Text("Carbs: \(dailyRecord.carbs)g")
-                                    //                                            .font(.subheadline)
-                                    //                                    }
                                 }
                                 .foregroundColor(Color.white.opacity(0.70))
                                 .padding(.vertical, 5)
@@ -75,7 +62,7 @@ struct NutritionLogView: View {
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         }
                         .listStyle(PlainListStyle())
-                        .background(Color(red: 56/255, green: 56/255, blue: 56/255))
+                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                         .navigationTitle("Nutrition Log")
                         .foregroundColor(.white)
                     }
@@ -121,7 +108,21 @@ struct NutritionLogView: View {
 
 
 struct DayDetailView: View {
-    var dailyRecord: DailyRecord
+    @State private var isLoading = false
+    @State private var errorMessage: String?
+    
+    @State var dailyRecord: DailyRecord
+    @Binding var needsRefresh: Bool
+    
+    @State private var foods: [DailyFood] = []
+    @State private var drinks: [DailyDrink] = []
+    
+    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>) {
+        self._dailyRecord = State(initialValue: dailyRecord)
+        self._foods = State(initialValue: dailyRecord.foods)
+        self._drinks = State(initialValue: dailyRecord.drinks)
+        self._needsRefresh = needsRefresh
+    }
     
     let goalCalories: Int = 2300
     let goalProtein: Int = 160
@@ -150,8 +151,11 @@ struct DayDetailView: View {
                     .padding(.horizontal, 20)
                     
                     List {
-                        ForEach(dailyRecord.foods, id: \.id) { food in
-                            NavigationLink(destination: FoodDetailView(food: food)) {
+                        ForEach(foods, id: \.id) { food in
+                            NavigationLink(destination: FoodDetailView(food: food, onDelete: {
+                                self.foods.removeAll { $0.id == food.id }
+                                self.needsRefresh = true
+                            })) {
                                 Text(food.name)
                                     .foregroundColor(.white.opacity(0.70))
                             }
@@ -159,7 +163,10 @@ struct DayDetailView: View {
                         }
                         
                         ForEach(dailyRecord.drinks, id: \.id) { drink in
-                            NavigationLink(destination: DrinkDetailView(drink: drink)) {
+                            NavigationLink(destination: DrinkDetailView(drink: drink, onDelete: {
+                                self.drinks.removeAll { $0.id == drink.id }
+                                self.needsRefresh = true
+                            })) {
                                 Text(drink.name)
                                     .foregroundColor(.white.opacity(0.70))
                             }
@@ -174,6 +181,12 @@ struct DayDetailView: View {
             }
             .navigationTitle("\(formattedDate)")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                if needsRefresh {
+                    fetchDailyRecord()
+                    needsRefresh = false
+                }
+            }
         }
     }
     
@@ -186,26 +199,431 @@ struct DayDetailView: View {
         
         return "\(monthName) \(day), \(year)"
     }
-}
-
-struct FoodDetailView: View {
-    var food: DailyFood
     
-    var body: some View {
-        VStack {
-            Text(food.name)
-            // Add more detailed views here
+    func fetchDailyRecord() {
+        isLoading = true
+        errorMessage = nil
+        
+        getCurrentDaily { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let record):
+                    self.dailyRecord = record
+                    self.foods = record.foods
+                case .failure(let error):
+                    self.errorMessage = "Failed to fetch daily record: \(error.localizedDescription)"
+                }
+            }
         }
     }
 }
 
+
+
+struct FoodDetailView: View {
+    var food: DailyFood
+    var onDelete: () -> Void
+    @Environment(\.presentationMode) var presentationMode
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack {
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    Text("\(food.name)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Serving", color: Color(.white))
+                    
+                    Text("\(food.servings, specifier: "%.2f")")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Weight", color: Color(.white))
+                    
+                    Text("\(food.weight.value)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("\(food.weight.unit)")
+                        .padding(8)
+                        .frame(width: 80, height: 60)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    Text("\(food.calories)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    Text("\(food.protein)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    Text("\(food.carbs)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    Text("\(food.fat)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                // Delete Item Button
+                Button(action: {
+                    deleteFoodInput(food) { result in
+                        switch result {
+                        case .success:
+                            print("Food item deleted!")
+                            // Set alert message
+                            alertMessage = "Deleted \(food.name)"
+                            // Show the alert
+                            showAlert = true
+                        case .failure(let error):
+                            print("Failed to delete food item: \(error)")
+                            // Set alert message
+                            alertMessage = "Failed to delete food item"
+                            // Show the alert
+                            showAlert = true
+                        }
+                    }
+                }) {
+                    Text("Delete \(food.name)")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(alertMessage),
+                    dismissButton: .default(Text("OK")) {
+                        // Notify the parent view of the deletion
+                        onDelete()
+                        // Dismiss the view
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            }
+        }
+    }
+}
+
+
 struct DrinkDetailView: View {
     var drink: DailyDrink
+    var onDelete: () -> Void
+    @Environment(\.presentationMode) var presentationMode
+    @State private var showAlert = false
+    @State private var alertMessage = ""
     
     var body: some View {
-        VStack {
-            Text(drink.name)
-            // Add more detailed views here
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack{
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    Text("\(drink.name)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Serving", color: Color(.white))
+                    
+                    Text("\(drink.servings, specifier: "%.2f")")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Volume", color: Color(.white))
+                    
+                    Text("\(drink.volume.value)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("\(drink.volume.unit)")
+                        .padding(8)
+                        .frame(width: 80, height: 60)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    Text("\(drink.calories)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    Text("\(drink.protein)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    Text("\(drink.carbs)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    Text("\(drink.fat)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                // Delete Item Button
+                Button(action: {
+                    deleteDrinkInput(drink) { result in
+                        switch result {
+                        case .success:
+                            print("Drink item deleted!")
+                            // Set alert message
+                            alertMessage = "Deleted \(drink.name)"
+                            // Show the alert
+                            showAlert = true
+                        case .failure(let error):
+                            print("Failed to delete drink item: \(error)")
+                            // Set alert message
+                            alertMessage = "Failed to delete drink item"
+                            // Show the alert
+                            showAlert = true
+                        }
+                    }
+                }) {
+                    Text("Delete \(drink.name)")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(alertMessage),
+                    dismissButton: .default(Text("OK")) {
+                        // Notify the parent view of the deletion
+                        onDelete()
+                        // Dismiss the view
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            }
         }
     }
 }

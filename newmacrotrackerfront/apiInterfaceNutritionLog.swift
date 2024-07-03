@@ -233,3 +233,55 @@ func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: In
     
     task.resume()
 }
+
+// Delete Food from Daily Record
+func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Error>) -> Void) {
+    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteFoodInput/\(food.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "DELETE"
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
+            print("Unexpected response")
+            completion(.failure(error))
+            return
+        }
+        
+        completion(.success(()))
+    }
+    
+    task.resume()
+}
+
+// Delete Drink from Daily Record
+func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, Error>) -> Void) {
+    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteDrinkInput/\(drink.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "DELETE"
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
+            print("Unexpected response")
+            completion(.failure(error))
+            return
+        }
+        
+        completion(.success(()))
+    }
+    
+    task.resume()
+}
