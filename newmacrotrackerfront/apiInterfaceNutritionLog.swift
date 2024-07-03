@@ -16,6 +16,7 @@ struct DailyRecord: Identifiable, Codable {
     var protein: Int
     var carbs: Int
     var fat: Int
+    var manuals: [DailyManual]
     var foods: [DailyFood]
     var drinks: [DailyDrink]
 }
@@ -52,6 +53,14 @@ struct DailyVolume: Codable {
     var unit: String
 }
 
+struct DailyManual: Identifiable, Codable {
+    var id: String
+    var calories: Int
+    var protein: Int
+    var carbs: Int
+    var fat: Int
+}
+
 
 // Get Current Daily Record
 func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Void) {
@@ -86,10 +95,12 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
                    let carbs = json["carbs"] as? Int,
                    let fat = json["fat"] as? Int,
                    let foodArray = json["foods"] as? [[String: Any]],
-                   let drinkArray = json["drinks"] as? [[String: Any]] {
+                   let drinkArray = json["drinks"] as? [[String: Any]],
+                   let manualArray = json["manuals"] as? [[String: Any]] {
                     
                     var foods: [DailyFood] = []
                     var drinks: [DailyDrink] = []
+                    var manuals: [DailyManual] = []
                     
                     // Parse foods
                     for foodWrapper in foodArray {
@@ -133,7 +144,20 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
                         }
                     }
                     
-                    let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, foods: foods, drinks: drinks)
+                    for manualWrapper in manualArray {
+                        print("Parsing manual: \(manualWrapper)");
+                        if let id = manualWrapper["_id"] as? String,
+                           let calories = manualWrapper["calories"] as? Int,
+                           let protein = manualWrapper["protein"] as? Int,
+                           let carbs = manualWrapper["carbs"] as? Int,
+                           let fat = manualWrapper["fat"] as? Int {
+                            
+                            let dailyManual = DailyManual(id: id, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                            manuals.append(dailyManual)
+                        }
+                    }
+                    
+                    let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks)
                     completion(.success(dailyRecord))
                 } else {
                     print("Failed to parse DailyRecord")
@@ -263,6 +287,32 @@ func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Erro
 // Delete Drink from Daily Record
 func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, Error>) -> Void) {
     var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteDrinkInput/\(drink.id)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "DELETE"
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
+            print("Unexpected response")
+            completion(.failure(error))
+            return
+        }
+        
+        completion(.success(()))
+    }
+    
+    task.resume()
+}
+
+// Delete Manual from Daily Record
+func deleteManualInput(_ manual: DailyManual, completion: @escaping (Result<Void, Error>) -> Void) {
+    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteManualInput/\(manual.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.httpMethod = "DELETE"
 

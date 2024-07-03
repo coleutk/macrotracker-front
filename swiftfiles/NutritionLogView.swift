@@ -116,11 +116,13 @@ struct DayDetailView: View {
     
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
+    @State private var manuals: [DailyManual] = []
     
     init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>) {
         self._dailyRecord = State(initialValue: dailyRecord)
         self._foods = State(initialValue: dailyRecord.foods)
         self._drinks = State(initialValue: dailyRecord.drinks)
+        self._manuals = State(initialValue: dailyRecord.manuals)
         self._needsRefresh = needsRefresh
     }
     
@@ -146,7 +148,6 @@ struct DayDetailView: View {
                             NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goalCarbs, color: Color(red: 120/255, green: 255/255, blue: 214/255))
                             NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goalFats, color: Color(red: 171/255, green: 169/255, blue: 195/255))
                         }
-                        
                     }
                     .padding(.horizontal, 20)
                     
@@ -162,12 +163,23 @@ struct DayDetailView: View {
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         }
                         
-                        ForEach(dailyRecord.drinks, id: \.id) { drink in
+                        ForEach(drinks, id: \.id) { drink in
                             NavigationLink(destination: DrinkDetailView(drink: drink, onDelete: {
                                 self.drinks.removeAll { $0.id == drink.id }
                                 self.needsRefresh = true
                             })) {
                                 Text(drink.name)
+                                    .foregroundColor(.white.opacity(0.70))
+                            }
+                            .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                        }
+                        
+                        ForEach(manuals, id: \.id) { manual in
+                            NavigationLink(destination: ManualDetailView(manual: manual, onDelete: {
+                                self.manuals.removeAll { $0.id == manual.id }
+                                self.needsRefresh = true
+                            })) {
+                                Text("Manual Entry")
                                     .foregroundColor(.white.opacity(0.70))
                             }
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
@@ -211,6 +223,8 @@ struct DayDetailView: View {
                 case .success(let record):
                     self.dailyRecord = record
                     self.foods = record.foods
+                    self.drinks = record.drinks
+                    self.manuals = record.manuals
                 case .failure(let error):
                     self.errorMessage = "Failed to fetch daily record: \(error.localizedDescription)"
                 }
@@ -627,6 +641,131 @@ struct DrinkDetailView: View {
         }
     }
 }
+
+
+
+struct ManualDetailView: View {
+    var manual: DailyManual
+    var onDelete: () -> Void
+    @Environment(\.presentationMode) var presentationMode
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack{
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Calories", color: Color(.white))
+                    
+                    Text("\(manual.calories)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(.white))
+                    
+                    Text("\(manual.protein)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(.white))
+                    
+                    Text("\(manual.carbs)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Fats", color: Color(.white))
+                    
+                    Text("\(manual.fat)")
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                // Delete Item Button
+                Button(action: {
+                    deleteManualInput(manual) { result in
+                        switch result {
+                        case .success:
+                            print("Manual entry deleted!")
+                            // Set alert message
+                            alertMessage = "Deleted manual entry"
+                            // Show the alert
+                            showAlert = true
+                        case .failure(let error):
+                            print("Failed to delete manual entry: \(error)")
+                            // Set alert message
+                            alertMessage = "Failed to delete manual entry"
+                            // Show the alert
+                            showAlert = true
+                        }
+                    }
+                }) {
+                    Text("Delete Manual Entry")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+            .alert(isPresented: $showAlert) {
+                Alert(
+                    title: Text(alertMessage),
+                    dismissButton: .default(Text("OK")) {
+                        // Notify the parent view of the deletion
+                        onDelete()
+                        // Dismiss the view
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            }
+        }
+    }
+}
+
 
 struct NutritionLogView_Previews: PreviewProvider {
     static var previews: some View {
