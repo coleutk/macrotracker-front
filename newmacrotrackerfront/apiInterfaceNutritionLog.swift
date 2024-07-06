@@ -7,6 +7,11 @@
 
 import Foundation
 
+struct HistoricalRecord: Identifiable, Codable {
+    var id: String
+    var records: [DailyRecord]
+}
+
 
 struct DailyRecord: Identifiable, Codable {
     var id: String
@@ -59,6 +64,119 @@ struct DailyManual: Identifiable, Codable {
     var protein: Int
     var carbs: Int
     var fat: Int
+}
+
+
+func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Error>) -> Void) {
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.httpMethod = "GET"
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let data = data else {
+            print("No data received")
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+            return
+        }
+        
+        do {
+            if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+               let recordsArray = jsonResponse["records"] as? [[String: Any]] {
+                print("Received JSON: \(jsonResponse)") // Debug print
+                
+                var historicalRecords: [DailyRecord] = []
+                
+                for record in recordsArray {
+                    if let id = record["_id"] as? String,
+                       let userId = record["userId"] as? String,
+                       let date = record["date"] as? String,
+                       let calories = record["calories"] as? Int,
+                       let protein = record["protein"] as? Int,
+                       let carbs = record["carbs"] as? Int,
+                       let fat = record["fat"] as? Int,
+                       let foodArray = record["foods"] as? [[String: Any]],
+                       let drinkArray = record["drinks"] as? [[String: Any]],
+                       let manualArray = record["manuals"] as? [[String: Any]] {
+                        
+                        var foods: [DailyFood] = []
+                        var drinks: [DailyDrink] = []
+                        var manuals: [DailyManual] = []
+                        
+                        // Parse foods
+                        for foodWrapper in foodArray {
+                            if let food = foodWrapper["food"] as? [String: Any],
+                               let id = foodWrapper["_id"] as? String, // Grabbing id of the entry rather than the specific food
+                               let name = food["name"] as? String,
+                               let servings = foodWrapper["servings"] as? Float,
+                               let weightDict = food["weight"] as? [String: Any],
+                               let weightValue = weightDict["value"] as? Int,
+                               let weightUnit = weightDict["unit"] as? String,
+                               let calories = food["calories"] as? Int,
+                               let protein = food["protein"] as? Int,
+                               let carbs = food["carbs"] as? Int,
+                               let fat = food["fat"] as? Int {
+                                
+                                let weight = DailyWeight(value: weightValue, unit: weightUnit)
+                                let dailyFood = DailyFood(id: id, name: name, servings: servings, weight: weight, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                                foods.append(dailyFood)
+                            }
+                        }
+                        
+                        // Parse drinks
+                        for drinkWrapper in drinkArray {
+                            if let drink = drinkWrapper["drink"] as? [String: Any],
+                               let id = drinkWrapper["_id"] as? String, // Grabbing id of the entry rather than the specific drink
+                               let name = drink["name"] as? String,
+                               let servings = drinkWrapper["servings"] as? Float,
+                               let volumeDict = drink["volume"] as? [String: Any],
+                               let volumeValue = volumeDict["value"] as? Int,
+                               let volumeUnit = volumeDict["unit"] as? String,
+                               let calories = drink["calories"] as? Int,
+                               let protein = drink["protein"] as? Int,
+                               let carbs = drink["carbs"] as? Int,
+                               let fat = drink["fat"] as? Int {
+                                
+                                let volume = DailyVolume(value: volumeValue, unit: volumeUnit)
+                                let dailyDrink = DailyDrink(id: id, name: name, servings: servings, volume: volume, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                                drinks.append(dailyDrink)
+                            }
+                        }
+                        
+                        // Parse manuals
+                        for manualWrapper in manualArray {
+                            if let id = manualWrapper["_id"] as? String,
+                               let calories = manualWrapper["calories"] as? Int,
+                               let protein = manualWrapper["protein"] as? Int,
+                               let carbs = manualWrapper["carbs"] as? Int,
+                               let fat = manualWrapper["fat"] as? Int {
+                                
+                                let dailyManual = DailyManual(id: id, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                                manuals.append(dailyManual)
+                            }
+                        }
+                        
+                        let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks)
+                        historicalRecords.append(dailyRecord)
+                    }
+                }
+                
+                completion(.success(historicalRecords))
+            } else {
+                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to parse JSON"])))
+            }
+        } catch {
+            print("Failed to parse JSON: \(error)")
+            completion(.failure(error))
+        }
+    }
+    
+    task.resume()
 }
 
 
@@ -239,6 +357,40 @@ func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: In
         "protein": protein,
         "carbs": carbs,
         "fat": fats
+    ]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+        guard let data = data, error == nil else {
+            return
+        }
+        
+        do {
+            let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            print("SUCCESS: \(response)")
+        } catch {
+            print(error)
+        }
+    }
+    
+    task.resume()
+}
+
+// Add Manual to DailyRecord
+func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat: Int) {
+    guard let url = URL(string: "http://localhost:3000/dailyRecords/addManual") else {
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = [
+        "_id": _id,
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fat": fat
     ]
     request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
     

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HomeView: View {
     var username: String
+    @State private var selectedGoal: SelectedGoal? = nil
+    @State private var dailyRecord: DailyRecord? = nil
     @State private var foods: [Food] = []
     @State private var drinks: [Drink] = []
 
@@ -22,18 +24,26 @@ struct HomeView: View {
     @State private var totalProtein: Int = 0
     @State private var totalCarbs: Int = 0
     @State private var totalFats: Int = 0
-
-    let goalCalories: Int = 2300
-    let goalProtein: Int = 160
-    let goalCarbs: Int = 250
-    let goalFats: Int = 70
+    
+    @State private var errorMessage: String? = nil
+//    let goalCalories: Int = 2300
+//    let goalProtein: Int = 160
+//    let goalCarbs: Int = 250
+//    let goalFats: Int = 70
 
 
     func updateProgress() {
-        calorieProgress = min(Float(totalCalories) / Float(goalCalories), 1.0)
-        proteinProgress = min(Float(totalProtein) / Float(goalProtein), 1.0)
-        carbProgress = min(Float(totalCarbs) / Float(goalCarbs), 1.0)
-        fatProgress = min(Float(totalFats) / Float(goalFats), 1.0)
+        if let goal = selectedGoal, let record = dailyRecord {
+            totalCalories = record.calories
+            totalProtein = record.protein
+            totalCarbs = record.carbs
+            totalFats = record.fat
+
+            calorieProgress = min(Float(totalCalories) / Float(goal.calorieGoal), 1.0)
+            proteinProgress = min(Float(totalProtein) / Float(goal.proteinGoal), 1.0)
+            carbProgress = min(Float(totalCarbs) / Float(goal.carbGoal), 1.0)
+            fatProgress = min(Float(totalFats) / Float(goal.fatGoal), 1.0)
+        }
     }
 
     var body: some View {
@@ -48,21 +58,29 @@ struct HomeView: View {
                             //isAddFoodSheetPresented.toggle()
                         }) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                    .frame(width: 300, height: 50)
-                                
-                                VStack {
-                                    Text("\(username)'s GOAL 1")
-                                        .aspectRatio(contentMode: .fit)
-                                        .font(.largeTitle)
-                                        .bold()
-                                }
-                                .foregroundColor(.white.opacity(0.70))
-                            }
-                        }
-                        .buttonStyle(MyButtonStyle())
-                        .padding(.horizontal, 10)
+                                 if let goal = selectedGoal {
+                                     Text("\(goal.name)")
+                                         .font(.title)
+                                         .bold()
+                                         .padding(10)
+                                         .background(
+                                             RoundedRectangle(cornerRadius: 10)
+                                                 .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                         )
+                                 } else {
+                                     Text("Loading goal...")
+                                         .font(.title)
+                                         .bold()
+                                         .padding(10)
+                                         .background(
+                                             RoundedRectangle(cornerRadius: 10)
+                                                 .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                         )
+                                 }
+                             }
+                         }
+                         .buttonStyle(MyButtonStyle())
+                         .padding(.horizontal, 10)
                     }
                     
                     Spacer()
@@ -70,12 +88,16 @@ struct HomeView: View {
                     VStack(spacing: 20) {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
                             GridRow {
-                                NutrientView(nutrient: "Calories", curValue: Int(totalCalories), goalValue: goalCalories, color: Color(red: 10/255, green: 211/255, blue: 255/255))
-                                NutrientView(nutrient: "Protein", curValue: Int(totalProtein), goalValue: goalProtein, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                                if let goal = selectedGoal {
+                                    NutrientView(nutrient: "Calories", curValue: Int(totalCalories), goalValue: goal.calorieGoal, color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                                    NutrientView(nutrient: "Protein", curValue: Int(totalProtein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                                }
                             }
                             GridRow {
-                                NutrientView(nutrient: "Carbs", curValue: Int(totalCarbs), goalValue: goalCarbs, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                NutrientView(nutrient: "Fat", curValue: Int(totalFats), goalValue: goalFats, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                if let goal = selectedGoal {
+                                    NutrientView(nutrient: "Carbs", curValue: Int(totalCarbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                    NutrientView(nutrient: "Fat", curValue: Int(totalFats), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                }
                             }
                         }
                     }
@@ -127,8 +149,21 @@ struct HomeView: View {
                             }
                             .buttonStyle(MyButtonStyle())
                             .padding(.horizontal, 10)
-                            .sheet(isPresented: $isManualWriteSheetPresented) {
-                                ManualWriteSheet(manualCalories: $manualCalories, manualProtein: $manualProtein, manualCarbs: $manualCarbs, manualFats: $manualFats, isSheetPresented: $isManualWriteSheetPresented, totalCalories: $totalCalories, totalProtein: $totalProtein, totalCarbs: $totalCarbs, totalFats: $totalFats, updateProgress: updateProgress)
+                            .sheet(isPresented: $isManualWriteSheetPresented, onDismiss: {
+                                fetchCurrentDailyRecord()
+                            }) {
+                                ManualWriteSheet(
+                                    manualCalories: $manualCalories,
+                                    manualProtein: $manualProtein,
+                                    manualCarbs: $manualCarbs,
+                                    manualFats: $manualFats,
+                                    isSheetPresented: $isManualWriteSheetPresented,
+                                    totalCalories: $totalCalories,
+                                    totalProtein: $totalProtein,
+                                    totalCarbs: $totalCarbs,
+                                    totalFats: $totalFats,
+                                    updateProgress: updateProgress
+                                )
                             }
                             
                             Button(action: {
@@ -150,7 +185,9 @@ struct HomeView: View {
                             }
                             .buttonStyle(MyButtonStyle())
                             .padding(.horizontal, 10)
-                            .sheet(isPresented: $isInventorySelectionSheetPresented) {
+                            .sheet(isPresented: $isInventorySelectionSheetPresented, onDismiss: {
+                                fetchCurrentDailyRecord()
+                            }) {
                                 InventorySelectionSheet(
                                     totalCalories: $totalCalories,
                                     totalProtein: $totalProtein,
@@ -214,6 +251,10 @@ struct HomeView: View {
                     .frame(height: 5)
                 }
             }
+            .onAppear {
+                fetchUserSelectedGoal()
+                fetchCurrentDailyRecord()
+            }
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -223,6 +264,40 @@ struct HomeView: View {
             configuration.label
                 .padding(5)
                 .foregroundColor(.white.opacity(0.70))
+        }
+    }
+    
+    private func fetchUserSelectedGoal() {
+        getUserSelectedGoal { result in
+            switch result {
+            case .success(let goal):
+                DispatchQueue.main.async {
+                    self.selectedGoal = goal
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    private func fetchCurrentDailyRecord() {
+        getCurrentDaily { result in
+            switch result {
+            case .success(let record):
+                DispatchQueue.main.async {
+                    self.dailyRecord = record
+                    self.updateProgress()
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                    // If no record exists, initialize values to zero
+                    self.dailyRecord = DailyRecord(id: "", userId: "", date: "", calories: 0, protein: 0, carbs: 0, fat: 0, manuals: [], foods: [], drinks: [])
+                    self.updateProgress()
+                }
+            }
         }
     }
 }
@@ -400,6 +475,23 @@ struct ManualWriteSheet: View {
                 .padding(3)
 
                 Button(action: {
+                    // Generate a unique ID
+                    let id = UUID().uuidString
+                    // Convert input values from String to Int
+                    let calories = Int(manualCalories) ?? 0
+                    let protein = Int(manualProtein) ?? 0
+                    let carbs = Int(manualCarbs) ?? 0
+                    let fats = Int(manualFats) ?? 0
+
+                    // Call the addManualToDaily function
+                    addManualToDaily(
+                        _id: id,
+                        calories: calories,
+                        protein: protein,
+                        carbs: carbs,
+                        fat: fats
+                    )
+                    
                     // Add manually entered values to total values
                     totalCalories += Int(manualCalories) ?? 0
                     totalProtein += Int(manualProtein) ?? 0

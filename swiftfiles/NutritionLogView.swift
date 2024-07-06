@@ -4,9 +4,14 @@ struct NutritionLogView: View {
     @State private var selectedMonth = Calendar.current.component(.month, from: Date())
     @State private var selectedYear = Calendar.current.component(.year, from: Date())
     @State private var dailyRecord: DailyRecord?
+    @State private var historicalRecords: [DailyRecord]
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var needsRefresh = false
+    
+    init(historicalRecords: [DailyRecord] = []) {
+        self._historicalRecords = State(initialValue: historicalRecords)
+    }
     
     var body: some View {
         NavigationStack {
@@ -37,8 +42,8 @@ struct NutritionLogView: View {
                         .cornerRadius(10)
                     }
                     .padding()
-                    //                    .onChange(of: selectedMonth) { _ in fetchDailyRecord() }
-                    //                    .onChange(of: selectedYear) { _ in fetchDailyRecord() }
+                    // .onChange(of: selectedMonth) { _ in fetchDailyRecord() }
+                    // .onChange(of: selectedYear) { _ in fetchDailyRecord() }
                     
                     // List of Entries
                     if isLoading {
@@ -47,19 +52,37 @@ struct NutritionLogView: View {
                     } else if let errorMessage = errorMessage {
                         Text(errorMessage)
                             .foregroundColor(.red)
-                    } else if let dailyRecord = dailyRecord {
+                    } else {
                         List {
-                            NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh)) {
-                                VStack(alignment: .leading) {
-                                    let formattedDate = formattedDate(from: dailyRecord.date)
-                                    Text(formattedDate)
-                                        .font(.headline)
-                                        .foregroundColor(.white.opacity(0.80))
+                            // Current Daily Record
+                            if let dailyRecord = dailyRecord {
+                                NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false)) {
+                                    VStack(alignment: .leading) {
+                                        let formattedDate = formattedDate(from: dailyRecord.date)
+                                        Text("Today: \(formattedDate)")
+                                            .font(.headline)
+                                            .foregroundColor(.white.opacity(0.80))
+                                    }
+                                    .foregroundColor(Color.white.opacity(0.70))
+                                    .padding(.vertical, 5)
                                 }
-                                .foregroundColor(Color.white.opacity(0.70))
-                                .padding(.vertical, 5)
+                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                             }
-                            .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            
+                            // Historical Records
+                            ForEach(historicalRecords, id: \.id) { record in
+                                NavigationLink(destination: DayDetailView(dailyRecord: record, needsRefresh: $needsRefresh, isHistorical: true)) {
+                                    VStack(alignment: .leading) {
+                                        let formattedDate = formattedDate(from: record.date)
+                                        Text(formattedDate)
+                                            .font(.headline)
+                                            .foregroundColor(.white.opacity(0.80))
+                                    }
+                                    .foregroundColor(Color.white.opacity(0.70))
+                                    .padding(.vertical, 5)
+                                }
+                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            }
                         }
                         .listStyle(PlainListStyle())
                         .background(Color(red: 20/255, green: 20/255, blue: 30/255))
@@ -72,6 +95,7 @@ struct NutritionLogView: View {
             .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
                 fetchDailyRecord()
+                fetchHistoricalRecords()
             }
         }
     }
@@ -94,6 +118,24 @@ struct NutritionLogView: View {
         }
     }
     
+    // Function to fetch historical records
+    func fetchHistoricalRecords() {
+        isLoading = true
+        errorMessage = nil
+        
+        getAllHistoricalRecords { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let records):
+                    self.historicalRecords = records
+                case .failure(let error):
+                    self.errorMessage = "Failed to fetch historical records: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+    
     // Function to format date string
     func formattedDate(from dateString: String) -> String {
         let year = dateString.prefix(4)
@@ -107,29 +149,33 @@ struct NutritionLogView: View {
 }
 
 
+
 struct DayDetailView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     
+    @State private var selectedGoal: SelectedGoal? = nil
     @State var dailyRecord: DailyRecord
     @Binding var needsRefresh: Bool
+    var isHistorical: Bool // New parameter
     
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
     @State private var manuals: [DailyManual] = []
     
-    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>) {
+    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool) {
         self._dailyRecord = State(initialValue: dailyRecord)
         self._foods = State(initialValue: dailyRecord.foods)
         self._drinks = State(initialValue: dailyRecord.drinks)
         self._manuals = State(initialValue: dailyRecord.manuals)
         self._needsRefresh = needsRefresh
+        self.isHistorical = isHistorical // Initialize new parameter
     }
     
-    let goalCalories: Int = 2300
-    let goalProtein: Int = 160
-    let goalCarbs: Int = 250
-    let goalFats: Int = 70
+//    let goalCalories: Int = 2300
+//    let goalProtein: Int = 160
+//    let goalCarbs: Int = 250
+//    let goalFats: Int = 70
     
     var body: some View {
         let formattedDate = formattedDate(from: dailyRecord.date)
@@ -141,12 +187,16 @@ struct DayDetailView: View {
                 VStack {
                     Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
                         GridRow {
-                            NutrientView(nutrient: "Calories", curValue: Int(dailyRecord.calories), goalValue: goalCalories, color: Color(red: 10/255, green: 211/255, blue: 255/255))
-                            NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goalProtein, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                            if let goal = selectedGoal {
+                                NutrientView(nutrient: "Calories", curValue: Int(dailyRecord.calories), goalValue: goal.calorieGoal, color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                                NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                            }
                         }
                         GridRow {
-                            NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goalCarbs, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                            NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goalFats, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                            if let goal = selectedGoal {
+                                NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                            }
                         }
                     }
                     .padding(.horizontal, 20)
@@ -156,7 +206,7 @@ struct DayDetailView: View {
                             NavigationLink(destination: FoodDetailView(food: food, onDelete: {
                                 self.foods.removeAll { $0.id == food.id }
                                 self.needsRefresh = true
-                            })) {
+                            }, isHistorical: isHistorical)) {
                                 Text(food.name)
                                     .foregroundColor(.white.opacity(0.70))
                             }
@@ -167,7 +217,7 @@ struct DayDetailView: View {
                             NavigationLink(destination: DrinkDetailView(drink: drink, onDelete: {
                                 self.drinks.removeAll { $0.id == drink.id }
                                 self.needsRefresh = true
-                            })) {
+                            }, isHistorical: isHistorical)) {
                                 Text(drink.name)
                                     .foregroundColor(.white.opacity(0.70))
                             }
@@ -178,7 +228,7 @@ struct DayDetailView: View {
                             NavigationLink(destination: ManualDetailView(manual: manual, onDelete: {
                                 self.manuals.removeAll { $0.id == manual.id }
                                 self.needsRefresh = true
-                            })) {
+                            }, isHistorical: isHistorical)) {
                                 Text("Manual Entry")
                                     .foregroundColor(.white.opacity(0.70))
                             }
@@ -194,6 +244,8 @@ struct DayDetailView: View {
             .navigationTitle("\(formattedDate)")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
+                fetchUserSelectedGoal()
+                
                 if needsRefresh {
                     fetchDailyRecord()
                     needsRefresh = false
@@ -231,6 +283,21 @@ struct DayDetailView: View {
             }
         }
     }
+    
+    private func fetchUserSelectedGoal() {
+        getUserSelectedGoal { result in
+            switch result {
+            case .success(let goal):
+                DispatchQueue.main.async {
+                    self.selectedGoal = goal
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
 }
 
 
@@ -241,6 +308,8 @@ struct FoodDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showAlert = false
     @State private var alertMessage = ""
+    var isHistorical: Bool // New parameter
+
 
     var body: some View {
         ZStack {
@@ -393,33 +462,35 @@ struct FoodDetailView: View {
                 }
                 .padding(3)
                 
-                // Delete Item Button
-                Button(action: {
-                    deleteFoodInput(food) { result in
-                        switch result {
-                        case .success:
-                            print("Food item deleted!")
-                            // Set alert message
-                            alertMessage = "Deleted \(food.name)"
-                            // Show the alert
-                            showAlert = true
-                        case .failure(let error):
-                            print("Failed to delete food item: \(error)")
-                            // Set alert message
-                            alertMessage = "Failed to delete food item"
-                            // Show the alert
-                            showAlert = true
+                if !isHistorical {
+                    // Delete Item Button
+                    Button(action: {
+                        deleteFoodInput(food) { result in
+                            switch result {
+                            case .success:
+                                print("Food item deleted!")
+                                // Set alert message
+                                alertMessage = "Deleted \(food.name)"
+                                // Show the alert
+                                showAlert = true
+                            case .failure(let error):
+                                print("Failed to delete food item: \(error)")
+                                // Set alert message
+                                alertMessage = "Failed to delete food item"
+                                // Show the alert
+                                showAlert = true
+                            }
                         }
+                    }) {
+                        Text("Delete \(food.name)")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
                     }
-                }) {
-                    Text("Delete \(food.name)")
-                        .foregroundColor(.white.opacity(0.70))
-                        .padding(14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red.opacity(0.50))
-                        .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .padding(.top, 20)
                 }
             }
             .foregroundColor(.white.opacity(0.70))
@@ -445,6 +516,7 @@ struct DrinkDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showAlert = false
     @State private var alertMessage = ""
+    var isHistorical: Bool // New parameter
     
     var body: some View {
         ZStack {
@@ -598,32 +670,34 @@ struct DrinkDetailView: View {
                 .padding(3)
                 
                 // Delete Item Button
-                Button(action: {
-                    deleteDrinkInput(drink) { result in
-                        switch result {
-                        case .success:
-                            print("Drink item deleted!")
-                            // Set alert message
-                            alertMessage = "Deleted \(drink.name)"
-                            // Show the alert
-                            showAlert = true
-                        case .failure(let error):
-                            print("Failed to delete drink item: \(error)")
-                            // Set alert message
-                            alertMessage = "Failed to delete drink item"
-                            // Show the alert
-                            showAlert = true
+                if !isHistorical {
+                    Button(action: {
+                        deleteDrinkInput(drink) { result in
+                            switch result {
+                            case .success:
+                                print("Drink item deleted!")
+                                // Set alert message
+                                alertMessage = "Deleted \(drink.name)"
+                                // Show the alert
+                                showAlert = true
+                            case .failure(let error):
+                                print("Failed to delete drink item: \(error)")
+                                // Set alert message
+                                alertMessage = "Failed to delete drink item"
+                                // Show the alert
+                                showAlert = true
+                            }
                         }
+                    }) {
+                        Text("Delete \(drink.name)")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
                     }
-                }) {
-                    Text("Delete \(drink.name)")
-                        .foregroundColor(.white.opacity(0.70))
-                        .padding(14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red.opacity(0.50))
-                        .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .padding(.top, 20)
                 }
             }
             .foregroundColor(.white.opacity(0.70))
@@ -650,6 +724,7 @@ struct ManualDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var showAlert = false
     @State private var alertMessage = ""
+    var isHistorical: Bool // New parameter
     
     var body: some View {
         ZStack {
@@ -721,33 +796,35 @@ struct ManualDetailView: View {
                 }
                 .padding(3)
                 
-                // Delete Item Button
-                Button(action: {
-                    deleteManualInput(manual) { result in
-                        switch result {
-                        case .success:
-                            print("Manual entry deleted!")
-                            // Set alert message
-                            alertMessage = "Deleted manual entry"
-                            // Show the alert
-                            showAlert = true
-                        case .failure(let error):
-                            print("Failed to delete manual entry: \(error)")
-                            // Set alert message
-                            alertMessage = "Failed to delete manual entry"
-                            // Show the alert
-                            showAlert = true
+                if !isHistorical {
+                    // Delete Item Button
+                    Button(action: {
+                        deleteManualInput(manual) { result in
+                            switch result {
+                            case .success:
+                                print("Manual entry deleted!")
+                                // Set alert message
+                                alertMessage = "Deleted manual entry"
+                                // Show the alert
+                                showAlert = true
+                            case .failure(let error):
+                                print("Failed to delete manual entry: \(error)")
+                                // Set alert message
+                                alertMessage = "Failed to delete manual entry"
+                                // Show the alert
+                                showAlert = true
+                            }
                         }
+                    }) {
+                        Text("Delete Manual Entry")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
                     }
-                }) {
-                    Text("Delete Manual Entry")
-                        .foregroundColor(.white.opacity(0.70))
-                        .padding(14)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red.opacity(0.50))
-                        .cornerRadius(15)
-                        .padding(.horizontal, 22)
-                        .padding(.top, 20)
                 }
             }
             .foregroundColor(.white.opacity(0.70))
