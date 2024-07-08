@@ -51,20 +51,6 @@ struct WelcomeView: View {
             .navigationBarHidden(true)
         }
     }
-    
-    func authenticateUser(username: String, password: String) {
-        if username.lowercased() == "cratik" {
-            wrongUsername = 0
-            if password.lowercased() == "soccer1119" {
-                wrongPassword = 0
-                showingLoginScreen = true
-            } else {
-                wrongPassword = 1
-            }
-        } else {
-            wrongUsername = 1
-        }
-    }
 }
 
 struct WelcomeView_Preview: PreviewProvider {

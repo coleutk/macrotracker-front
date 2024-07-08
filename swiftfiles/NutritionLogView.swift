@@ -9,6 +9,7 @@ struct NutritionLogView: View {
     @State private var errorMessage: String?
     @State private var needsRefresh = false
     
+    
     init(historicalRecords: [DailyRecord] = []) {
         self._historicalRecords = State(initialValue: historicalRecords)
     }
@@ -22,28 +23,27 @@ struct NutritionLogView: View {
                 VStack {
                     // Month and Year Picker
                     HStack {
-                        Picker("Month", selection: $selectedMonth) {
-                            ForEach(1...12, id: \.self) { month in
-                                Text(DateFormatter().monthSymbols[month - 1])
-                                    .tag(month)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
-                        .cornerRadius(10)
-                        
-                        Picker("Year", selection: $selectedYear) {
-                            ForEach(2020...Calendar.current.component(.year, from: Date()), id: \.self) { year in
-                                Text(String(year)).tag(year)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
-                        .cornerRadius(10)
+//                        Picker("Month", selection: $selectedMonth) {
+//                            ForEach(1...12, id: \.self) { month in
+//                                Text(DateFormatter().monthSymbols[month - 1])
+//                                    .tag(month)
+//                            }
+//                        }
+//                        .pickerStyle(MenuPickerStyle())
+//                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+//                        .cornerRadius(10)
+//                        
+//                        Picker("Year", selection: $selectedYear) {
+//                            ForEach(2020...Calendar.current.component(.year, from: Date()), id: \.self) { year in
+//                                Text(String(year)).tag(year)
+//                            }
+//                        }
+//                        .pickerStyle(MenuPickerStyle())
+//                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+//                        .cornerRadius(10)
                     }
                     .padding()
-                    // .onChange(of: selectedMonth) { _ in fetchDailyRecord() }
-                    // .onChange(of: selectedYear) { _ in fetchDailyRecord() }
+
                     
                     // List of Entries
                     if isLoading {

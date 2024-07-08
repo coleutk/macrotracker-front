@@ -5,8 +5,10 @@ struct SignUpView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var wrongUsername = 0
+    @State private var wrongEmail = 0
     @State private var wrongPassword = 0
     @State private var showingHomeScreen = false
+    @State private var errorMessage = ""
     
     var body: some View {
         NavigationStack {
@@ -71,7 +73,7 @@ struct SignUpView: View {
                     .frame(width: 300, height: 50)
                     .background(Color.black.opacity(0.30))
                     .cornerRadius(15)
-                    .border(Color.red, width: CGFloat(wrongUsername))
+                    .border(Color.red, width: CGFloat(wrongEmail))
                     
                     HStack {
                         Image(systemName: "lock")
@@ -90,8 +92,9 @@ struct SignUpView: View {
                     .cornerRadius(15)
                     .border(Color.red, width: CGFloat(wrongPassword))
                     
+                    
                     Button(action: {
-                        registerUser(username: username, password: password)
+                        registerUser(username: username, email: email, password: password)
                     }) {
                         Text("Sign Up")
                             .foregroundColor(.white.opacity(0.70))
@@ -102,6 +105,12 @@ struct SignUpView: View {
                     }
                     .frame(width: 300, height: 50)
                     .padding(.top, 15)
+                    
+                    if !errorMessage.isEmpty {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .padding(.top, 10)
+                    }
                 }
                 .padding(.bottom, 100)
                 .navigationDestination(isPresented: $showingHomeScreen) {
@@ -112,9 +121,10 @@ struct SignUpView: View {
         .navigationBarBackButtonHidden(true)
     }
     
-    func registerUser(username: String, password: String) {
+    
+    func registerUser(username: String, email: String, password: String) {
         // Add your registration logic here
-        if !username.isEmpty && !password.isEmpty {
+        if !username.isEmpty && !email.isEmpty && !password.isEmpty {
             // Assume registration is always successful for demonstration
             showingHomeScreen = true
         } else {
@@ -124,6 +134,12 @@ struct SignUpView: View {
                 wrongUsername = 0
             }
             
+            if email.isEmpty {
+                wrongEmail = 1
+            } else {
+                wrongEmail = 0
+            }
+
             if password.isEmpty {
                 wrongPassword = 1
             } else {
