@@ -60,6 +60,7 @@ func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal, Error>) -
 // Sign Up User
 func userSignUp(username: String, email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
     guard let url = URL(string: "http://localhost:3000/users/signup") else {
+        completion(false, "Invalid URL")
         return
     }
     
@@ -75,16 +76,74 @@ func userSignUp(username: String, email: String, password: String, completion: @
     
     let task = URLSession.shared.dataTask(with: request) { data, _, error in
         guard let data = data, error == nil else {
+            completion(false, "Network error")
             return
         }
         
         do {
-            let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments)
-            print("SUCCESS: \(response)")
+            if let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                if let message = response["message"] as? String, message == "User created" {
+                    completion(true, nil)
+                } else if let message = response["message"] as? String {
+                    completion(false, message)
+                } else {
+                    completion(false, "Unknown error")
+                }
+            } else {
+                completion(false, "Invalid response from server")
+            }
         } catch {
-            print(error)
+            completion(false, "Failed to parse response")
         }
     }
     
     task.resume()
 }
+
+
+// Log in User
+func userLogin(email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
+    guard let url = URL(string: "http://localhost:3000/users/login") else {
+        completion(false, "Invalid URL")
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    let body: [String: Any] = [
+        "email": email,
+        "password": password
+    ]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+        guard let data = data, error == nil else {
+            completion(false, "Network error")
+            return
+        }
+        
+        do {
+            if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                if let message = json["message"] as? String, message == "Auth successful",
+                   let token = json["token"] as? String {
+                    UserDefaults.standard.set(token, forKey: "token")
+                    completion(true, nil)
+                } else if let message = json["message"] as? String {
+                    completion(false, message)
+                } else {
+                    completion(false, "Unknown error")
+                }
+            } else {
+                completion(false, "Invalid response from server")
+            }
+        } catch {
+            completion(false, "Failed to parse response")
+        }
+    }
+    
+    task.resume()
+}
+
+
+

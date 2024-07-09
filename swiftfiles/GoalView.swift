@@ -405,7 +405,14 @@ struct AddGoalSheet: View {
                         return
                     }
                     
-                    addGoal(_id: UUID().uuidString, name: goalName, calorieGoal: goalCalories, proteinGoal: goalProtein, carbGoal: goalCarbs, fatGoal: goalFat)
+                    addGoal(name: goalName, calorieGoal: goalCalories, proteinGoal: goalProtein, carbGoal: goalCarbs, fatGoal: goalFat) { success, message in
+                        if success {
+                            print("Goal created successfully")
+                        } else {
+                            print("Failed to create goal: \(message ?? "Unknown error")")
+                        }
+                    }
+
                     
                     isSheetPresented = false
                 }) {

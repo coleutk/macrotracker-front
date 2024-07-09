@@ -123,28 +123,22 @@ struct SignUpView: View {
     
     
     func registerUser(username: String, email: String, password: String) {
-        // Add your registration logic here
         if !username.isEmpty && !email.isEmpty && !password.isEmpty {
-            // Assume registration is always successful for demonstration
-            showingHomeScreen = true
+            userSignUp(username: username, email: email, password: password) { success, message in
+                if success {
+                    DispatchQueue.main.async {
+                        showingHomeScreen = true
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        errorMessage = message ?? "Unknown error"
+                    }
+                }
+            }
         } else {
-            if username.isEmpty {
-                wrongUsername = 1
-            } else {
-                wrongUsername = 0
-            }
-            
-            if email.isEmpty {
-                wrongEmail = 1
-            } else {
-                wrongEmail = 0
-            }
-
-            if password.isEmpty {
-                wrongPassword = 1
-            } else {
-                wrongPassword = 0
-            }
+            wrongUsername = username.isEmpty ? 1 : 0
+            wrongEmail = email.isEmpty ? 1 : 0
+            wrongPassword = password.isEmpty ? 1 : 0
         }
     }
 }

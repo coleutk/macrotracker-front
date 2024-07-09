@@ -1,13 +1,12 @@
 import SwiftUI
 
 struct LoginView: View {
-    @State private var username = ""
+    @State private var email = ""
     @State private var password = ""
-    @State private var wrongUsername = 0
+    @State private var wrongEmail = 0
     @State private var wrongPassword = 0
     @State private var showingHomeScreen = false
-    
-    @StateObject private var inventoryViewModel = InventoryViewModel()
+    @State private var errorMessage = ""
     
     var body: some View {
         NavigationStack {
@@ -48,14 +47,14 @@ struct LoginView: View {
                             .padding(.leading, 10)
                             .foregroundColor(Color.white.opacity(0.10))
                         
-                        TextField("E-Mail", text: $username)
+                        TextField("E-Mail", text: $email)
                             .foregroundColor(.white.opacity(0.90))
                             .padding(.leading, 1)
                     }
                     .frame(width: 300, height: 50)
                     .background(Color.black.opacity(0.30))
                     .cornerRadius(15)
-                    .border(Color.red, width: CGFloat(wrongUsername))
+                    .border(Color.red, width: CGFloat(wrongEmail))
                     
                     HStack {
                         Image(systemName: "lock")
@@ -75,7 +74,7 @@ struct LoginView: View {
                     .border(Color.red, width: CGFloat(wrongPassword))
                     
                     Button(action: {
-                        authenticateUser(username: username, password: password)
+                        loginUser(email: email, password: password)
                     }) {
                         Text("Login")
                             .foregroundColor(.white.opacity(0.70))
@@ -89,11 +88,7 @@ struct LoginView: View {
                 }
                 .padding(.bottom, 100)
                 .navigationDestination(isPresented: $showingHomeScreen) {
-                    HomeView(username: username)
-                        .environmentObject(inventoryViewModel) // So I can see saved data across tabs
-                        .onAppear {
-                            //inventoryViewModel.loadInventory()
-                        }
+                    HomeView(username: "tempUsername") // Or pass a different identifier
                 }
 
             }
@@ -102,17 +97,24 @@ struct LoginView: View {
         .navigationBarBackButtonHidden(true)
     }
     
-    func authenticateUser(username: String, password: String) {
-        if username.lowercased() == "cratik" {
-            wrongUsername = 0
-            if password.lowercased() == "soccer1119" {
-                wrongPassword = 0
-                showingHomeScreen = true
-            } else {
-                wrongPassword = 1
+    func loginUser(email: String, password: String) {
+        if !email.isEmpty && !password.isEmpty {
+            userLogin(email: email, password: password) { success, message in
+                if success {
+                    DispatchQueue.main.async {
+                        showingHomeScreen = true
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        wrongEmail = 1
+                        wrongPassword = 1
+                        errorMessage = message ?? "Invalid email or password"
+                    }
+                }
             }
         } else {
-            wrongUsername = 1
+            wrongEmail = email.isEmpty ? 1 : 0
+            wrongPassword = password.isEmpty ? 1 : 0
         }
     }
 }

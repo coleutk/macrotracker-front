@@ -16,11 +16,17 @@ struct Goal: Identifiable, Codable {
     var fatGoal: Int
 }
 
-// Get All Goals
+// Get All Goals (USER)
 func getAllGoals(_ completion: @escaping (Result<[Goal], Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/goals/")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "GET"
     
     // Container for fetched foods
@@ -72,9 +78,15 @@ func getAllGoals(_ completion: @escaping (Result<[Goal], Error>) -> Void) {
 
 // Edit Goal
 func editGoal(_ goal: Goal, completion: @escaping (Result<Goal, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/goals/\(goal.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "PATCH"
     
     // Create the array of objects as expected by the backend
@@ -124,8 +136,14 @@ func editGoal(_ goal: Goal, completion: @escaping (Result<Goal, Error>) -> Void)
 
 // Delete Goal
 func deleteGoal(_ goal: Goal, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     var request = URLRequest(url: URL(string: "http://localhost:3000/goals/\(goal.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "DELETE"
 
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -148,8 +166,13 @@ func deleteGoal(_ goal: Goal, completion: @escaping (Result<Void, Error>) -> Voi
     task.resume()
 }
 
-// Add Goal
-func addGoal(_id: String, name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fatGoal: Int) {
+// Add Goal (USER)
+func addGoal(name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fatGoal: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
     guard let url = URL(string: "http://localhost:3000/goals") else {
         return
     }
@@ -157,8 +180,8 @@ func addGoal(_id: String, name: String, calorieGoal: Int, proteinGoal: Int, carb
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let body: [String: Any] = [
-        "_id": _id,
         "name": name,
         "calorieGoal": calorieGoal,
         "proteinGoal": proteinGoal,
