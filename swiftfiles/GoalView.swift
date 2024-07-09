@@ -278,13 +278,19 @@ struct EditGoalView: View {
                 if goal.id != selectedGoalId {
                     Button(action: {
                         makeNewSelectedGoal(
-                            _id: goal.id,
+                            goalId: goal.id,
                             name: goal.name,
                             calorieGoal: goal.calorieGoal,
                             proteinGoal: goal.proteinGoal,
                             carbGoal: goal.carbGoal,
                             fatGoal: goal.fatGoal
-                        )
+                        ) { success, message in
+                            if success {
+                                print("Selected goal updated successfully")
+                            } else {
+                                print("Failed to update selected goal: \(message ?? "Unknown error")")
+                            }
+                        }
                         // Dismiss the view and go back to inventory
                         presentationMode.wrappedValue.dismiss()
                     }) {

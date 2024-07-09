@@ -76,7 +76,7 @@ func getAllGoals(_ completion: @escaping (Result<[Goal], Error>) -> Void) {
     task.resume()
 }
 
-// Edit Goal
+// Edit Goal (USER)
 func editGoal(_ goal: Goal, completion: @escaping (Result<Goal, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
@@ -134,7 +134,7 @@ func editGoal(_ goal: Goal, completion: @escaping (Result<Goal, Error>) -> Void)
     task.resume()
 }
 
-// Delete Goal
+// Delete Goal (USER)
 func deleteGoal(_ goal: Goal, completion: @escaping (Result<Void, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
@@ -206,17 +206,23 @@ func addGoal(name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fa
     task.resume()
 }
 
-// Make Different Goal = Selected Goal
-func makeNewSelectedGoal(_id: String, name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fatGoal: Int) {
-    guard let url = URL(string: "http://localhost:3000/goal/\(_id)") else { // Hardcoded to update it for the specific user, fix this to do it for the user that is logged in (stored in backend under userId = )
+// Make Different Goal = Selected Goal (USER)
+func makeNewSelectedGoal(goalId: String, name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fatGoal: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
+    guard let url = URL(string: "http://localhost:3000/goal/makeSelectedGoal") else { // Hardcoded to update it for the specific user, fix this to do it for the user that is logged in (stored in backend under userId = )
         return
     }
     
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let body: [String: Any] = [
-        "_id": _id,
+        "goalId": goalId,
         "name": name,
         "calorieGoal": calorieGoal,
         "proteinGoal": proteinGoal,
