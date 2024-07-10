@@ -32,9 +32,15 @@ enum WeightUnit: String, Codable, CaseIterable {
 
 // Get All Foods
 func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/foods/")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "GET"
     
     // Container for fetched foods
@@ -93,9 +99,15 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
 
 // Edit Food
 func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "PATCH"
     
     // Create the array of objects as expected by the backend
@@ -147,8 +159,14 @@ func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void)
 
 // Delete Food
 func deleteFood(_ food: Food, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "DELETE"
 
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -172,7 +190,12 @@ func deleteFood(_ food: Food, completion: @escaping (Result<Void, Error>) -> Voi
 }
 
 // Add Food
-func addFood(_id: String, name: String, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int) {
+func addFood(name: String, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
     guard let url = URL(string: "http://localhost:3000/foods") else {
         return
     }
@@ -180,8 +203,8 @@ func addFood(_id: String, name: String, weightValue: Int, weightUnit: String, ca
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let body: [String: Any] = [
-        "_id": _id,
         "name": name,
         "weight": [
             "value": weightValue,

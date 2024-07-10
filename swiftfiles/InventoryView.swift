@@ -940,7 +940,13 @@ struct AddFoodSheet: View {
                         return
                     }
                     
-                    addFood(_id: UUID().uuidString, name: foodName, weightValue: foodWeightValue, weightUnit: selectedUnit, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats)
+                    addFood(name: foodName, weightValue: foodWeightValue, weightUnit: selectedUnit, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats) { success, message in
+                        if success {
+                            print("Food created successfully")
+                        } else {
+                            print("Failed to create goal: \(message ?? "Unknown error")")
+                        }
+                    }
                     
                     isSheetPresented = false
                 }) {
@@ -1119,7 +1125,13 @@ struct AddDrinkSheet: View {
                         return
                     }
                     
-                    addDrink(_id: UUID().uuidString, name: drinkName, volumeValue: drinkVolumeValue, volumeUnit: selectedUnit, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats)
+                    addDrink(name: drinkName, volumeValue: drinkVolumeValue, volumeUnit: selectedUnit, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats) { success, message in
+                        if success {
+                            print("Drink created successfully")
+                        } else {
+                            print("Failed to create goal: \(message ?? "Unknown error")")
+                        }
+                    }
                     
                     isSheetPresented = false
                 }) {
