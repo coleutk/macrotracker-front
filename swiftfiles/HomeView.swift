@@ -375,6 +375,9 @@ struct ManualWriteSheet: View {
     @Binding var totalProtein: Int
     @Binding var totalCarbs: Int
     @Binding var totalFats: Int
+    
+    @State private var message = ""
+    @State private var showAlert = false
 
     var updateProgress: () -> Void
 
@@ -490,7 +493,16 @@ struct ManualWriteSheet: View {
                         protein: protein,
                         carbs: carbs,
                         fat: fats
-                    )
+                    )  { success, error in
+                        DispatchQueue.main.async {
+                            if success {
+                                message = "Manual added to daily successfully!"
+                            } else {
+                                message = error ?? "Failed to add manual to daily."
+                            }
+                            showAlert = true
+                        }
+                    }
                     
                     // Add manually entered values to total values
                     totalCalories += Int(manualCalories) ?? 0
@@ -707,6 +719,9 @@ struct FoodInputSheet: View {
 
     @FocusState private var isServingSizeFocused: Bool
     @FocusState private var isWeightValueFocused: Bool
+    
+    @State private var message = ""
+    @State private var showAlert = false
 
     init(food: Binding<Food>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void) {
         _food = food
@@ -905,16 +920,24 @@ struct FoodInputSheet: View {
                 Button(action: {
                     guard let flooredWeightValue = Float(foodWeightValue) else { return }
                     addFoodToDaily(
-                        _id: food.id,
                         name: food.name,
                         servings: Float(servingSize) ?? 0,
                         weightValue: Int(floor(flooredWeightValue)),
                         weightUnit: selectedUnit,
-                        calories: Int(foodProtein) ?? 0,
+                        calories: Int(foodCalories) ?? 0,
                         protein: Int(foodProtein) ?? 0,
                         carbs: Int(foodCarbs) ?? 0,
                         fats: Int(foodFat) ?? 0
-                    )
+                    ) { success, error in
+                        DispatchQueue.main.async {
+                            if success {
+                                message = "Food added to daily successfully!"
+                            } else {
+                                message = error ?? "Failed to add food to daily."
+                            }
+                            showAlert = true
+                        }
+                    }
 
                     
                     // Update total values
@@ -973,6 +996,9 @@ struct DrinkInputSheet: View {
     
     @FocusState private var isServingSizeFocused: Bool
     @FocusState private var isVolumeValueFocused: Bool
+    
+    @State private var message = ""
+    @State private var showAlert = false
 
     init(drink: Binding<Drink>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void) {
         _drink = drink
@@ -1181,7 +1207,16 @@ struct DrinkInputSheet: View {
                         protein: Int(drinkProtein) ?? 0,
                         carbs: Int(drinkCarbs) ?? 0,
                         fats: Int(drinkFat) ?? 0
-                    )
+                    ) { success, error in
+                        DispatchQueue.main.async {
+                            if success {
+                                message = "Drink added to daily successfully!"
+                            } else {
+                                message = error ?? "Failed to add drink to daily."
+                            }
+                            showAlert = true
+                        }
+                    }
                     
                     // Update total values
                     totalCalories += Int(drinkCalories) ?? 0

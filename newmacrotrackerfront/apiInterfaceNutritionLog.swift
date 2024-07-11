@@ -182,9 +182,15 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
 
 // Get Current Daily Record
 func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     // Build request
     var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/currentDailyRecord")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add authorization header
     request.httpMethod = "GET"
     
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -206,7 +212,7 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
                 
                 // Parse DailyRecord
                 if let id = json["_id"] as? String,
-                   let userId = json["userId"] as? String,
+                   let userId = json["user"] as? String,
                    let date = json["date"] as? String,
                    let calories = json["calories"] as? Int,
                    let protein = json["protein"] as? Int,
@@ -297,7 +303,12 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
 
 
 // Add Food to DailyRecord
-func addFoodToDaily(_id: String, name: String, servings: Float, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int) {
+func addFoodToDaily(name: String, servings: Float, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
     guard let url = URL(string: "http://localhost:3000/dailyRecords/addFood") else {
         return
     }
@@ -305,8 +316,8 @@ func addFoodToDaily(_id: String, name: String, servings: Float, weightValue: Int
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let body: [String: Any] = [
-        "_id": _id,
         "name": name,
         "servings": servings,
         "weight": [
@@ -337,7 +348,12 @@ func addFoodToDaily(_id: String, name: String, servings: Float, weightValue: Int
 }
 
 // Add Drink to DailyRecord
-func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: Int, volumeUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int) {
+func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: Int, volumeUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
     guard let url = URL(string: "http://localhost:3000/dailyRecords/addDrink") else {
         return
     }
@@ -345,6 +361,7 @@ func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: In
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let body: [String: Any] = [
         "_id": _id,
         "name": name,
@@ -377,7 +394,12 @@ func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: In
 }
 
 // Add Manual to DailyRecord
-func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat: Int) {
+func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
     guard let url = URL(string: "http://localhost:3000/dailyRecords/addManual") else {
         return
     }
@@ -385,6 +407,7 @@ func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat:
     var request = URLRequest(url: url)
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     let body: [String: Any] = [
         "_id": _id,
         "calories": calories,
@@ -410,10 +433,17 @@ func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat:
     task.resume()
 }
 
+
 // Delete Food from Daily Record
 func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+
     var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteFoodInput/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
 
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -422,19 +452,22 @@ func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Erro
             completion(.failure(error))
             return
         }
-        
+
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
             print("Unexpected response")
             completion(.failure(error))
             return
         }
-        
+
         completion(.success(()))
     }
-    
+
     task.resume()
 }
+
+
+
 
 // Delete Drink from Daily Record
 func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, Error>) -> Void) {

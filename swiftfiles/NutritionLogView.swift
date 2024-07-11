@@ -473,10 +473,12 @@ struct FoodDetailView: View {
                                 alertMessage = "Deleted \(food.name)"
                                 // Show the alert
                                 showAlert = true
+                                // Call the onDelete closure
+                                onDelete()
                             case .failure(let error):
                                 print("Failed to delete food item: \(error)")
                                 // Set alert message
-                                alertMessage = "Failed to delete food item"
+                                alertMessage = "Failed to delete food item: \(error.localizedDescription)"
                                 // Show the alert
                                 showAlert = true
                             }
