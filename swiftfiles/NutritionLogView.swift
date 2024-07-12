@@ -682,6 +682,8 @@ struct DrinkDetailView: View {
                                 alertMessage = "Deleted \(drink.name)"
                                 // Show the alert
                                 showAlert = true
+                                
+                                onDelete()
                             case .failure(let error):
                                 print("Failed to delete drink item: \(error)")
                                 // Set alert message

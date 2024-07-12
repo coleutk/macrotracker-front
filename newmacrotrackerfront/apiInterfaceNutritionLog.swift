@@ -180,7 +180,7 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
 }
 
 
-// Get Current Daily Record
+// Get Current Daily Record (USER)
 func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
@@ -298,11 +298,7 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
 }
 
 
-
-
-
-
-// Add Food to DailyRecord
+// Add Food to DailyRecord (USER)
 func addFoodToDaily(name: String, servings: Float, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(false, "User not authenticated")
@@ -347,7 +343,8 @@ func addFoodToDaily(name: String, servings: Float, weightValue: Int, weightUnit:
     task.resume()
 }
 
-// Add Drink to DailyRecord
+
+// Add Drink to DailyRecord (USER)
 func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: Int, volumeUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(false, "User not authenticated")
@@ -393,7 +390,8 @@ func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: In
     task.resume()
 }
 
-// Add Manual to DailyRecord
+
+// Add Manual to DailyRecord (USER)
 func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat: Int, completion: @escaping (Bool, String?) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(false, "User not authenticated")
@@ -434,7 +432,7 @@ func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat:
 }
 
 
-// Delete Food from Daily Record
+// Delete Food from Daily Record (USER)
 func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
@@ -471,8 +469,14 @@ func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Erro
 
 // Delete Drink from Daily Record
 func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteDrinkInput/\(drink.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
 
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
