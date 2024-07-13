@@ -68,8 +68,14 @@ struct DailyManual: Identifiable, Codable {
 
 
 func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add authorization header
     request.httpMethod = "GET"
     
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -94,7 +100,7 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
                 
                 for record in recordsArray {
                     if let id = record["_id"] as? String,
-                       let userId = record["userId"] as? String,
+                       let userId = record["user"] as? String,
                        let date = record["date"] as? String,
                        let calories = record["calories"] as? Int,
                        let protein = record["protein"] as? Int,
@@ -501,8 +507,14 @@ func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, E
 
 // Delete Manual from Daily Record
 func deleteManualInput(_ manual: DailyManual, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
     var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteManualInput/\(manual.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
 
     let task = URLSession.shared.dataTask(with: request) { data, response, error in
