@@ -505,7 +505,7 @@ func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, E
     task.resume()
 }
 
-// Delete Manual from Daily Record
+// Delete Manual from Daily Record (USER)
 func deleteManualInput(_ manual: DailyManual, completion: @escaping (Result<Void, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
@@ -536,3 +536,48 @@ func deleteManualInput(_ manual: DailyManual, completion: @escaping (Result<Void
     
     task.resume()
 }
+
+struct ResetResponse: Codable {
+    let message: String
+    let resetRecord: DailyRecord
+}
+
+func resetDailyRecord(completion: @escaping (Result<ResetResponse, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
+    guard let url = URL(string: "http://localhost:3000/dailyRecords/resetDailyRecord") else {
+        completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+        
+        guard let data = data else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+            return
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(ResetResponse.self, from: data)
+            completion(.success(response))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+    
+    task.resume()
+}
+

@@ -83,6 +83,7 @@ struct NutritionLogView: View {
                                 }
                                 .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                             }
+                            
                         }
                         .listStyle(PlainListStyle())
                         .background(Color(red: 20/255, green: 20/255, blue: 30/255))
@@ -151,6 +152,8 @@ struct NutritionLogView: View {
 
 
 struct DayDetailView: View {
+    @Environment(\.presentationMode) var presentationMode
+    
     @State private var isLoading = false
     @State private var errorMessage: String?
     
@@ -158,6 +161,7 @@ struct DayDetailView: View {
     @State var dailyRecord: DailyRecord
     @Binding var needsRefresh: Bool
     var isHistorical: Bool // New parameter
+    @State private var showConfirmationAlert = false // Add this line
     
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
@@ -171,11 +175,6 @@ struct DayDetailView: View {
         self._needsRefresh = needsRefresh
         self.isHistorical = isHistorical // Initialize new parameter
     }
-    
-//    let goalCalories: Int = 2300
-//    let goalProtein: Int = 160
-//    let goalCarbs: Int = 250
-//    let goalFats: Int = 70
     
     var body: some View {
         let formattedDate = formattedDate(from: dailyRecord.date)
@@ -240,6 +239,34 @@ struct DayDetailView: View {
                 }
                 .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                 .foregroundColor(.white)
+                
+                if(!isHistorical) {
+                    VStack {
+                        Spacer()
+                        
+                        Button (action: {
+                            showConfirmationAlert = true
+                        }) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10) // Rounded rectangle background
+                                    .foregroundColor(Color(red: 20/255, green: 20/255, blue: 30/255)) // Background color
+                                    .frame(width: 162, height: 45)
+                                
+                                HStack {
+                                    Text("Complete Day")
+                                        .font(.system(size: 16))
+                                        .bold()
+                                    
+                                    Image(systemName: "checkmark.circle")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 20, height: 20)
+                                }
+                                .foregroundColor(.white.opacity(0.50))
+                            }
+                        }
+                    }
+                }
             }
             .navigationTitle("\(formattedDate)")
             .navigationBarTitleDisplayMode(.inline)
@@ -250,6 +277,17 @@ struct DayDetailView: View {
                     fetchDailyRecord()
                     needsRefresh = false
                 }
+            }
+            .alert(isPresented: $showConfirmationAlert) { // Show confirmation alert
+                Alert(
+                    title: Text("Complete Day"),
+                    message: Text("Are you sure you want to end \(formattedDate)?"),
+                    primaryButton: .destructive(Text("Yes")) {
+                        resetDaily()
+                        presentationMode.wrappedValue.dismiss()
+                    },
+                    secondaryButton: .cancel()
+                )
             }
         }
     }
@@ -295,6 +333,20 @@ struct DayDetailView: View {
                 DispatchQueue.main.async {
                     self.errorMessage = error.localizedDescription
                 }
+            }
+        }
+    }
+    
+    private func resetDaily() {
+        // Example usage:
+        resetDailyRecord { result in
+            switch result {
+            case .success(let response):
+                print("Daily record reset successfully.")
+                print("Message: \(response.message)")
+                print("Reset Record ID: \(response.resetRecord.id)")
+            case .failure(let error):
+                print("Failed to reset daily record: \(error)")
             }
         }
     }
