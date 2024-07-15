@@ -12,8 +12,14 @@ struct HistoricalRecord: Identifiable, Codable {
     var records: [DailyRecord]
 }
 
+struct HistoricalGoal: Codable {
+    let calorieGoal: Int
+    let proteinGoal: Int
+    let carbGoal: Int
+    let fatGoal: Int
+}
 
-struct DailyRecord: Identifiable, Codable {
+struct DailyRecord: Codable {
     var id: String
     var userId: String
     var date: String
@@ -24,6 +30,7 @@ struct DailyRecord: Identifiable, Codable {
     var manuals: [DailyManual]
     var foods: [DailyFood]
     var drinks: [DailyDrink]
+    var goal: HistoricalGoal? // Add this line
 }
 
 struct DailyFood: Identifiable, Codable {
@@ -108,7 +115,8 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
                        let fat = record["fat"] as? Int,
                        let foodArray = record["foods"] as? [[String: Any]],
                        let drinkArray = record["drinks"] as? [[String: Any]],
-                       let manualArray = record["manuals"] as? [[String: Any]] {
+                       let manualArray = record["manuals"] as? [[String: Any]],
+                       let goalDict = record["goal"] as? [String: Any] {
                         
                         var foods: [DailyFood] = []
                         var drinks: [DailyDrink] = []
@@ -167,7 +175,15 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
                             }
                         }
                         
-                        let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks)
+                        // Parse goal
+                        let goal = HistoricalGoal(
+                            calorieGoal: goalDict["calorieGoal"] as? Int ?? 0,
+                            proteinGoal: goalDict["proteinGoal"] as? Int ?? 0,
+                            carbGoal: goalDict["carbGoal"] as? Int ?? 0,
+                            fatGoal: goalDict["fatGoal"] as? Int ?? 0
+                        )
+                        
+                        let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks, goal: goal)
                         historicalRecords.append(dailyRecord)
                     }
                 }
@@ -184,7 +200,6 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
     
     task.resume()
 }
-
 
 // Get Current Daily Record (USER)
 func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Void) {
@@ -302,6 +317,7 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
     
     task.resume()
 }
+
 
 
 // Add Food to DailyRecord (USER)

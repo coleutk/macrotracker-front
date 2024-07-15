@@ -159,6 +159,7 @@ struct DayDetailView: View {
     
     @State private var selectedGoal: SelectedGoal? = nil
     @State var dailyRecord: DailyRecord
+    
     @Binding var needsRefresh: Bool
     var isHistorical: Bool // New parameter
     @State private var showConfirmationAlert = false // Add this line
@@ -184,21 +185,40 @@ struct DayDetailView: View {
                     .ignoresSafeArea()
                 
                 VStack {
-                    Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
-                        GridRow {
-                            if let goal = selectedGoal {
-                                NutrientView(nutrient: "Calories", curValue: Int(dailyRecord.calories), goalValue: goal.calorieGoal, color: Color(red: 10/255, green: 211/255, blue: 255/255))
-                                NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    if(!isHistorical) {
+                        Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
+                            GridRow {
+                                if let goal = selectedGoal {
+                                    NutrientView(nutrient: "Calories", curValue: Int(dailyRecord.calories), goalValue: goal.calorieGoal, color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                                    NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                                }
+                            }
+                            GridRow {
+                                if let goal = selectedGoal {
+                                    NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                    NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                }
                             }
                         }
-                        GridRow {
-                            if let goal = selectedGoal {
-                                NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        .padding(.horizontal, 20)
+                        
+                    } else {
+                        Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
+                            GridRow {
+                                if let goal = dailyRecord.goal {
+                                    NutrientView(nutrient: "Calories", curValue: Int(dailyRecord.calories), goalValue: goal.calorieGoal, color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                                    NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                                }
+                            }
+                            GridRow {
+                                if let goal = selectedGoal {
+                                    NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                    NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                }
                             }
                         }
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.horizontal, 20)
                     
                     List {
                         ForEach(foods, id: \.id) { food in
