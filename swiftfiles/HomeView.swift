@@ -26,10 +26,6 @@ struct HomeView: View {
     @State private var totalFats: Int = 0
     
     @State private var errorMessage: String? = nil
-//    let goalCalories: Int = 2300
-//    let goalProtein: Int = 160
-//    let goalCarbs: Int = 250
-//    let goalFats: Int = 70
 
 
     func updateProgress() {

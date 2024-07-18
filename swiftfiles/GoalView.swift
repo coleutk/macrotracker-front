@@ -172,40 +172,102 @@ struct EditGoalView: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Goal Name", text: $goalName)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $goalName)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
                 
-                TextField("Calories", text: $goalCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $goalCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
                 
-                TextField("Protein", text: $goalProtein)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $goalProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
                 
-                TextField("Carbs", text: $goalCarbs)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $goalCarbs)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
                 
-                TextField("Fats", text: $goalFat)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
+                HStack {
+                    MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $goalFat)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
                 
                 // Save Changes Button
                 Button(action: {
@@ -334,73 +396,102 @@ struct AddGoalSheet: View {
                     .bold()
                     .foregroundColor(.white.opacity(0.70))
                 
-                TextField("Goal Name", text: $goalName)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
-                TextField("Calories", text: $goalCalories)
-                    .padding(14)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.20))
-                    .cornerRadius(15)
-                    .padding(.horizontal, 22)
-                
                 HStack {
-                    TextField("Protein", text: $goalProtein)
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $goalName)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $goalCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $goalProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Carbs", text: $goalCarbs)
+                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                    
+                    TextField("Enter Amount...", text: $goalCarbs)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 HStack {
-                    TextField("Fat", text: $goalFat)
+                    MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    
+                    TextField("Enter Amount...", text: $goalFat)
                         .padding(14)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
-                        .padding(.horizontal, 22)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
                     
                     Text("g")
                         .padding(14)
-                        .frame(width: 90)
+                        .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
                 }
+                .padding(3)
                 
                 Button(action: {
                     guard let goalCalories = Int(goalCalories),

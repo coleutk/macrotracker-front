@@ -56,7 +56,7 @@ struct NutritionLogView: View {
                         List {
                             // Current Daily Record
                             if let dailyRecord = dailyRecord {
-                                NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false)) {
+                                NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords)) {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: dailyRecord.date)
                                         Text("Today: \(formattedDate)")
@@ -161,20 +161,23 @@ struct DayDetailView: View {
     @State var dailyRecord: DailyRecord
     
     @Binding var needsRefresh: Bool
+    @State private var resettingDaily: Bool = false
     var isHistorical: Bool // New parameter
+    var onRefreshHistoricalRecords: (() -> Void)?
     @State private var showConfirmationAlert = false // Add this line
     
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
     @State private var manuals: [DailyManual] = []
     
-    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool) {
+    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil) {
         self._dailyRecord = State(initialValue: dailyRecord)
         self._foods = State(initialValue: dailyRecord.foods)
         self._drinks = State(initialValue: dailyRecord.drinks)
         self._manuals = State(initialValue: dailyRecord.manuals)
         self._needsRefresh = needsRefresh
         self.isHistorical = isHistorical // Initialize new parameter
+        self.onRefreshHistoricalRecords = onRefreshHistoricalRecords
     }
     
     var body: some View {
@@ -298,12 +301,18 @@ struct DayDetailView: View {
                     needsRefresh = false
                 }
             }
+            .onDisappear {
+                if !isHistorical && resettingDaily{
+                    onRefreshHistoricalRecords?()
+                }
+            }
             .alert(isPresented: $showConfirmationAlert) { // Show confirmation alert
                 Alert(
                     title: Text("Complete Day"),
                     message: Text("Are you sure you want to end \(formattedDate)?"),
                     primaryButton: .destructive(Text("Yes")) {
                         resetDaily()
+                        resettingDaily = true
                         presentationMode.wrappedValue.dismiss()
                     },
                     secondaryButton: .cancel()

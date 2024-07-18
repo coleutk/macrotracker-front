@@ -425,7 +425,7 @@ struct EditFoodView: View {
                 .padding(3)
                 
                 HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
                     TextField("Enter Amount...", text: $foodFat)
                         .keyboardType(.numberPad)
@@ -681,7 +681,7 @@ struct EditDrinkView: View {
                 .padding(3)
                 
                 HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
                     TextField("Enter Amount...", text: $drinkFat)
                         .keyboardType(.numberPad)
@@ -908,7 +908,7 @@ struct AddFoodSheet: View {
                 .padding(3)
                 
                 HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
                     TextField("Enter Amount...", text: $foodFats)
                         .padding(14)
@@ -1093,7 +1093,7 @@ struct AddDrinkSheet: View {
                 .padding(3)
                 
                 HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                    MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
                     TextField("Enter Amount...", text: $drinkFats)
                         .padding(14)
