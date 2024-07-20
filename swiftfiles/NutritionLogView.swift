@@ -59,7 +59,7 @@ struct NutritionLogView: View {
                                 NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords)) {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: dailyRecord.date)
-                                        Text("Today: \(formattedDate)")
+                                        Text("\(formattedDate) (Today)")
                                             .font(.headline)
                                             .foregroundColor(.white.opacity(0.80))
                                     }
@@ -313,6 +313,7 @@ struct DayDetailView: View {
                     primaryButton: .destructive(Text("Yes")) {
                         resetDaily()
                         resettingDaily = true
+                        createNewDailyRecord()
                         presentationMode.wrappedValue.dismiss()
                     },
                     secondaryButton: .cancel()
@@ -376,6 +377,19 @@ struct DayDetailView: View {
                 print("Reset Record ID: \(response.resetRecord.id)")
             case .failure(let error):
                 print("Failed to reset daily record: \(error)")
+            }
+        }
+    }
+    
+    private func createNewDailyRecord() {
+        // Example usage:
+        createNextDailyRecord { result in
+            switch result {
+            case .success(let response):
+                print("New daily record created successfully.")
+                print("New Record ID: \(response.id)")
+            case .failure(let error):
+                print("Failed to create new daily record: \(error)")
             }
         }
     }
