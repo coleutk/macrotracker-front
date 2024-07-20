@@ -11,6 +11,8 @@ struct ProfileView: View {
     var username: String
     @State private var selectedGoal: SelectedGoal? = nil
     @State private var errorMessage: String? = nil
+    @State private var showLogoutAlert = false
+    @State private var isLoggedOut = false
 
     var body: some View {
         NavigationStack {
@@ -67,6 +69,17 @@ struct ProfileView: View {
                         }
                         .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         .padding(.vertical, 10)
+                        
+                        // Custom Logout Button with background NavigationLink
+                        Button(action: {
+                            showLogoutAlert = true
+                        }) {
+                            Text("Logout")
+                                .font(.headline)
+                                .foregroundColor(.red.opacity(0.70))
+                        }
+                        .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                        .padding(.vertical, 10)
                     }
                     .listStyle(PlainListStyle())
                     .background(Color(red: 44/255, green: 44/255, blue: 53/255))
@@ -76,6 +89,20 @@ struct ProfileView: View {
             }
             .onAppear {
                 fetchUserSelectedGoal()
+            }
+            .alert(isPresented: $showLogoutAlert) {
+                Alert(
+                    title: Text("Logout"),
+                    message: Text("Are you sure you want to logout?"),
+                    primaryButton: .destructive(Text("Logout")) {
+                        logout()
+                        isLoggedOut = true
+                    },
+                    secondaryButton: .cancel()
+                )
+            }
+            .navigationDestination(isPresented: $isLoggedOut) {
+                WelcomeView()
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
@@ -94,6 +121,12 @@ struct ProfileView: View {
                 }
             }
         }
+    }
+    
+
+    private func logout() {
+        UserDefaults.standard.removeObject(forKey: "token")
+        UserDefaults.standard.synchronize()
     }
 }
 
