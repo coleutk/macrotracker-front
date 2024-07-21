@@ -59,6 +59,10 @@ struct NutritionLogView: View {
                                 NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords)) {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: dailyRecord.date)
+                                        
+                                        if(dailyRecord.locked ?? false) {
+                                            Text("locked")
+                                        }
                                         Text("\(formattedDate) (Today)")
                                             .font(.headline)
                                             .foregroundColor(.white.opacity(0.80))
@@ -341,10 +345,17 @@ struct DayDetailView: View {
                 isLoading = false
                 switch result {
                 case .success(let record):
-                    self.dailyRecord = record
-                    self.foods = record.foods
-                    self.drinks = record.drinks
-                    self.manuals = record.manuals
+                    if let record = record {
+                        self.dailyRecord = record
+                        self.foods = record.foods
+                        self.drinks = record.drinks
+                        self.manuals = record.manuals
+                    } else {
+                        // Handle case where record is nil
+                        self.foods = []
+                        self.drinks = []
+                        self.manuals = []
+                    }
                 case .failure(let error):
                     self.errorMessage = "Failed to fetch daily record: \(error.localizedDescription)"
                 }

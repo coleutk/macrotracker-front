@@ -31,6 +31,7 @@ struct DailyRecord: Codable {
     var foods: [DailyFood]
     var drinks: [DailyDrink]
     var goal: HistoricalGoal? // Add this line
+    var locked: Bool?
 }
 
 struct DailyFood: Identifiable, Codable {
@@ -94,7 +95,7 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
         
         guard let data = data else {
             print("No data received")
-            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+            completion(.success([])) // Treat as no data
             return
         }
         
@@ -190,7 +191,7 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
                 
                 completion(.success(historicalRecords))
             } else {
-                completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to parse JSON"])))
+                completion(.success([]))
             }
         } catch {
             print("Failed to parse JSON: \(error)")
@@ -202,7 +203,7 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
 }
 
 // Get Current Daily Record (USER)
-func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Void) {
+func getCurrentDaily(_ completion: @escaping (Result<DailyRecord?, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
         return
@@ -231,6 +232,11 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
             if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 print("Received JSON: \(json)") // Debug print
                 
+                if let message = json["message"] as? String, message == "No daily record found for today" {
+                    completion(.success(nil)) // No record found
+                    return
+                }
+                
                 // Parse DailyRecord
                 if let id = json["_id"] as? String,
                    let userId = json["user"] as? String,
@@ -241,7 +247,8 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
                    let fat = json["fat"] as? Int,
                    let foodArray = json["foods"] as? [[String: Any]],
                    let drinkArray = json["drinks"] as? [[String: Any]],
-                   let manualArray = json["manuals"] as? [[String: Any]] {
+                   let manualArray = json["manuals"] as? [[String: Any]],
+                    let locked = json["locked"] as? Bool {
                     
                     var foods: [DailyFood] = []
                     var drinks: [DailyDrink] = []
@@ -302,7 +309,7 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord, Error>) -> Voi
                         }
                     }
                     
-                    let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks)
+                    let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks, locked: locked)
                     completion(.success(dailyRecord))
                 } else {
                     print("Failed to parse DailyRecord")
