@@ -643,3 +643,53 @@ func createNextDailyRecord(completion: @escaping (Result<DailyRecord, Error>) ->
     task.resume()
 }
 
+
+
+
+// new
+
+struct InitializeDailyRecordResponse: Codable {
+    let message: String
+    let newRecord: DailyRecord?
+}
+
+func initializeDailyRecordIfEmpty(completion: @escaping (Result<InitializeDailyRecordResponse, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+
+    guard let url = URL(string: "http://localhost:3000/dailyRecords/initializeDailyRecordIfEmpty") else {
+        completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+
+        guard let data = data else {
+            completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+            return
+        }
+
+        do {
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(InitializeDailyRecordResponse.self, from: data)
+            completion(.success(response))
+        } catch {
+            completion(.failure(error))
+        }
+    }
+
+    task.resume()
+}
+
+

@@ -56,7 +56,9 @@ struct NutritionLogView: View {
                         List {
                             // Current Daily Record
                             if let dailyRecord = dailyRecord {
-                                NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords)) {
+                                NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords, onDismiss: {
+                                    self.fetchDailyRecord()
+                                })) {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: dailyRecord.date)
                                         
@@ -99,9 +101,12 @@ struct NutritionLogView: View {
             }
             .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
-                fetchDailyRecord()
-                fetchHistoricalRecords()
+                checkAndInitializeRecords()
             }
+//            .onAppear {
+//                fetchDailyRecord()
+//                fetchHistoricalRecords()
+//            }
         }
     }
     
@@ -122,6 +127,7 @@ struct NutritionLogView: View {
             }
         }
     }
+
     
     // Function to fetch historical records
     func fetchHistoricalRecords() {
@@ -151,6 +157,32 @@ struct NutritionLogView: View {
         
         return "\(monthName) \(day), \(year)"
     }
+    
+    
+    // Function to check and initialize records
+    func checkAndInitializeRecords() {
+        isLoading = true
+        errorMessage = nil
+        
+        initializeDailyRecordIfEmpty { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let response):
+                    if response.message == "Records already exist" {
+                        fetchDailyRecord()
+                        fetchHistoricalRecords()
+                    } else if let newRecord = response.newRecord {
+                        self.dailyRecord = newRecord
+                    }
+                case .failure(let error):
+                    self.errorMessage = "Failed to initialize records: \(error.localizedDescription)"
+                    fetchDailyRecord()
+                    fetchHistoricalRecords()
+                }
+            }
+        }
+    }
 }
 
 
@@ -168,13 +200,14 @@ struct DayDetailView: View {
     @State private var resettingDaily: Bool = false
     var isHistorical: Bool // New parameter
     var onRefreshHistoricalRecords: (() -> Void)?
+    var onDismiss: (() -> Void)? // New parameter for dismissal callback
     @State private var showConfirmationAlert = false // Add this line
     
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
     @State private var manuals: [DailyManual] = []
     
-    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil) {
+    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil, onDismiss: (() -> Void)? = nil) {
         self._dailyRecord = State(initialValue: dailyRecord)
         self._foods = State(initialValue: dailyRecord.foods)
         self._drinks = State(initialValue: dailyRecord.drinks)
@@ -182,6 +215,7 @@ struct DayDetailView: View {
         self._needsRefresh = needsRefresh
         self.isHistorical = isHistorical // Initialize new parameter
         self.onRefreshHistoricalRecords = onRefreshHistoricalRecords
+        self.onDismiss = onDismiss // Initialize the new parameter
     }
     
     var body: some View {
@@ -308,6 +342,7 @@ struct DayDetailView: View {
             .onDisappear {
                 if !isHistorical && resettingDaily{
                     onRefreshHistoricalRecords?()
+                    onDismiss?() // Call the dismissal callback
                 }
             }
             .alert(isPresented: $showConfirmationAlert) { // Show confirmation alert
