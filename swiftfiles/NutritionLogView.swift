@@ -56,23 +56,45 @@ struct NutritionLogView: View {
                         List {
                             // Current Daily Record
                             if let dailyRecord = dailyRecord {
-                                NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords, onDismiss: {
-                                    self.fetchDailyRecord()
-                                })) {
+                                if dailyRecord.locked ?? false {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: dailyRecord.date)
-                                        
-                                        if(dailyRecord.locked ?? false) {
-                                            Text("locked")
-                                        }
-                                        Text("\(formattedDate) (Today)")
+                                        Text("\(formattedDate) (Tomorrow)")
                                             .font(.headline)
                                             .foregroundColor(.white.opacity(0.80))
+                                            .padding(.bottom, -2)
+                                        HStack {
+                                            Text("Locked")
+                                                .font(.subheadline)
+                                                .foregroundColor(.red.opacity(0.80))
+                                                .padding(.trailing, -5)
+                                            
+                                            Image(systemName: "lock")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 13, height: 13)
+                                                .foregroundColor(.red.opacity(0.80))
+                                        }
+                                        .padding(.bottom, -2)
                                     }
                                     .foregroundColor(Color.white.opacity(0.70))
-                                    .padding(.vertical, 5)
+                                    .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                                } else {
+                                    NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords, onDismiss: {
+                                        self.fetchDailyRecord()
+                                    })) {
+                                        VStack(alignment: .leading) {
+                                            let formattedDate = formattedDate(from: dailyRecord.date)
+                                            
+                                            Text("\(formattedDate) (Today)")
+                                                .font(.headline)
+                                                .foregroundColor(.white.opacity(0.80))
+                                        }
+                                        .foregroundColor(Color.white.opacity(0.70))
+                                        .padding(.vertical, 5)
+                                    }
+                                    .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                                 }
-                                .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                             }
                             
                             // Historical Records
