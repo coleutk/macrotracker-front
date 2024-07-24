@@ -135,7 +135,7 @@ func editGoal(_ goal: Goal, completion: @escaping (Result<Goal, Error>) -> Void)
 }
 
 // Delete Goal (USER)
-func deleteGoal(_ goal: Goal, completion: @escaping (Result<Void, Error>) -> Void) {
+func deleteGoal(_ goal: Goal, selectedGoalId: String?, completion: @escaping (Result<Void, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
         return
@@ -153,14 +153,18 @@ func deleteGoal(_ goal: Goal, completion: @escaping (Result<Void, Error>) -> Voi
             return
         }
         
-        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            let error = NSError(domain: "HTTPError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unexpected response"])
-            print("Unexpected response")
-            completion(.failure(error))
-            return
+        if goal.id == selectedGoalId {
+            // Clear the selected goal if the deleted goal is the selected one
+            clearSelectedGoal { success, message in
+                if success {
+                    completion(.success(()))
+                } else {
+                    completion(.failure(NSError(domain: "", code: 500, userInfo: [NSLocalizedDescriptionKey: message ?? "Failed to clear selected goal"])))
+                }
+            }
+        } else {
+            completion(.success(()))
         }
-        
-        completion(.success(()))
     }
     
     task.resume()
@@ -229,6 +233,8 @@ func makeNewSelectedGoal(goalId: String, name: String, calorieGoal: Int, protein
         "carbGoal": carbGoal,
         "fatGoal": fatGoal
     ]
+    
+    
     request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
     
     let task = URLSession.shared.dataTask(with: request) { data, _, error in
@@ -246,4 +252,43 @@ func makeNewSelectedGoal(goalId: String, name: String, calorieGoal: Int, protein
     
     task.resume()
 }
+
+// Function to clear the selected goal for the user
+func clearSelectedGoal(completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
+    guard let url = URL(string: "http://localhost:3000/goals/clearSelectedGoal") else {
+        completion(false, "Invalid URL")
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.httpMethod = "POST"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    
+    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+        guard let data = data, error == nil else {
+            completion(false, error?.localizedDescription)
+            return
+        }
+        
+        do {
+            if let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any],
+               let success = response["success"] as? Bool {
+                completion(success, nil)
+            } else {
+                completion(false, "Unexpected response from server")
+            }
+        } catch {
+            completion(false, error.localizedDescription)
+        }
+    }
+    
+    task.resume()
+}
+
 

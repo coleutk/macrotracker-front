@@ -20,7 +20,7 @@ struct SelectedGoal: Codable {
 }
 
 // Grab Selected Goal from User Details (USER)
-func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal, Error>) -> Void) {
+func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal?, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
         return
@@ -44,26 +44,32 @@ func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal, Error>) -
         
         do {
             if let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any],
-               let user = json["user"] as? [String: Any],
-               let selectedGoal = user["selectedGoal"] as? [String: Any],
-               let id = selectedGoal["_id"] as? String,
-               let name = selectedGoal["name"] as? String,
-               let calorieGoal = selectedGoal["calorieGoal"] as? Int,
-               let proteinGoal = selectedGoal["proteinGoal"] as? Int,
-               let carbGoal = selectedGoal["carbGoal"] as? Int,
-               let fatGoal = selectedGoal["fatGoal"] as? Int {
+               let user = json["user"] as? [String: Any] {
                 
-                let goal = SelectedGoal(
-                    id: id,
-                    name: name,
-                    calorieGoal: calorieGoal,
-                    proteinGoal: proteinGoal,
-                    carbGoal: carbGoal,
-                    fatGoal: fatGoal
-                )
-                
-                print("Selected Goal parsed: \(goal)")
-                completion(.success(goal))
+                if let selectedGoal = user["selectedGoal"] as? [String: Any],
+                   let id = selectedGoal["_id"] as? String,
+                   let name = selectedGoal["name"] as? String,
+                   let calorieGoal = selectedGoal["calorieGoal"] as? Int,
+                   let proteinGoal = selectedGoal["proteinGoal"] as? Int,
+                   let carbGoal = selectedGoal["carbGoal"] as? Int,
+                   let fatGoal = selectedGoal["fatGoal"] as? Int {
+                    
+                    let goal = SelectedGoal(
+                        id: id,
+                        name: name,
+                        calorieGoal: calorieGoal,
+                        proteinGoal: proteinGoal,
+                        carbGoal: carbGoal,
+                        fatGoal: fatGoal
+                    )
+                    
+                    print("Selected Goal parsed: \(goal)")
+                    completion(.success(goal))
+                } else if user["selectedGoal"] is NSNull {
+                    completion(.success(nil))
+                } else {
+                    completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid response from server"])))
+                }
             } else {
                 completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid response from server"])))
             }
@@ -74,6 +80,7 @@ func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal, Error>) -
     
     task.resume()
 }
+
 
 // Sign Up User
 func userSignUp(username: String, email: String, password: String, completion: @escaping (Bool, String?) -> Void) {

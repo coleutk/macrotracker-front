@@ -264,6 +264,10 @@ struct DayDetailView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        if selectedGoal == nil {
+                            Text("[No goal selected]")
+                                .foregroundColor(.red)
+                        }
                         
                     } else {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
@@ -281,6 +285,10 @@ struct DayDetailView: View {
                             }
                         }
                         .padding(.horizontal, 20)
+                        if dailyRecord.goal == nil {
+                            Text("[No goal selected]")
+                                .foregroundColor(.red)
+                        }
                     }
                     
                     List {
@@ -428,8 +436,14 @@ struct DayDetailView: View {
                     self.selectedGoal = goal
                 }
             case .failure(let error):
-                DispatchQueue.main.async {
-                    self.errorMessage = error.localizedDescription
+                if (error as NSError).code == 404 { // Assuming 404 is the error code for no goal found
+                    DispatchQueue.main.async {
+                        self.selectedGoal = nil // No goal found
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = error.localizedDescription
+                    }
                 }
             }
         }

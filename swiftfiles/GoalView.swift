@@ -110,7 +110,7 @@ struct GoalView: View {
                 getUserSelectedGoal { result in
                     switch result {
                     case .success(let selectedGoal):
-                        self.selectedGoalId = selectedGoal.id
+                        self.selectedGoalId = selectedGoal?.id
                     case .failure(let error):
                         print("Failed to load selected goal: \(error.localizedDescription)")
                     }
@@ -309,7 +309,7 @@ struct EditGoalView: View {
                 // Delete Item Button
                 Button(action: {
                     // Handle deletion here
-                    deleteGoal(goal) { result in
+                    deleteGoal(goal, selectedGoalId: selectedGoalId) { result in
                         switch result {
                         case .success:
                             onDelete?() // Call the onDelete callback

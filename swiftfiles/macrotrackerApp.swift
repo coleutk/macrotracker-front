@@ -12,7 +12,6 @@ struct macrotrackerApp: App {
     var body: some Scene {
         WindowGroup {
             WelcomeView()
-                .environmentObject(InventoryViewModel())
         }
     }
 }

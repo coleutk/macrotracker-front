@@ -63,15 +63,23 @@ struct HomeView: View {
                                              RoundedRectangle(cornerRadius: 10)
                                                  .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
                                          )
-                                 } else {
-                                     Text("Loading goal...")
-                                         .font(.title)
-                                         .bold()
-                                         .padding(10)
-                                         .background(
-                                             RoundedRectangle(cornerRadius: 10)
-                                                 .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                         )
+                                 } else if selectedGoal == nil{
+                                     ZStack {
+                                         RoundedRectangle(cornerRadius: 10)
+                                             .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                             .frame(width: 300)
+                                             .frame(height: 100)
+                                         VStack {
+                                             Text("[No goal selected]")
+                                                 .font(.title)
+                                                 .bold()
+                                                 .padding(10)
+                                                 .padding(.bottom, -20)
+                                             Text("Create your goal in Profile!")
+                                                 .font(.title3)
+                                                 .padding(10)
+                                         }
+                                     }
                                  }
                              }
                          }
@@ -271,8 +279,14 @@ struct HomeView: View {
                     self.selectedGoal = goal
                 }
             case .failure(let error):
-                DispatchQueue.main.async {
-                    self.errorMessage = error.localizedDescription
+                if (error as NSError).code == 404 { // Assuming 404 is the error code for no goal found
+                    DispatchQueue.main.async {
+                        self.selectedGoal = nil // No goal found
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = error.localizedDescription
+                    }
                 }
             }
         }

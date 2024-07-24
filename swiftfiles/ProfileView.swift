@@ -39,6 +39,13 @@ struct ProfileView: View {
                                     .foregroundColor(.white.opacity(0.70))
                                     .padding(.bottom, 3)
                                     .padding(.horizontal, 20)
+                            } else if selectedGoal == nil {
+                                Text("[No goal selected]")
+                                    .font(.title2)
+                                    .bold()
+                                    .foregroundColor(.white.opacity(0.80))
+                                    .padding(.bottom, 3)
+                                    .padding(.horizontal, 20)
                             } else if let errorMessage = errorMessage {
                                 Text("Error: \(errorMessage)")
                                     .foregroundColor(.red)
@@ -88,6 +95,7 @@ struct ProfileView: View {
                 }
             }
             .onAppear {
+                print("fetchUserSelectedGoal() called")
                 fetchUserSelectedGoal()
             }
             .alert(isPresented: $showLogoutAlert) {
@@ -116,13 +124,18 @@ struct ProfileView: View {
                     self.selectedGoal = goal
                 }
             case .failure(let error):
-                DispatchQueue.main.async {
-                    self.errorMessage = error.localizedDescription
+                if (error as NSError).code == 404 { // Assuming 404 is the error code for no goal found
+                    DispatchQueue.main.async {
+                        self.selectedGoal = nil // No goal found
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.errorMessage = error.localizedDescription
+                    }
                 }
             }
         }
     }
-    
 
     private func logout() {
         UserDefaults.standard.removeObject(forKey: "token")
