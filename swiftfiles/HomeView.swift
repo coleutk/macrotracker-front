@@ -134,71 +134,123 @@ struct HomeView: View {
                     
                     VStack {
                         HStack {
-                            Button(action: {
-                                isManualWriteSheetPresented.toggle()
-                            }) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                        .frame(width: 50, height: 50)
-                                    
-                                    VStack {
-                                        Image(systemName: "pencil")
+                            if let dailyRecord = dailyRecord {
+                                if dailyRecord.locked ?? false {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                            .frame(width: 50, height: 50)
+                                        
+                                        VStack {
+                                            Image(systemName: "pencil")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 25, height: 25)
+                                        }
+                                        .foregroundColor(.white.opacity(0.10))
+                                        
+                                        Image(systemName: "lock")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
-                                            .frame(width: 25, height: 25)
+                                            .frame(width: 30, height: 30)
+                                            .foregroundColor(Color(red: 143/255, green: 6/255, blue: 21/255).opacity(0.90))
+                                            .bold()
                                     }
-                                    .foregroundColor(.white.opacity(0.70))
+                                    .padding(.horizontal, 10)
+                                } else {
+                                    Button(action: {
+                                        isManualWriteSheetPresented.toggle()
+                                    }) {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                                .frame(width: 50, height: 50)
+                                            
+                                            VStack {
+                                                Image(systemName: "pencil")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 25, height: 25)
+                                            }
+                                            .foregroundColor(.white.opacity(0.70))
+                                        }
+                                    }
+                                    .buttonStyle(MyButtonStyle())
+                                    .padding(.horizontal, 10)
+                                    .sheet(isPresented: $isManualWriteSheetPresented, onDismiss: {
+                                        fetchCurrentDailyRecord()
+                                    }) {
+                                        ManualWriteSheet(
+                                            manualCalories: $manualCalories,
+                                            manualProtein: $manualProtein,
+                                            manualCarbs: $manualCarbs,
+                                            manualFats: $manualFats,
+                                            isSheetPresented: $isManualWriteSheetPresented,
+                                            totalCalories: $totalCalories,
+                                            totalProtein: $totalProtein,
+                                            totalCarbs: $totalCarbs,
+                                            totalFats: $totalFats,
+                                            updateProgress: updateProgress
+                                        )
+                                    }
                                 }
-                            }
-                            .buttonStyle(MyButtonStyle())
-                            .padding(.horizontal, 10)
-                            .sheet(isPresented: $isManualWriteSheetPresented, onDismiss: {
-                                fetchCurrentDailyRecord()
-                            }) {
-                                ManualWriteSheet(
-                                    manualCalories: $manualCalories,
-                                    manualProtein: $manualProtein,
-                                    manualCarbs: $manualCarbs,
-                                    manualFats: $manualFats,
-                                    isSheetPresented: $isManualWriteSheetPresented,
-                                    totalCalories: $totalCalories,
-                                    totalProtein: $totalProtein,
-                                    totalCarbs: $totalCarbs,
-                                    totalFats: $totalFats,
-                                    updateProgress: updateProgress
-                                )
                             }
                             
-                            Button(action: {
-                                isInventorySelectionSheetPresented.toggle()
-                            }) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                        .frame(width: 50, height: 50)
-                                    
-                                    VStack {
-                                        Image(systemName: "plus")
+                            if let dailyRecord = dailyRecord {
+                                if dailyRecord.locked ?? false {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                            .frame(width: 50, height: 50)
+                                        
+                                        VStack {
+                                            Image(systemName: "plus")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 25, height: 25)
+                                        }
+                                        .foregroundColor(.white.opacity(0.10))
+                                        
+                                        Image(systemName: "lock")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
-                                            .frame(width: 25, height: 25)
+                                            .frame(width: 30, height: 30)
+                                            .foregroundColor(Color(red: 143/255, green: 6/255, blue: 21/255).opacity(0.90))
+                                            .bold()
                                     }
-                                    .foregroundColor(.white.opacity(0.70))
+                                    .padding(.horizontal, 10)
+                                } else {
+                                    Button(action: {
+                                        isInventorySelectionSheetPresented.toggle()
+                                    }) {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                                .frame(width: 50, height: 50)
+                                            
+                                            VStack {
+                                                Image(systemName: "plus")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 25, height: 25)
+                                            }
+                                            .foregroundColor(.white.opacity(0.70))
+                                        }
+                                    }
+                                    .buttonStyle(MyButtonStyle())
+                                    .padding(.horizontal, 10)
+                                    .sheet(isPresented: $isInventorySelectionSheetPresented, onDismiss: {
+                                        fetchCurrentDailyRecord()
+                                    }) {
+                                        InventorySelectionSheet(
+                                            totalCalories: $totalCalories,
+                                            totalProtein: $totalProtein,
+                                            totalCarbs: $totalCarbs,
+                                            totalFats: $totalFats,
+                                            updateProgress: updateProgress
+                                        )
+                                    }
                                 }
-                            }
-                            .buttonStyle(MyButtonStyle())
-                            .padding(.horizontal, 10)
-                            .sheet(isPresented: $isInventorySelectionSheetPresented, onDismiss: {
-                                fetchCurrentDailyRecord()
-                            }) {
-                                InventorySelectionSheet(
-                                    totalCalories: $totalCalories,
-                                    totalProtein: $totalProtein,
-                                    totalCarbs: $totalCarbs,
-                                    totalFats: $totalFats,
-                                    updateProgress: updateProgress
-                                )
                             }
                         }
                     }
