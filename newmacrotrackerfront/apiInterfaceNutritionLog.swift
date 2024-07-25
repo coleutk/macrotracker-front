@@ -692,4 +692,48 @@ func initializeDailyRecordIfEmpty(completion: @escaping (Result<InitializeDailyR
     task.resume()
 }
 
+func deleteArchivedRecord(date: String, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+
+    guard let url = URL(string: "http://localhost:3000/archivedRecords/deleteArchivedRecord") else {
+        completion(false, "Invalid URL")
+        return
+    }
+
+    var request = URLRequest(url: url)
+    request.httpMethod = "DELETE"
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    
+    let body: [String: Any] = ["date": date]
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        guard let data = data, error == nil else {
+            completion(false, error?.localizedDescription)
+            return
+        }
+
+        do {
+            if let json = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed) as? [String: Any],
+               let message = json["message"] as? String {
+                if message == "Archived record deleted successfully" {
+                    completion(true, nil)
+                } else {
+                    completion(false, message)
+                }
+            } else {
+                completion(false, "Invalid response from server")
+            }
+        } catch {
+            completion(false, error.localizedDescription)
+        }
+    }
+
+    task.resume()
+}
+
 

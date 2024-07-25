@@ -223,7 +223,13 @@ struct DayDetailView: View {
     var isHistorical: Bool // New parameter
     var onRefreshHistoricalRecords: (() -> Void)?
     var onDismiss: (() -> Void)? // New parameter for dismissal callback
-    @State private var showConfirmationAlert = false // Add this line
+    @State private var showDayConfirmationAlert = false // Add this line
+    @State private var currentAction: ActionType? = nil // Add this line
+    
+    enum ActionType {
+        case completeDay
+        case deleteDay
+    }
     
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
@@ -336,7 +342,8 @@ struct DayDetailView: View {
                         Spacer()
                         
                         Button (action: {
-                            showConfirmationAlert = true
+                            currentAction = .completeDay
+                            showDayConfirmationAlert = true
                         }) {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10) // Rounded rectangle background
@@ -349,6 +356,34 @@ struct DayDetailView: View {
                                         .bold()
                                     
                                     Image(systemName: "checkmark.circle")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 20, height: 20)
+                                }
+                                .foregroundColor(.white.opacity(0.50))
+                            }
+                        }
+                    }
+                } else {
+                    VStack {
+                        Spacer()
+                        
+                        Button (action: {
+                            currentAction = .deleteDay
+                            showDayConfirmationAlert = true
+                        }) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10) // Rounded rectangle background
+                                    .foregroundColor(Color(red: 61/255, green: 2/255, blue: 9/255))
+                                    .frame(width: 162, height: 45)
+                                    .opacity(0.70)
+                                
+                                HStack {
+                                    Text("Delete Day")
+                                        .font(.system(size: 16))
+                                        .bold()
+                                    
+                                    Image(systemName: "trash")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 20, height: 20)
@@ -375,18 +410,32 @@ struct DayDetailView: View {
                     onDismiss?() // Call the dismissal callback
                 }
             }
-            .alert(isPresented: $showConfirmationAlert) { // Show confirmation alert
-                Alert(
-                    title: Text("Complete Day"),
-                    message: Text("Are you sure you want to end \(formattedDate)?"),
-                    primaryButton: .destructive(Text("Yes")) {
-                        resetDaily()
-                        resettingDaily = true
-                        createNewDailyRecord()
-                        presentationMode.wrappedValue.dismiss()
-                    },
-                    secondaryButton: .cancel()
-                )
+            .alert(isPresented: $showDayConfirmationAlert) {
+                switch currentAction {
+                case .completeDay:
+                    return Alert(
+                        title: Text("Complete Day"),
+                        message: Text("Are you sure you want to complete \(formattedDate)?"),
+                        primaryButton: .destructive(Text("Yes")) {
+                            resetDaily()
+                            resettingDaily = true
+                            createNewDailyRecord()
+                            presentationMode.wrappedValue.dismiss()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                case .deleteDay:
+                    return Alert(
+                        title: Text("Delete Day"),
+                        message: Text("Are you sure you want to delete \(formattedDate)?"),
+                        primaryButton: .destructive(Text("Yes")) {
+                            deleteArchived()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                case .none:
+                    return Alert(title: Text("Error"), message: Text("Unknown action"))
+                }
             }
         }
     }
@@ -472,6 +521,21 @@ struct DayDetailView: View {
                 print("New Record ID: \(response.id)")
             case .failure(let error):
                 print("Failed to create new daily record: \(error)")
+            }
+        }
+    }
+    
+    func deleteArchived() {
+        deleteArchivedRecord(date: dailyRecord.date) { success, message in
+            DispatchQueue.main.async {
+                if success {
+                    print("Archived record deleted successfully")
+                    presentationMode.wrappedValue.dismiss()
+                    // Call any additional code if needed
+                } else {
+                    print("Failed to delete archived record: \(message ?? "Unknown error")")
+                    // Handle error
+                }
             }
         }
     }
