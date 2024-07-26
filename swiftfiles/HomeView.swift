@@ -86,8 +86,7 @@ struct HomeView: View {
                          .buttonStyle(MyButtonStyle())
                          .padding(.horizontal, 10)
                     }
-                    
-                    Spacer()
+                    .padding(.bottom, 10)
                     
                     VStack(spacing: 20) {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
@@ -97,10 +96,16 @@ struct HomeView: View {
                                     NutrientView(nutrient: "Protein", curValue: Int(totalProtein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
                                 }
                             }
-                            GridRow {
-                                if let goal = selectedGoal {
-                                    NutrientView(nutrient: "Carbs", curValue: Int(totalCarbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                    NutrientView(nutrient: "Fat", curValue: Int(totalFats), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                            if let goal = selectedGoal {
+                                if goal.carbGoal != 0 || goal.fatGoal != 0 {
+                                    GridRow {
+                                        if goal.carbGoal != 0 {
+                                            NutrientView(nutrient: "Carbs", curValue: Int(totalCarbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                        }
+                                        if goal.fatGoal != 0 {
+                                            NutrientView(nutrient: "Fat", curValue: Int(totalFats), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -126,6 +131,8 @@ struct HomeView: View {
                                     .frame(width: 153.0, height: 153.0)
                                     .padding(15.0)
                                     .animation(.easeInOut(duration: 2.0), value: carbProgress)
+                            } else {
+                                Spacer()
                             }
                             
                             if(goal.fatGoal != 0) {
@@ -260,7 +267,7 @@ struct HomeView: View {
                             }
                         }
                     }
-                    .padding(.bottom, 60)
+                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 100 : 60)
                     
                     HStack {
                         NavigationLink(destination: NutritionLogView()) {
