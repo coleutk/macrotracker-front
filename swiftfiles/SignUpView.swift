@@ -126,6 +126,20 @@ struct SignUpView: View {
         if !username.isEmpty && !email.isEmpty && !password.isEmpty {
             userSignUp(username: username, email: email, password: password) { success, message in
                 if success {
+                    userLogin(email: email, password: password) { success, message in
+                        if success {
+                            DispatchQueue.main.async {
+                                showingHomeScreen = true
+                            }
+                        } else {
+                            DispatchQueue.main.async {
+                                wrongEmail = 1
+                                wrongPassword = 1
+                                errorMessage = message ?? "Invalid email or password"
+                            }
+                        }
+                    }
+                    
                     DispatchQueue.main.async {
                         showingHomeScreen = true
                     }

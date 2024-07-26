@@ -120,15 +120,21 @@ struct HomeView: View {
                             .padding(15.0)
                             .animation(.easeInOut(duration: 2.0), value: proteinProgress)
                         
-                        ProgressBar(progress: self.$carbProgress, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                            .frame(width: 153.0, height: 153.0)
-                            .padding(15.0)
-                            .animation(.easeInOut(duration: 2.0), value: carbProgress)
-                        
-                        ProgressBar(progress: self.$fatProgress, color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                            .frame(width: 67.0, height: 67.0)
-                            .padding(15.0)
-                            .animation(.easeInOut(duration: 2.0), value: fatProgress)
+                        if let goal = selectedGoal {
+                            if(goal.carbGoal != 0) {
+                                ProgressBar(progress: self.$carbProgress, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                    .frame(width: 153.0, height: 153.0)
+                                    .padding(15.0)
+                                    .animation(.easeInOut(duration: 2.0), value: carbProgress)
+                            }
+                            
+                            if(goal.fatGoal != 0) {
+                                ProgressBar(progress: self.$fatProgress, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                    .frame(width: 67.0, height: 67.0)
+                                    .padding(15.0)
+                                    .animation(.easeInOut(duration: 2.0), value: fatProgress)
+                            }
+                        }
                     }
                     .padding(.bottom, 20)
                     

@@ -148,6 +148,9 @@ struct EditGoalView: View {
     @State var goalCarbs: String
     @State var goalFat: String
     
+    @State private var addingCarbs: String = ""
+    @State private var addingFat: String = ""
+    
     // Initialize the text fields with default values
     init(goal: Binding<Goal>, selectedGoalId: String?, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
         _goal = goal
@@ -225,15 +228,25 @@ struct EditGoalView: View {
                 
                 HStack {
                     MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                    
-                    TextField("Enter Amount...", text: $goalCarbs)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
+                    if goalCarbs == "0" {
+                        TextField("Enter Amount...", text: $addingCarbs)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                    } else {
+                        TextField("Enter Amount...", text: $goalCarbs)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                    }
                     
                     Text("g")
                         .padding(14)
@@ -249,14 +262,25 @@ struct EditGoalView: View {
                 HStack {
                     MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
-                    TextField("Enter Amount...", text: $goalFat)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
+                    if goalFat == "0" {
+                        TextField("Enter Amount...", text: $addingFat)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                    } else {
+                        TextField("Enter Amount...", text: $goalFat)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                    }
                     
                     Text("g")
                         .padding(14)
@@ -275,10 +299,21 @@ struct EditGoalView: View {
                     goal.name = goalName
                     goal.calorieGoal = Int(goalCalories) ?? goal.calorieGoal
                     goal.proteinGoal = Int(goalProtein) ?? goal.proteinGoal
-                    goal.carbGoal = Int(goalCarbs) ?? goal.carbGoal
-                    goal.fatGoal = Int(goalFat) ?? goal.fatGoal
                     
-                    // Call the editFood function
+                    // Update carb and fat goals if changed
+                    if goalCarbs.isEmpty || goalCarbs == "0" {
+                        goal.carbGoal = Int(addingCarbs) ?? 0
+                    } else {
+                        goal.carbGoal = Int(goalCarbs) ?? goal.carbGoal
+                    }
+                    
+                    if goalFat.isEmpty || goalFat == "0" {
+                        goal.fatGoal = Int(addingFat) ?? 0
+                    } else {
+                        goal.fatGoal = Int(goalFat) ?? goal.fatGoal
+                    }
+                    
+                    // Call the editGoal function
                     editGoal(goal) { result in
                         switch result {
                         case .success(let updatedGoal):
@@ -286,7 +321,7 @@ struct EditGoalView: View {
                             print("Changes saved: \(updatedGoal)")
                             alertMessage = "Changes saved!"
                             showAlert = true
-                            goal = updatedGoal // Update the food with the returned updatedFood
+                            goal = updatedGoal // Update the goal with the returned updatedGoal
                         case .failure(let error):
                             print("Failed to save changes: \(error)")
                             alertMessage = "Failed to save changes: \(error.localizedDescription)"
@@ -377,6 +412,7 @@ struct EditGoalView: View {
 }
 
 
+
 struct AddGoalSheet: View {
     @Binding var goalName: String
     @Binding var goalCalories: String
@@ -385,6 +421,9 @@ struct AddGoalSheet: View {
     @Binding var goalFat: String
     @Binding var isSheetPresented: Bool
     @Binding var goals: [Goal]
+    
+    @State private var showError: Bool = false
+    @State private var errorMessage: String = ""
     
     var body: some View {
         ZStack {
@@ -494,24 +533,32 @@ struct AddGoalSheet: View {
                 .padding(3)
                 
                 Button(action: {
-                    guard let goalCalories = Int(goalCalories),
-                          let goalProtein = Int(goalProtein),
-                          let goalCarbs = Int(goalCarbs),
-                          let goalFat = Int(goalFat) else {
-                        print("Invalid input")
-                        return
-                    }
                     
-                    addGoal(name: goalName, calorieGoal: goalCalories, proteinGoal: goalProtein, carbGoal: goalCarbs, fatGoal: goalFat) { success, message in
-                        if success {
-                            print("Goal created successfully")
-                        } else {
-                            print("Failed to create goal: \(message ?? "Unknown error")")
+                    if goalName.isEmpty || goalCalories.isEmpty || goalProtein.isEmpty {
+                        showError = true
+                        errorMessage = "Name, Calories, and Protein are required."
+                    } else {
+                        
+                        guard let goalCalories = Int(goalCalories),
+                              let goalProtein = Int(goalProtein) else {
+                            print("Invalid input")
+                            return
                         }
+                        
+                        let goalCarbsOpt = Int(goalCarbs)
+                        let goalFatOpt = Int(goalFat)
+                        
+                        addGoal(name: goalName, calorieGoal: goalCalories, proteinGoal: goalProtein, carbGoal: goalCarbsOpt ?? 0, fatGoal: goalFatOpt ?? 0) { success, message in
+                            if success {
+                                print("Goal created successfully")
+                            } else {
+                                print("Failed to create goal: \(message ?? "Unknown error")")
+                            }
+                        }
+                        
+                        
+                        isSheetPresented = false
                     }
-
-                    
-                    isSheetPresented = false
                 }) {
                     Text("Add Goal")
                         .foregroundColor(.white.opacity(0.70))
@@ -522,8 +569,17 @@ struct AddGoalSheet: View {
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
                 }
+                
+                
+                if showError {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .padding(.top, 10)
+                }
+                
             }
             .foregroundColor(.white.opacity(0.70))
+            
         }
     }
 }
