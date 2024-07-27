@@ -75,6 +75,8 @@ struct DailyManual: Identifiable, Codable {
 }
 
 
+
+
 func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))

@@ -10,7 +10,7 @@ struct UserDetails: Codable {
     var email: String
 }
 
-struct SelectedGoal: Codable {
+struct SelectedGoal: Identifiable, Codable {
     var id: String // Use 'id' instead of '_id' to be consistent
     var name: String
     var calorieGoal: Int

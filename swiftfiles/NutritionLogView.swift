@@ -262,10 +262,16 @@ struct DayDetailView: View {
                                     NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
                                 }
                             }
-                            GridRow {
-                                if let goal = selectedGoal {
-                                    NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                    NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                            if let goal = selectedGoal {
+                                if goal.carbGoal != 0 || goal.fatGoal != 0 {
+                                    GridRow {
+                                        if goal.carbGoal != 0 {
+                                            NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                        }
+                                        if goal.fatGoal != 0 {
+                                            NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -283,10 +289,16 @@ struct DayDetailView: View {
                                     NutrientView(nutrient: "Protein", curValue: Int(dailyRecord.protein), goalValue: goal.proteinGoal, color: Color(red: 46/255, green: 94/255, blue: 170/255))
                                 }
                             }
-                            GridRow {
-                                if let goal = selectedGoal {
-                                    NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                    NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                            if let goal = dailyRecord.goal {
+                                if goal.carbGoal != 0 || goal.fatGoal != 0 {
+                                    GridRow {
+                                        if goal.carbGoal != 0 {
+                                            NutrientView(nutrient: "Carbs", curValue: Int(dailyRecord.carbs), goalValue: goal.carbGoal, color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                                        }
+                                        if goal.fatGoal != 0 {
+                                            NutrientView(nutrient: "Fat", curValue: Int(dailyRecord.fat), goalValue: goal.fatGoal, color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -299,7 +311,7 @@ struct DayDetailView: View {
                     
                     List {
                         ForEach(foods, id: \.id) { food in
-                            NavigationLink(destination: FoodDetailView(food: food, onDelete: {
+                            NavigationLink(destination: FoodDetailView(food: food, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.foods.removeAll { $0.id == food.id }
                                 self.needsRefresh = true
                             }, isHistorical: isHistorical)) {
@@ -310,7 +322,7 @@ struct DayDetailView: View {
                         }
                         
                         ForEach(drinks, id: \.id) { drink in
-                            NavigationLink(destination: DrinkDetailView(drink: drink, onDelete: {
+                            NavigationLink(destination: DrinkDetailView(drink: drink, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.drinks.removeAll { $0.id == drink.id }
                                 self.needsRefresh = true
                             }, isHistorical: isHistorical)) {
@@ -321,7 +333,7 @@ struct DayDetailView: View {
                         }
                         
                         ForEach(manuals, id: \.id) { manual in
-                            NavigationLink(destination: ManualDetailView(manual: manual, onDelete: {
+                            NavigationLink(destination: ManualDetailView(manual: manual, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.manuals.removeAll { $0.id == manual.id }
                                 self.needsRefresh = true
                             }, isHistorical: isHistorical)) {
@@ -440,6 +452,25 @@ struct DayDetailView: View {
         }
     }
     
+    func selectedGoalForRecord(isHistorical: Bool) -> SelectedGoal? {
+        if isHistorical {
+            if let goal = dailyRecord.goal {
+                return SelectedGoal(
+                    id: dailyRecord.id, // Assuming the id is taken from dailyRecord
+                    name: "Historical Goal", // Provide an appropriate name for historical goals
+                    calorieGoal: goal.calorieGoal,
+                    proteinGoal: goal.proteinGoal,
+                    carbGoal: goal.carbGoal,
+                    fatGoal: goal.fatGoal
+                )
+            } else {
+                return nil
+            }
+        } else {
+            return selectedGoal
+        }
+    }
+    
     func formattedDate(from dateString: String) -> String {
         let year = dateString.prefix(4)
         let month = dateString[dateString.index(dateString.startIndex, offsetBy: 5)..<dateString.index(dateString.startIndex, offsetBy: 7)]
@@ -545,6 +576,9 @@ struct DayDetailView: View {
 
 struct FoodDetailView: View {
     var food: DailyFood
+    
+    var selectedGoal: SelectedGoal?
+    
     var onDelete: () -> Void
     @Environment(\.presentationMode) var presentationMode
     @State private var showAlert = false
@@ -655,53 +689,57 @@ struct FoodDetailView: View {
                 }
                 .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                    
-                    Text("\(food.carbs)")
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        Text("\(food.carbs ?? 0)")
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                    
-                    Text("\(food.fat)")
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        Text("\(food.fat ?? 0)")
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
                 if !isHistorical {
                     // Delete Item Button
@@ -755,6 +793,9 @@ struct FoodDetailView: View {
 
 struct DrinkDetailView: View {
     var drink: DailyDrink
+    
+    var selectedGoal: SelectedGoal?
+    
     var onDelete: () -> Void
     @Environment(\.presentationMode) var presentationMode
     @State private var showAlert = false
@@ -864,53 +905,57 @@ struct DrinkDetailView: View {
                 }
                 .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                    
-                    Text("\(drink.carbs)")
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        Text("\(drink.carbs ?? 0)")
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                    
-                    Text("\(drink.fat)")
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        Text("\(drink.fat ?? 0)")
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
                 // Delete Item Button
                 if !isHistorical {
@@ -965,6 +1010,9 @@ struct DrinkDetailView: View {
 
 struct ManualDetailView: View {
     var manual: DailyManual
+    
+    var selectedGoal: SelectedGoal?
+    
     var onDelete: () -> Void
     @Environment(\.presentationMode) var presentationMode
     @State private var showAlert = false
@@ -1011,35 +1059,39 @@ struct ManualDetailView: View {
                 }
                 .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Carbs", color: Color(.white))
-                    
-                    Text("\(manual.carbs)")
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(.white))
+                        
+                        Text("\(manual.carbs)")
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(.white))
-                    
-                    Text("\(manual.fat)")
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(.white))
+                        
+                        Text("\(manual.fat)")
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
                 if !isHistorical {
                     // Delete Item Button

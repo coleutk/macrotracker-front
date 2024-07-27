@@ -203,7 +203,8 @@ struct HomeView: View {
                                             totalProtein: $totalProtein,
                                             totalCarbs: $totalCarbs,
                                             totalFats: $totalFats,
-                                            updateProgress: updateProgress
+                                            updateProgress: updateProgress,
+                                            selectedGoal: selectedGoal
                                         )
                                     }
                                 }
@@ -260,7 +261,8 @@ struct HomeView: View {
                                             totalProtein: $totalProtein,
                                             totalCarbs: $totalCarbs,
                                             totalFats: $totalFats,
-                                            updateProgress: updateProgress
+                                            updateProgress: updateProgress,
+                                            selectedGoal: selectedGoal
                                         )
                                     }
                                 }
@@ -455,6 +457,7 @@ struct ManualWriteSheet: View {
     @State private var showAlert = false
 
     var updateProgress: () -> Void
+    var selectedGoal: SelectedGoal?
 
     var body: some View {
         ZStack {
@@ -504,53 +507,57 @@ struct ManualWriteSheet: View {
                 }
                 .padding(3)
 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                    
-                    TextField("Enter Amount...", text: $manualCarbs)
-                        .keyboardType(.numberPad)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        TextField("Enter Amount...", text: $manualCarbs)
+                            .keyboardType(.numberPad)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
-
-                HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                    
-                    TextField("Enter Amount...", text: $manualFats)
-                        .keyboardType(.numberPad)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        TextField("Enter Amount...", text: $manualFats)
+                            .keyboardType(.numberPad)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
 
                 Button(action: {
                     // Generate a unique ID
@@ -627,9 +634,9 @@ struct InventorySelectionSheet: View {
     @Binding var totalProtein: Int
     @Binding var totalCarbs: Int
     @Binding var totalFats: Int
-
-    var updateProgress: () -> Void
     
+    var updateProgress: () -> Void
+    var selectedGoal: SelectedGoal? // Add this line
     
     class SheetMananger: ObservableObject{
         enum Sheet{
@@ -704,7 +711,8 @@ struct InventorySelectionSheet: View {
                                         totalProtein: $totalProtein,
                                         totalCarbs: $totalCarbs,
                                         totalFats: $totalFats,
-                                        updateProgress: updateProgress
+                                        updateProgress: updateProgress,
+                                        selectedGoal: selectedGoal
                                     )
                                 }
                             case .Drink:
@@ -715,7 +723,8 @@ struct InventorySelectionSheet: View {
                                         totalProtein: $totalProtein,
                                         totalCarbs: $totalCarbs,
                                         totalFats: $totalFats,
-                                        updateProgress: updateProgress
+                                        updateProgress: updateProgress,
+                                        selectedGoal: selectedGoal
                                     )
                                 }
                             }
@@ -781,6 +790,7 @@ struct FoodInputSheet: View {
     @Binding var totalFats: Int
 
     var updateProgress: () -> Void
+    var selectedGoal: SelectedGoal? // Add this line
     
     @State private var selectedUnit: String
     @State private var servingSize: String
@@ -797,14 +807,19 @@ struct FoodInputSheet: View {
     
     @State private var message = ""
     @State private var showAlert = false
+    
+    // For Errors in Adding Items (Mismatched Macros to Goal)
+    @State private var errorMessage = ""
+    @State private var showErrorAlert = false
 
-    init(food: Binding<Food>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void) {
+    init(food: Binding<Food>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void, selectedGoal: SelectedGoal?) {
         _food = food
         _totalCalories = totalCalories
         _totalProtein = totalProtein
         _totalCarbs = totalCarbs
         _totalFats = totalFats
         self.updateProgress = updateProgress
+        self.selectedGoal = selectedGoal
         
         _selectedUnit = State(initialValue: food.wrappedValue.weight.unit.rawValue)
         _servingSize = State(initialValue: String(format: "%.2f", 1.0))
@@ -942,90 +957,108 @@ struct FoodInputSheet: View {
                 }
                 .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                    
-                    TextField("Enter Amount...", text: $foodCarbs)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                        .disabled(true)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        TextField("Enter Amount...", text: $foodCarbs)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                    
-                    TextField("Enter Amount...", text: $foodFat)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                        .disabled(true)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        TextField("Enter Amount...", text: $foodFat)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
                 Button(action: {
-                    guard let flooredWeightValue = Float(foodWeightValue) else { return }
-                    addFoodToDaily(
-                        name: food.name,
-                        servings: Float(servingSize) ?? 0,
-                        weightValue: Int(floor(flooredWeightValue)),
-                        weightUnit: selectedUnit,
-                        calories: Int(foodCalories) ?? 0,
-                        protein: Int(foodProtein) ?? 0,
-                        carbs: Int(foodCarbs) ?? 0,
-                        fats: Int(foodFat) ?? 0
-                    ) { success, error in
-                        DispatchQueue.main.async {
-                            if success {
-                                message = "Food added to daily successfully!"
-                            } else {
-                                message = error ?? "Failed to add food to daily."
-                            }
-                            showAlert = true
+                    if (selectedGoal?.carbGoal != 0 && foodCarbs.isEmpty) || selectedGoal?.fatGoal != 0 && foodFat.isEmpty {
+                        var missingMacros: [String] = []
+                        if selectedGoal?.carbGoal != 0 && foodCarbs.isEmpty {
+                            missingMacros.append("carbs")
                         }
+                        
+                        if selectedGoal?.fatGoal != 0 && foodFat.isEmpty {
+                            missingMacros.append("fat")
+                        }
+                        
+                        errorMessage = "The current food is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        showErrorAlert = true
+                    } else {
+                        guard let flooredWeightValue = Float(foodWeightValue) else { return }
+                        addFoodToDaily(
+                            name: food.name,
+                            servings: Float(servingSize) ?? 0,
+                            weightValue: Int(floor(flooredWeightValue)),
+                            weightUnit: selectedUnit,
+                            calories: Int(foodCalories) ?? 0,
+                            protein: Int(foodProtein) ?? 0,
+                            carbs: Int(foodCarbs) ?? 0,
+                            fats: Int(foodFat) ?? 0
+                        ) { success, error in
+                            DispatchQueue.main.async {
+                                if success {
+                                    message = "Food added to daily successfully!"
+                                } else {
+                                    message = error ?? "Failed to add food to daily."
+                                }
+                                showAlert = true
+                            }
+                        }
+                        
+                        
+                        // Update total values
+                        totalCalories += Int(foodCalories) ?? 0
+                        totalProtein += Int(foodProtein) ?? 0
+                        totalCarbs += Int(foodCarbs) ?? 0
+                        totalFats += Int(foodFat) ?? 0
+                        
+                        // Update progress bars
+                        updateProgress()
+                        
+                        // Close the sheet
+                        presentationMode.wrappedValue.dismiss()
                     }
-
-                    
-                    // Update total values
-                    totalCalories += Int(foodCalories) ?? 0
-                    totalProtein += Int(foodProtein) ?? 0
-                    totalCarbs += Int(foodCarbs) ?? 0
-                    totalFats += Int(foodFat) ?? 0
-
-                    // Update progress bars
-                    updateProgress()
-
-                    // Close the sheet
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Add to user's goal")
                         .foregroundColor(.white.opacity(0.70))
@@ -1035,6 +1068,9 @@ struct FoodInputSheet: View {
                         .cornerRadius(15)
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
+                }
+                .alert(isPresented: $showErrorAlert) {
+                    Alert(title: Text("Missing Values"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
                 }
             }
             .foregroundColor(.white.opacity(0.70))
@@ -1057,6 +1093,7 @@ struct DrinkInputSheet: View {
     @Binding var totalFats: Int
 
     var updateProgress: () -> Void
+    var selectedGoal: SelectedGoal? // Add this line
     
     @State private var selectedUnit: String
     @State private var servingSize: String
@@ -1075,13 +1112,18 @@ struct DrinkInputSheet: View {
     @State private var message = ""
     @State private var showAlert = false
 
-    init(drink: Binding<Drink>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void) {
+    // For Errors in Adding Items (Mismatched Macros to Goal)
+    @State private var errorMessage = ""
+    @State private var showErrorAlert = false
+    
+    init(drink: Binding<Drink>, totalCalories: Binding<Int>, totalProtein: Binding<Int>, totalCarbs: Binding<Int>, totalFats: Binding<Int>, updateProgress: @escaping () -> Void, selectedGoal: SelectedGoal?) {
         _drink = drink
         _totalCalories = totalCalories
         _totalProtein = totalProtein
         _totalCarbs = totalCarbs
         _totalFats = totalFats
         self.updateProgress = updateProgress
+        self.selectedGoal = selectedGoal
         
         _selectedUnit = State(initialValue: drink.wrappedValue.volume.unit.rawValue)
         _servingSize = State(initialValue: String(format: "%.2f", 1.0))
@@ -1220,90 +1262,107 @@ struct DrinkInputSheet: View {
                 }
                 .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                    
-                    TextField("Enter Amount...", text: $drinkCarbs)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                        .disabled(true)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        TextField("Enter Amount...", text: $drinkCarbs)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
-                HStack {
-                    MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                    
-                    TextField("Enter Amount...", text: $drinkFat)
-                        .padding(14)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .opacity(0.70)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.trailing, 22)
-                        .padding(.leading, -10)
-                        .disabled(true)
-                    
-                    Text("g")
-                        .padding(14)
-                        .frame(width: 80, height: 60)
-                        .background(Color.black.opacity(0.20))
-                        .cornerRadius(15)
-                        .padding(.leading, -20)
-                        .padding(.trailing, 22)
-                        .foregroundColor(.white.opacity(0.50))
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        TextField("Enter Amount...", text: $drinkFat)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
                 }
-                .padding(3)
                 
                 Button(action: {
-                    guard let flooredVolumeValue = Float(drinkVolumeValue) else { return }
-                    addDrinkToDaily(
-                        _id: drink.id,
-                        name: drink.name,
-                        servings: Float(servingSize) ?? 0,
-                        volumeValue: Int(floor(flooredVolumeValue)),
-                        volumeUnit: selectedUnit,
-                        calories: Int(drinkCalories) ?? 0,
-                        protein: Int(drinkProtein) ?? 0,
-                        carbs: Int(drinkCarbs) ?? 0,
-                        fats: Int(drinkFat) ?? 0
-                    ) { success, error in
-                        DispatchQueue.main.async {
-                            if success {
-                                message = "Drink added to daily successfully!"
-                            } else {
-                                message = error ?? "Failed to add drink to daily."
-                            }
-                            showAlert = true
+                    if (selectedGoal?.carbGoal != 0 && drinkCarbs.isEmpty) || (selectedGoal?.fatGoal != 0 && drinkFat.isEmpty) {
+                        var missingMacros: [String] = []
+                        if selectedGoal?.carbGoal != 0 && drinkCarbs.isEmpty {
+                            missingMacros.append("carbs")
                         }
+                        if selectedGoal?.fatGoal != 0 && drinkFat.isEmpty {
+                            missingMacros.append("fats")
+                        }
+                        errorMessage = "The current drink is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        showErrorAlert = true
+                    } else {
+                        
+                        guard let flooredVolumeValue = Float(drinkVolumeValue) else { return }
+                        addDrinkToDaily(
+                            _id: drink.id,
+                            name: drink.name,
+                            servings: Float(servingSize) ?? 0,
+                            volumeValue: Int(floor(flooredVolumeValue)),
+                            volumeUnit: selectedUnit,
+                            calories: Int(drinkCalories) ?? 0,
+                            protein: Int(drinkProtein) ?? 0,
+                            carbs: Int(drinkCarbs) ?? 0,
+                            fats: Int(drinkFat) ?? 0
+                        ) { success, error in
+                            DispatchQueue.main.async {
+                                if success {
+                                    message = "Drink added to daily successfully!"
+                                } else {
+                                    message = error ?? "Failed to add drink to daily."
+                                }
+                                showAlert = true
+                            }
+                        }
+                        
+                        // Update total values
+                        totalCalories += Int(drinkCalories) ?? 0
+                        totalProtein += Int(drinkProtein) ?? 0
+                        totalCarbs += Int(drinkCarbs) ?? 0
+                        totalFats += Int(drinkFat) ?? 0
+                        
+                        // Update progress bars
+                        updateProgress()
+                        
+                        // Close the sheet
+                        presentationMode.wrappedValue.dismiss()
                     }
-                    
-                    // Update total values
-                    totalCalories += Int(drinkCalories) ?? 0
-                    totalProtein += Int(drinkProtein) ?? 0
-                    totalCarbs += Int(drinkCarbs) ?? 0
-                    totalFats += Int(drinkFat) ?? 0
-
-                    // Update progress bars
-                    updateProgress()
-
-                    // Close the sheet
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Add to user's goal")
                         .foregroundColor(.white.opacity(0.70))
@@ -1313,6 +1372,9 @@ struct DrinkInputSheet: View {
                         .cornerRadius(15)
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
+                }
+                .alert(isPresented: $showErrorAlert) {
+                    Alert(title: Text("Missing Values"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
                 }
             }
             .foregroundColor(.white.opacity(0.70))
