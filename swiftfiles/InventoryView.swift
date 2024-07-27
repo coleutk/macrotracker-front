@@ -288,8 +288,8 @@ struct EditFoodView: View {
     @State private var foodWeightValue: String
     @State private var foodCalories: String
     @State private var foodProtein: String
-    @State private var foodCarbs: String
-    @State private var foodFat: String
+    @State private var foodCarbs: String?
+    @State private var foodFat: String?
 
     init(food: Binding<Food>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
         _food = food
@@ -301,8 +301,8 @@ struct EditFoodView: View {
         _foodWeightValue = State(initialValue: String(food.wrappedValue.weight.value))
         _foodCalories = State(initialValue: String(food.wrappedValue.calories))
         _foodProtein = State(initialValue: String(food.wrappedValue.protein))
-        _foodCarbs = State(initialValue: String(food.wrappedValue.carbs))
-        _foodFat = State(initialValue: String(food.wrappedValue.fat))
+        _foodCarbs = State(initialValue: food.wrappedValue.carbs.map { String($0) })
+        _foodFat = State(initialValue: food.wrappedValue.fat.map { String($0) })
     }
     
     var body: some View {
@@ -403,7 +403,11 @@ struct EditFoodView: View {
                 HStack {
                     MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
                     
-                    TextField("Enter Amount...", text: $foodCarbs)
+                    TextField("Enter Amount...", text: Binding(get: {
+                        foodCarbs ?? ""
+                    }, set: {
+                        foodCarbs = $0.isEmpty ? nil : $0
+                    }))
                         .keyboardType(.numberPad)
                         .padding(14)
                         .frame(height: 60)
@@ -427,7 +431,11 @@ struct EditFoodView: View {
                 HStack {
                     MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
-                    TextField("Enter Amount...", text: $foodFat)
+                    TextField("Enter Amount...", text: Binding(get: {
+                        foodFat ?? ""
+                    }, set: {
+                        foodFat = $0.isEmpty ? nil : $0
+                    }))
                         .keyboardType(.numberPad)
                         .padding(14)
                         .frame(height: 60)
@@ -454,8 +462,8 @@ struct EditFoodView: View {
                     food.weight.value = Int(foodWeightValue) ?? food.weight.value
                     food.calories = Int(foodCalories) ?? food.calories
                     food.protein = Int(foodProtein) ?? food.protein
-                    food.carbs = Int(foodCarbs) ?? food.carbs
-                    food.fat = Int(foodFat) ?? food.fat
+                    food.carbs = foodCarbs.flatMap { Int($0) }
+                    food.fat = foodFat.flatMap { Int($0) }
                     
                     // Call the editFood function
                     editFood(food) { result in
@@ -525,6 +533,7 @@ struct EditFoodView: View {
 }
 
 
+
 struct EditDrinkView: View {
     @Environment(\.presentationMode) var presentationMode
 
@@ -543,8 +552,8 @@ struct EditDrinkView: View {
     @State private var drinkVolumeValue: String
     @State private var drinkCalories: String
     @State private var drinkProtein: String
-    @State private var drinkCarbs: String
-    @State private var drinkFat: String
+    @State private var drinkCarbs: String?
+    @State private var drinkFat: String?
 
     init(drink: Binding<Drink>, onSave: (() -> Void)?, onDelete: (() -> Void)?) {
         _drink = drink
@@ -557,8 +566,8 @@ struct EditDrinkView: View {
         _drinkVolumeValue = State(initialValue: String(drink.wrappedValue.volume.value))
         _drinkCalories = State(initialValue: String(drink.wrappedValue.calories))
         _drinkProtein = State(initialValue: String(drink.wrappedValue.protein))
-        _drinkCarbs = State(initialValue: String(drink.wrappedValue.carbs))
-        _drinkFat = State(initialValue: String(drink.wrappedValue.fat))
+        _drinkCarbs = State(initialValue: drink.wrappedValue.carbs.map { String($0) })
+        _drinkFat = State(initialValue: drink.wrappedValue.fat.map { String($0) })
     }
     
     var body: some View {
@@ -659,7 +668,11 @@ struct EditDrinkView: View {
                 HStack {
                     MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
                     
-                    TextField("Enter Amount...", text: $drinkCarbs)
+                    TextField("Enter Amount...", text: Binding(get: {
+                        drinkCarbs ?? ""
+                    }, set: {
+                        drinkCarbs = $0.isEmpty ? nil : $0
+                    }))
                         .keyboardType(.numberPad)
                         .padding(14)
                         .frame(height: 60)
@@ -683,7 +696,11 @@ struct EditDrinkView: View {
                 HStack {
                     MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                     
-                    TextField("Enter Amount...", text: $drinkFat)
+                    TextField("Enter Amount...", text: Binding(get: {
+                        drinkFat ?? ""
+                    }, set: {
+                        drinkFat = $0.isEmpty ? nil : $0
+                    }))
                         .keyboardType(.numberPad)
                         .padding(14)
                         .frame(height: 60)
@@ -710,8 +727,8 @@ struct EditDrinkView: View {
                     drink.volume.value = Int(drinkVolumeValue) ?? drink.volume.value
                     drink.calories = Int(drinkCalories) ?? drink.calories
                     drink.protein = Int(drinkProtein) ?? drink.protein
-                    drink.carbs = Int(drinkCarbs) ?? drink.carbs
-                    drink.fat = Int(drinkFat) ?? drink.fat
+                    drink.carbs = drinkCarbs.flatMap { Int($0) }
+                    drink.fat = drinkFat.flatMap { Int($0) }
                     
                     // Call the editDrink function
                     editDrink(drink) { result in
@@ -933,18 +950,19 @@ struct AddFoodSheet: View {
                 Button(action: {
                     guard let foodWeightValue = Int(foodWeightValue),
                           let foodCalories = Int(foodCalories),
-                          let foodProtein = Int(foodProtein),
-                          let foodCarbs = Int(foodCarbs),
-                          let foodFats = Int(foodFats) else {
+                          let foodProtein = Int(foodProtein) else {
                         print("Invalid input")
                         return
                     }
+                    
+                    let foodCarbs = foodCarbs.isEmpty ? nil : Int(foodCarbs)
+                    let foodFats = foodFats.isEmpty ? nil : Int(foodFats)
                     
                     addFood(name: foodName, weightValue: foodWeightValue, weightUnit: selectedUnit, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats) { success, message in
                         if success {
                             print("Food created successfully")
                         } else {
-                            print("Failed to create goal: \(message ?? "Unknown error")")
+                            print("Failed to create food: \(message ?? "Unknown error")")
                         }
                     }
                     
@@ -964,6 +982,7 @@ struct AddFoodSheet: View {
         }
     }
 }
+
 
 
 
@@ -1118,12 +1137,13 @@ struct AddDrinkSheet: View {
                 Button(action: {
                     guard let drinkVolumeValue = Int(drinkVolumeValue),
                           let drinkCalories = Int(drinkCalories),
-                          let drinkProtein = Int(drinkProtein),
-                          let drinkCarbs = Int(drinkCarbs),
-                          let drinkFats = Int(drinkFats) else {
+                          let drinkProtein = Int(drinkProtein) else {
                         print("Invalid input")
                         return
                     }
+                    
+                    let drinkCarbs = drinkCarbs.isEmpty ? nil : Int(drinkCarbs)
+                    let drinkFats = drinkFats.isEmpty ? nil : Int(drinkFats)
                     
                     addDrink(name: drinkName, volumeValue: drinkVolumeValue, volumeUnit: selectedUnit, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats) { success, message in
                         if success {

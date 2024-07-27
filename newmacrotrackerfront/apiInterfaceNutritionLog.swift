@@ -41,8 +41,8 @@ struct DailyFood: Identifiable, Codable {
     var weight: DailyWeight
     var calories: Int
     var protein: Int
-    var carbs: Int
-    var fat: Int
+    var carbs: Int?
+    var fat: Int?
 }
 
 struct DailyWeight: Codable {
@@ -57,8 +57,8 @@ struct DailyDrink: Identifiable, Codable {
     var volume: DailyVolume
     var calories: Int
     var protein: Int
-    var carbs: Int
-    var fat: Int
+    var carbs: Int?
+    var fat: Int?
 }
 
 struct DailyVolume: Codable {

@@ -13,8 +13,8 @@ struct Food: Identifiable, Codable {
     var weight: Weight
     var calories: Int
     var protein: Int
-    var carbs: Int
-    var fat: Int
+    var carbs: Int?
+    var fat: Int?
 }
 
 struct Weight: Codable {
@@ -64,10 +64,10 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
                        let unit = weightDict["unit"] as? String,
                        let weightUnit = WeightUnit(rawValue: unit),
                        let calories = currFood["calories"] as? Int,
-                       let protein = currFood["protein"] as? Int,
-                       let carbs = currFood["carbs"] as? Int,
-                       let fat = currFood["fat"] as? Int
-                    {
+                       let protein = currFood["protein"] as? Int {
+                        
+                        let carbs = currFood["carbs"] as? Int
+                        let fat = currFood["fat"] as? Int
                         
                         let weight = Weight(value: value, unit: weightUnit)
                         foods.append(Food(
@@ -111,14 +111,24 @@ func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void)
     request.httpMethod = "PATCH"
     
     // Create the array of objects as expected by the backend
-    let updateOps: [[String: Any]] = [
+    var updateOps: [[String: Any]] = [
         ["propName": "name", "value": food.name],
         ["propName": "weight", "value": ["value": food.weight.value, "unit": food.weight.unit.rawValue]],
         ["propName": "calories", "value": food.calories],
-        ["propName": "protein", "value": food.protein],
-        ["propName": "carbs", "value": food.carbs],
-        ["propName": "fat", "value": food.fat]
+        ["propName": "protein", "value": food.protein]
     ]
+    
+    if let carbs = food.carbs {
+        updateOps.append(["propName": "carbs", "value": carbs])
+    } else {
+        updateOps.append(["propName": "carbs", "value": NSNull()])
+    }
+    
+    if let fat = food.fat {
+        updateOps.append(["propName": "fat", "value": fat])
+    } else {
+        updateOps.append(["propName": "fat", "value": NSNull()])
+    }
     
     do {
         let jsonData = try JSONSerialization.data(withJSONObject: updateOps, options: [])
@@ -190,7 +200,7 @@ func deleteFood(_ food: Food, completion: @escaping (Result<Void, Error>) -> Voi
 }
 
 // Add Food
-func addFood(name: String, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+func addFood(name: String, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int?, fats: Int?, completion: @escaping (Bool, String?) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(false, "User not authenticated")
         return
@@ -204,17 +214,29 @@ func addFood(name: String, weightValue: Int, weightUnit: String, calories: Int, 
     request.httpMethod = "POST"
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-    let body: [String: Any] = [
+    
+    var body: [String: Any] = [
         "name": name,
         "weight": [
             "value": weightValue,
             "unit": weightUnit
         ],
         "calories": calories,
-        "protein": protein,
-        "carbs": carbs,
-        "fat": fats
+        "protein": protein
     ]
+    
+    if let carbs = carbs {
+        body["carbs"] = carbs
+    } else {
+        body["carbs"] = NSNull()
+    }
+    
+    if let fats = fats {
+        body["fat"] = fats
+    } else {
+        body["fat"] = NSNull()
+    }
+    
     request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
     
     let task = URLSession.shared.dataTask(with: request) { data, _, error in

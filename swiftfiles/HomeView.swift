@@ -813,8 +813,8 @@ struct FoodInputSheet: View {
         _foodWeightValue = State(initialValue: String(food.wrappedValue.weight.value))
         _foodCalories = State(initialValue: String(food.wrappedValue.calories))
         _foodProtein = State(initialValue: String(food.wrappedValue.protein))
-        _foodCarbs = State(initialValue: String(food.wrappedValue.carbs))
-        _foodFat = State(initialValue: String(food.wrappedValue.fat))
+        _foodCarbs = State(initialValue: food.wrappedValue.carbs != nil ? String(food.wrappedValue.carbs!) : "")
+        _foodFat = State(initialValue: food.wrappedValue.fat != nil ? String(food.wrappedValue.fat!) : "")
     }
     
     func recalculateMacronutrients() {
@@ -823,8 +823,8 @@ struct FoodInputSheet: View {
         let weightFactor = foodWeightValue / Float(food.weight.value)
         foodCalories = String(Int(Float(food.calories) * weightFactor))
         foodProtein = String(Int(Float(food.protein) * weightFactor))
-        foodCarbs = String(Int(Float(food.carbs) * weightFactor))
-        foodFat = String(Int(Float(food.fat) * weightFactor))
+        foodCarbs = String(Int(Float(food.carbs ?? 0) * weightFactor))
+        foodFat = String(Int(Float(food.fat ?? 0) * weightFactor))
     }
     
     var body: some View {
@@ -1091,8 +1091,8 @@ struct DrinkInputSheet: View {
         _drinkVolumeValue = State(initialValue: String(drink.wrappedValue.volume.value))
         _drinkCalories = State(initialValue: String(drink.wrappedValue.calories))
         _drinkProtein = State(initialValue: String(drink.wrappedValue.protein))
-        _drinkCarbs = State(initialValue: String(drink.wrappedValue.carbs))
-        _drinkFat = State(initialValue: String(drink.wrappedValue.fat))
+        _drinkCarbs = State(initialValue: drink.wrappedValue.carbs != nil ? String(drink.wrappedValue.carbs!) : "")
+        _drinkFat = State(initialValue: drink.wrappedValue.fat != nil ? String(drink.wrappedValue.fat!) : "")
     }
     
     func recalculateMacronutrients() {
@@ -1101,8 +1101,8 @@ struct DrinkInputSheet: View {
         let volumeFactor = drinkVolumeValue / Float(drink.volume.value)
         drinkCalories = String(Int(Float(drink.calories) * volumeFactor))
         drinkProtein = String(Int(Float(drink.protein) * volumeFactor))
-        drinkCarbs = String(Int(Float(drink.carbs) * volumeFactor))
-        drinkFat = String(Int(Float(drink.fat) * volumeFactor))
+        drinkCarbs = String(Int(Float(drink.carbs ?? 0) * volumeFactor))
+        drinkFat = String(Int(Float(drink.fat ?? 0) * volumeFactor))
     }
     
     var body: some View {
