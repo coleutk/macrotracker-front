@@ -99,18 +99,28 @@ func userSignUp(username: String, email: String, password: String, completion: @
     ]
     request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
     
-    let task = URLSession.shared.dataTask(with: request) { data, _, error in
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
         guard let data = data, error == nil else {
             completion(false, "Network error")
             return
         }
         
         do {
-            if let response = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
-                if let message = response["message"] as? String, message == "User created" {
-                    completion(true, nil)
-                } else if let message = response["message"] as? String {
-                    completion(false, message)
+            // Parse JSON response
+            if let responseDict = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: Any] {
+                
+                // Check for "message" key in the response
+                if let message = responseDict["message"] as? String {
+                    // Handle specific messages
+                    if message == "User created" {
+                        completion(true, message)
+                    } else {
+                        completion(false, message) // Display backend message on error
+                    }
+                } else if let errors = responseDict["errors"] as? [[String: Any]] {
+                    // Handle validation errors (if any)
+                    let errorMessage = errors.compactMap { $0["msg"] as? String }.joined(separator: "\n")
+                    completion(false, errorMessage)
                 } else {
                     completion(false, "Unknown error")
                 }
@@ -124,6 +134,7 @@ func userSignUp(username: String, email: String, password: String, completion: @
     
     task.resume()
 }
+
 
 
 // Log in User

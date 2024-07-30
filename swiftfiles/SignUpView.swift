@@ -110,6 +110,8 @@ struct SignUpView: View {
                         Text(errorMessage)
                             .foregroundColor(.red)
                             .padding(.top, 10)
+                            .frame(width: 300, alignment: .leading)
+                            .fixedSize(horizontal: false, vertical: true) // Allow text to wrap
                     }
                 }
                 .padding(.bottom, 100)
