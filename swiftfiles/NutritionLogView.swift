@@ -438,9 +438,8 @@ struct DayDetailView: View {
                         title: Text("Complete Day"),
                         message: Text("Are you sure you want to complete \(formattedDate)?"),
                         primaryButton: .destructive(Text("Yes")) {
-                            resetDaily()
                             resettingDaily = true
-                            createNewDailyRecord()
+                            completeDailyRecord()
                             presentationMode.wrappedValue.dismiss()
                         },
                         secondaryButton: .cancel()
@@ -538,29 +537,18 @@ struct DayDetailView: View {
         }
     }
     
-    private func resetDaily() {
-        // Example usage:
-        resetDailyRecord { result in
-            switch result {
-            case .success(let response):
-                print("Daily record reset successfully.")
-                print("Message: \(response.message)")
-                print("Reset Record ID: \(response.resetRecord.id)")
-            case .failure(let error):
-                print("Failed to reset daily record: \(error)")
-            }
-        }
-    }
-    
-    private func createNewDailyRecord() {
-        // Example usage:
-        createNextDailyRecord { result in
-            switch result {
-            case .success(let response):
-                print("New daily record created successfully.")
-                print("New Record ID: \(response.id)")
-            case .failure(let error):
-                print("Failed to create new daily record: \(error)")
+    private func completeDailyRecord() {
+        completeDay { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    print("Message: \(response.message)")
+                    print("New Record: \(response.newRecord)")
+                    // Handle the success, maybe update the UI or state
+                case .failure(let error):
+                    print("Failed to complete day: \(error.localizedDescription)")
+                    // Handle the error, show an alert or log it
+                }
             }
         }
     }
