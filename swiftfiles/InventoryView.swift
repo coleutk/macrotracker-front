@@ -9,6 +9,9 @@ struct InventoryView: View {
     @State private var foods: [Food] = []    
     @State private var drinks: [Drink] = []
     
+    // Search Bar State
+    @State private var searchText: String = ""
+    
     @EnvironmentObject var inventoryViewModel: InventoryViewModel
     @State private var selectedItem: Item = .Food
     
@@ -48,10 +51,22 @@ struct InventoryView: View {
                     .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                     .cornerRadius(10)
                     .padding()
+                    .padding(.bottom, -10)
+                    
+                    // Search Bar
+                    HStack {
+                        TextField("Search", text: $searchText)
+                            .padding(10)
+                            .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                    }
+                    .padding(.bottom, 5)
                     
                     List {
                         if selectedItem == .Food {
-                            ForEach(foods, id: \.id) { food in
+                            ForEach(filteredFoods(), id: \.id) { food in
                                 NavigationLink(destination: EditFoodView(
                                     food: bindingFood(for: food),
                                     onSave: {
@@ -68,7 +83,7 @@ struct InventoryView: View {
                             }
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         } else {
-                            ForEach(drinks, id: \.id) { drink in
+                            ForEach(filteredDrinks(), id: \.id) { drink in
                                 NavigationLink(destination: EditDrinkView(
                                     drink: bindingDrink(for: drink),
                                     onSave: {
@@ -211,7 +226,7 @@ struct InventoryView: View {
             switch result {
             case .success(let foods):
                 print("Foods loaded: \(foods)") // Debug print
-                self.foods = foods
+                self.foods = foods.sorted(by: { $0.id > $1.id })
             case .failure(let error):
                 print("Failed to load foods: \(error.localizedDescription)")
             }
@@ -224,7 +239,7 @@ struct InventoryView: View {
             switch result {
             case .success(let drinks):
                 print("Drinks loaded: \(drinks)") // Debug print
-                self.drinks = drinks
+                self.drinks = drinks.sorted(by: { $0.id > $1.id })
             case .failure(let error):
                 print("Failed to load drinks: \(error.localizedDescription)")
             }
@@ -243,6 +258,23 @@ struct InventoryView: View {
             fatalError("Drink not found")
         }
         return $drinks[index]
+    }
+    
+    // Filtering functions
+    private func filteredFoods() -> [Food] {
+        if searchText.isEmpty {
+            return foods
+        } else {
+            return foods.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+    
+    private func filteredDrinks() -> [Drink] {
+        if searchText.isEmpty {
+            return drinks
+        } else {
+            return drinks.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+        }
     }
 }
 

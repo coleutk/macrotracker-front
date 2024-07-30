@@ -8,7 +8,7 @@ struct NutritionLogView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var needsRefresh = false
-    
+    @State private var searchText: String = "" // State to track the search query
     
     init(historicalRecords: [DailyRecord] = []) {
         self._historicalRecords = State(initialValue: historicalRecords)
@@ -21,29 +21,22 @@ struct NutritionLogView: View {
                     .ignoresSafeArea()
                 
                 VStack {
+                    // Search Bar
+                    HStack {
+                        TextField("Search", text: $searchText)
+                            .padding(10)
+                            .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                    }
+                    .padding(.top)
+
                     // Month and Year Picker
                     HStack {
-//                        Picker("Month", selection: $selectedMonth) {
-//                            ForEach(1...12, id: \.self) { month in
-//                                Text(DateFormatter().monthSymbols[month - 1])
-//                                    .tag(month)
-//                            }
-//                        }
-//                        .pickerStyle(MenuPickerStyle())
-//                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
-//                        .cornerRadius(10)
-//                        
-//                        Picker("Year", selection: $selectedYear) {
-//                            ForEach(2020...Calendar.current.component(.year, from: Date()), id: \.self) { year in
-//                                Text(String(year)).tag(year)
-//                            }
-//                        }
-//                        .pickerStyle(MenuPickerStyle())
-//                        .background(Color(red: 20/255, green: 20/255, blue: 30/255))
-//                        .cornerRadius(10)
+                        // Your month and year picker code here
                     }
-                    .padding()
-
+                    .padding(.bottom, 5)
                     
                     // List of Entries
                     if isLoading {
@@ -54,8 +47,8 @@ struct NutritionLogView: View {
                             .foregroundColor(.red)
                     } else {
                         List {
-                            // Current Daily Record
-                            if let dailyRecord = dailyRecord {
+                            // Filtered current daily record
+                            if let dailyRecord = dailyRecord, dailyRecordMatchesSearch(dailyRecord) {
                                 if dailyRecord.locked ?? false {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: dailyRecord.date)
@@ -97,8 +90,8 @@ struct NutritionLogView: View {
                                 }
                             }
                             
-                            // Historical Records
-                            ForEach(historicalRecords, id: \.id) { record in
+                            // Filtered historical records
+                            ForEach(filteredHistoricalRecords(), id: \.id) { record in
                                 NavigationLink(destination: DayDetailView(dailyRecord: record, needsRefresh: $needsRefresh, isHistorical: true)) {
                                     VStack(alignment: .leading) {
                                         let formattedDate = formattedDate(from: record.date)
@@ -125,10 +118,6 @@ struct NutritionLogView: View {
             .onAppear {
                 checkAndInitializeRecords()
             }
-//            .onAppear {
-//                fetchDailyRecord()
-//                fetchHistoricalRecords()
-//            }
         }
     }
     
@@ -150,7 +139,6 @@ struct NutritionLogView: View {
         }
     }
 
-    
     // Function to fetch historical records
     func fetchHistoricalRecords() {
         isLoading = true
@@ -161,7 +149,8 @@ struct NutritionLogView: View {
                 isLoading = false
                 switch result {
                 case .success(let records):
-                    self.historicalRecords = records
+                    // Sort the records by date in descending order
+                    self.historicalRecords = records.sorted(by: { $0.date > $1.date })
                 case .failure(let error):
                     self.errorMessage = "Failed to fetch historical records: \(error.localizedDescription)"
                 }
@@ -179,7 +168,6 @@ struct NutritionLogView: View {
         
         return "\(monthName) \(day), \(year)"
     }
-    
     
     // Function to check and initialize records
     func checkAndInitializeRecords() {
@@ -205,7 +193,28 @@ struct NutritionLogView: View {
             }
         }
     }
+    
+    // Function to filter historical records based on the search query
+    func filteredHistoricalRecords() -> [DailyRecord] {
+        if searchText.isEmpty {
+            return historicalRecords
+        } else {
+            return historicalRecords.filter { record in
+                formattedDate(from: record.date).lowercased().contains(searchText.lowercased())
+            }
+        }
+    }
+    
+    // Function to check if daily record matches search query
+    func dailyRecordMatchesSearch(_ record: DailyRecord) -> Bool {
+        if searchText.isEmpty {
+            return true
+        } else {
+            return formattedDate(from: record.date).lowercased().contains(searchText.lowercased())
+        }
+    }
 }
+
 
 
 

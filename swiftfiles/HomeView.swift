@@ -625,6 +625,9 @@ struct InventorySelectionSheet: View {
     @State private var foods: [Food] = []
     @State private var drinks: [Drink] = []
     
+    // Search Bar State
+    @State private var searchText: String = ""
+    
     @State private var isFoodInputSheetPresented = false
     @State private var isDrinkInputSheetPresented = false
     @State private var selectedFood: Food? = nil
@@ -665,10 +668,27 @@ struct InventorySelectionSheet: View {
                     .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                     .cornerRadius(10)
                     .padding()
+                    .padding(.bottom, -10)
+                    
+                    // Search Bar
+                    HStack {
+                        TextField("Search", text: $searchText)
+                            .padding(10)
+                            .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(red: 44/255, green: 44/255, blue: 53/255), lineWidth: 2) // Set the border color and width
+                                    .padding(.horizontal)
+                            )
+                    }
+                    .padding(.bottom, 5)
                     
                     List {
                         if selectedItem == .Food {
-                            ForEach(foods, id: \.id) { food in
+                            ForEach(filteredFoods(), id: \.id) { food in
                                 Button(action: {
                                     selectedFood = food
                                     sheetManager.whichSheet = .Food
@@ -680,7 +700,7 @@ struct InventorySelectionSheet: View {
                             }
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         } else {
-                            ForEach(drinks, id: \.id) { drink in
+                            ForEach(filteredDrinks(), id: \.id) { drink in
                                 Button(action: {
                                     selectedDrink = drink
                                     sheetManager.whichSheet = .Drink
@@ -742,7 +762,7 @@ struct InventorySelectionSheet: View {
             switch result {
             case .success(let foods):
                 print("Foods loaded: \(foods)") // Debug print
-                self.foods = foods
+                self.foods = foods.sorted(by: { $0.id > $1.id })
             case .failure(let error):
                 print("Failed to load foods: \(error.localizedDescription)")
             }
@@ -755,7 +775,7 @@ struct InventorySelectionSheet: View {
             switch result {
             case .success(let drinks):
                 print("Drinks loaded: \(drinks)") // Debug print
-                self.drinks = drinks
+                self.drinks = drinks.sorted(by: { $0.id > $1.id })
             case .failure(let error):
                 print("Failed to load drinks: \(error.localizedDescription)")
             }
@@ -774,6 +794,23 @@ struct InventorySelectionSheet: View {
             fatalError("Drink not found")
         }
         return $drinks[index]
+    }
+    
+    // Filtering functions
+    private func filteredFoods() -> [Food] {
+        if searchText.isEmpty {
+            return foods
+        } else {
+            return foods.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+    
+    private func filteredDrinks() -> [Drink] {
+        if searchText.isEmpty {
+            return drinks
+        } else {
+            return drinks.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+        }
     }
 }
 
