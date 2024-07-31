@@ -4,6 +4,7 @@ struct SignUpView: View {
     @State private var username = ""
     @State private var email = ""
     @State private var password = ""
+    @State private var confirmPassword = ""
     @State private var wrongUsername = 0
     @State private var wrongEmail = 0
     @State private var wrongPassword = 0
@@ -92,6 +93,23 @@ struct SignUpView: View {
                     .cornerRadius(15)
                     .border(Color.red, width: CGFloat(wrongPassword))
                     
+                    HStack {
+                        Image(systemName: "lock")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
+                            .padding(.leading, 10)
+                            .foregroundColor(Color.white.opacity(0.10))
+                        
+                        SecureField("Confirm Password", text: $confirmPassword)
+                            .foregroundColor(.white.opacity(0.90))
+                            .padding(.leading, 1)
+                    }
+                    .frame(width: 300, height: 50)
+                    .background(Color.black.opacity(0.30))
+                    .cornerRadius(15)
+                    .border(Color.red, width: CGFloat(wrongPassword))
+                    
                     
                     Button(action: {
                         registerUser(username: username, email: email, password: password)
@@ -125,7 +143,13 @@ struct SignUpView: View {
     
     
     func registerUser(username: String, email: String, password: String) {
-        if !username.isEmpty && !email.isEmpty && !password.isEmpty {
+        if !username.isEmpty && !email.isEmpty && !password.isEmpty && !confirmPassword.isEmpty {
+            if password != confirmPassword {
+                wrongPassword = 1
+                errorMessage = "Passwords do not match"
+                return
+            }
+            
             userSignUp(username: username, email: email, password: password) { success, message in
                 if success {
                     userLogin(email: email, password: password) { success, message in
@@ -155,6 +179,7 @@ struct SignUpView: View {
             wrongUsername = username.isEmpty ? 1 : 0
             wrongEmail = email.isEmpty ? 1 : 0
             wrongPassword = password.isEmpty ? 1 : 0
+            errorMessage = "Please fill in all fields"
         }
     }
 }
