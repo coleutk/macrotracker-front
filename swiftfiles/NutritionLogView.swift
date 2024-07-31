@@ -9,17 +9,21 @@ struct NutritionLogView: View {
     @State private var errorMessage: String?
     @State private var needsRefresh = false
     @State private var searchText: String = "" // State to track the search query
-    
+
+    // For Locked Timer
+    @State private var timeRemaining: Int = UserDefaults.standard.integer(forKey: "timeRemaining") // Retrieve from UserDefaults
+    @State private var timer: Timer?
+
     init(historicalRecords: [DailyRecord] = []) {
         self._historicalRecords = State(initialValue: historicalRecords)
     }
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(red: 44/255, green: 44/255, blue: 53/255)
                     .ignoresSafeArea()
-                
+
                 VStack {
                     // Search Bar
                     HStack {
@@ -37,7 +41,7 @@ struct NutritionLogView: View {
                         // Your month and year picker code here
                     }
                     .padding(.bottom, 5)
-                    
+
                     // List of Entries
                     if isLoading {
                         ProgressView()
@@ -57,39 +61,52 @@ struct NutritionLogView: View {
                                             .foregroundColor(.white.opacity(0.80))
                                             .padding(.bottom, -2)
                                         HStack {
-                                            Text("Locked")
-                                                .font(.subheadline)
-                                                .foregroundColor(.red.opacity(0.80))
-                                                .padding(.trailing, -5)
-                                            
-                                            Image(systemName: "lock")
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 13, height: 13)
-                                                .foregroundColor(.red.opacity(0.80))
+                                            if timeRemaining > 0 {
+                                                Text("Locked [\(formatTime(timeRemaining))]")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.red.opacity(0.80))
+                                                    .padding(.trailing, -5)
+                                                
+                                                Image(systemName: "lock")
+                                                    .resizable()
+                                                    .aspectRatio(contentMode: .fit)
+                                                    .frame(width: 13, height: 13)
+                                                    .foregroundColor(.red.opacity(0.80))
+                                            }
                                         }
                                         .padding(.bottom, -2)
                                     }
                                     .foregroundColor(Color.white.opacity(0.70))
                                     .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                                 } else {
-                                    NavigationLink(destination: DayDetailView(dailyRecord: dailyRecord, needsRefresh: $needsRefresh, isHistorical: false, onRefreshHistoricalRecords: fetchHistoricalRecords, onDismiss: {
-                                        self.fetchDailyRecord()
-                                    })) {
-                                        VStack(alignment: .leading) {
-                                            let formattedDate = formattedDate(from: dailyRecord.date)
-                                            
-                                            Text("\(formattedDate) (Today)")
-                                                .font(.headline)
-                                                .foregroundColor(.white.opacity(0.80))
-                                        }
-                                        .foregroundColor(Color.white.opacity(0.70))
-                                        .padding(.vertical, 5)
+                                    NavigationLink(destination: DayDetailView(
+                                        dailyRecord: dailyRecord,
+                                        needsRefresh: $needsRefresh,
+                                        isHistorical: false,
+                                        onRefreshHistoricalRecords: fetchHistoricalRecords,
+                                        onDismiss: {
+                                            self.fetchDailyRecord()
+                                        },
+                                        onCompleteDay: { timeUntilMidnight in
+                                            print("Time until midnight received: \(timeUntilMidnight) seconds") // Debug print
+                                            self.timeRemaining = timeUntilMidnight
+                                            UserDefaults.standard.set(timeUntilMidnight, forKey: "timeRemaining") // Save to UserDefaults
+                                            startTimer()
+                                        })) {
+                                            VStack(alignment: .leading) {
+                                                let formattedDate = formattedDate(from: dailyRecord.date)
+
+                                                Text("\(formattedDate) (Today)")
+                                                    .font(.headline)
+                                                    .foregroundColor(.white.opacity(0.80))
+                                            }
+                                            .foregroundColor(Color.white.opacity(0.70))
+                                            .padding(.vertical, 5)
                                     }
                                     .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                                 }
                             }
-                            
+
                             // Filtered historical records
                             ForEach(filteredHistoricalRecords(), id: \.id) { record in
                                 NavigationLink(destination: DayDetailView(dailyRecord: record, needsRefresh: $needsRefresh, isHistorical: true)) {
@@ -104,7 +121,7 @@ struct NutritionLogView: View {
                                 }
                                 .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                             }
-                            
+
                         }
                         .listStyle(PlainListStyle())
                         .background(Color(red: 20/255, green: 20/255, blue: 30/255))
@@ -117,15 +134,16 @@ struct NutritionLogView: View {
             .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
                 checkAndInitializeRecords()
+                startTimer() // Start the timer on view appear
             }
         }
     }
-    
+
     // Function to fetch current daily record
     func fetchDailyRecord() {
         isLoading = true
         errorMessage = nil
-        
+
         getCurrentDaily { result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -143,7 +161,7 @@ struct NutritionLogView: View {
     func fetchHistoricalRecords() {
         isLoading = true
         errorMessage = nil
-        
+
         getAllHistoricalRecords { result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -157,23 +175,23 @@ struct NutritionLogView: View {
             }
         }
     }
-    
+
     // Function to format date string
     func formattedDate(from dateString: String) -> String {
         let year = dateString.prefix(4)
         let month = dateString[dateString.index(dateString.startIndex, offsetBy: 5)..<dateString.index(dateString.startIndex, offsetBy: 7)]
         let day = dateString[dateString.index(dateString.startIndex, offsetBy: 8)..<dateString.index(dateString.startIndex, offsetBy: 10)]
-        
+
         let monthName = DateFormatter().monthSymbols[Int(month)! - 1]
-        
+
         return "\(monthName) \(day), \(year)"
     }
-    
+
     // Function to check and initialize records
     func checkAndInitializeRecords() {
         isLoading = true
         errorMessage = nil
-        
+
         initializeDailyRecordIfEmpty { result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -193,7 +211,7 @@ struct NutritionLogView: View {
             }
         }
     }
-    
+
     // Function to filter historical records based on the search query
     func filteredHistoricalRecords() -> [DailyRecord] {
         if searchText.isEmpty {
@@ -204,7 +222,7 @@ struct NutritionLogView: View {
             }
         }
     }
-    
+
     // Function to check if daily record matches search query
     func dailyRecordMatchesSearch(_ record: DailyRecord) -> Bool {
         if searchText.isEmpty {
@@ -213,57 +231,98 @@ struct NutritionLogView: View {
             return formattedDate(from: record.date).lowercased().contains(searchText.lowercased())
         }
     }
+
+    // Timer functions
+    func startTimer() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if self.timeRemaining > 0 {
+                self.timeRemaining -= 1
+                UserDefaults.standard.set(self.timeRemaining, forKey: "timeRemaining") // Save to UserDefaults
+            } else {
+                timer?.invalidate()
+                unlockDailyRecord() // Call the function to unlock the daily record
+                self.fetchDailyRecord()
+            }
+        }
+    }
+
+    func formatTime(_ seconds: Int) -> String {
+        let hours = seconds / 3600
+        let minutes = (seconds % 3600) / 60
+        let seconds = seconds % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+
+    func unlockDailyRecord() {
+        // Call the API to unlock the daily record
+        unlockCurrentDailyRecord { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    print("Daily record unlocked: \(response)")
+                    self.fetchDailyRecord() // Refresh the daily record
+                case .failure(let error):
+                    print("Failed to unlock daily record: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
 }
+
 
 
 
 
 struct DayDetailView: View {
     @Environment(\.presentationMode) var presentationMode
-    
+
     @State private var isLoading = false
     @State private var errorMessage: String?
-    
+
     @State private var selectedGoal: SelectedGoal? = nil
     @State var dailyRecord: DailyRecord
-    
+
     @Binding var needsRefresh: Bool
     @State private var resettingDaily: Bool = false
-    var isHistorical: Bool // New parameter
+    var isHistorical: Bool
     var onRefreshHistoricalRecords: (() -> Void)?
-    var onDismiss: (() -> Void)? // New parameter for dismissal callback
-    @State private var showDayConfirmationAlert = false // Add this line
-    @State private var currentAction: ActionType? = nil // Add this line
-    
+    var onDismiss: (() -> Void)?
+    var onCompleteDay: ((Int) -> Void)?
+
+    @State private var showDayConfirmationAlert = false
+    @State private var currentAction: ActionType? = nil
+
     enum ActionType {
         case completeDay
         case deleteDay
     }
-    
+
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
     @State private var manuals: [DailyManual] = []
-    
-    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil, onDismiss: (() -> Void)? = nil) {
+
+    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil, onDismiss: (() -> Void)? = nil, onCompleteDay: ((Int) -> Void)? = nil) {
         self._dailyRecord = State(initialValue: dailyRecord)
         self._foods = State(initialValue: dailyRecord.foods)
         self._drinks = State(initialValue: dailyRecord.drinks)
         self._manuals = State(initialValue: dailyRecord.manuals)
         self._needsRefresh = needsRefresh
-        self.isHistorical = isHistorical // Initialize new parameter
+        self.isHistorical = isHistorical
         self.onRefreshHistoricalRecords = onRefreshHistoricalRecords
-        self.onDismiss = onDismiss // Initialize the new parameter
+        self.onDismiss = onDismiss
+        self.onCompleteDay = onCompleteDay
     }
-    
+
     var body: some View {
         let formattedDate = formattedDate(from: dailyRecord.date)
         NavigationStack {
             ZStack {
                 Color(red: 44/255, green: 44/255, blue: 53/255)
                     .ignoresSafeArea()
-                
+
                 VStack {
-                    if(!isHistorical) {
+                    if !isHistorical {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
                             GridRow {
                                 if let goal = selectedGoal {
@@ -289,7 +348,7 @@ struct DayDetailView: View {
                             Text("[No goal selected]")
                                 .foregroundColor(.red)
                         }
-                        
+
                     } else {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
                             GridRow {
@@ -317,7 +376,7 @@ struct DayDetailView: View {
                                 .foregroundColor(.red)
                         }
                     }
-                    
+
                     List {
                         ForEach(foods, id: \.id) { food in
                             NavigationLink(destination: FoodDetailView(food: food, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
@@ -329,7 +388,7 @@ struct DayDetailView: View {
                             }
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         }
-                        
+
                         ForEach(drinks, id: \.id) { drink in
                             NavigationLink(destination: DrinkDetailView(drink: drink, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.drinks.removeAll { $0.id == drink.id }
@@ -340,7 +399,7 @@ struct DayDetailView: View {
                             }
                             .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
                         }
-                        
+
                         ForEach(manuals, id: \.id) { manual in
                             NavigationLink(destination: ManualDetailView(manual: manual, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.manuals.removeAll { $0.id == manual.id }
@@ -357,25 +416,25 @@ struct DayDetailView: View {
                 }
                 .background(Color(red: 20/255, green: 20/255, blue: 30/255))
                 .foregroundColor(.white)
-                
-                if(!isHistorical) {
+
+                if !isHistorical {
                     VStack {
                         Spacer()
-                        
+
                         Button (action: {
                             currentAction = .completeDay
                             showDayConfirmationAlert = true
                         }) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 10) // Rounded rectangle background
-                                    .foregroundColor(Color(red: 20/255, green: 20/255, blue: 30/255)) // Background color
+                                RoundedRectangle(cornerRadius: 10)
+                                    .foregroundColor(Color(red: 20/255, green: 20/255, blue: 30/255))
                                     .frame(width: 162, height: 45)
-                                
+
                                 HStack {
                                     Text("Complete Day")
                                         .font(.system(size: 16))
                                         .bold()
-                                    
+
                                     Image(systemName: "checkmark.circle")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
@@ -388,22 +447,22 @@ struct DayDetailView: View {
                 } else {
                     VStack {
                         Spacer()
-                        
+
                         Button (action: {
                             currentAction = .deleteDay
                             showDayConfirmationAlert = true
                         }) {
                             ZStack {
-                                RoundedRectangle(cornerRadius: 10) // Rounded rectangle background
+                                RoundedRectangle(cornerRadius: 10)
                                     .foregroundColor(Color(red: 61/255, green: 2/255, blue: 9/255))
                                     .frame(width: 162, height: 45)
                                     .opacity(0.70)
-                                
+
                                 HStack {
                                     Text("Delete Day")
                                         .font(.system(size: 16))
                                         .bold()
-                                    
+
                                     Image(systemName: "trash")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
@@ -419,16 +478,16 @@ struct DayDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 fetchUserSelectedGoal()
-                
+
                 if needsRefresh {
                     fetchDailyRecord()
                     needsRefresh = false
                 }
             }
             .onDisappear {
-                if !isHistorical && resettingDaily{
+                if !isHistorical && resettingDaily {
                     onRefreshHistoricalRecords?()
-                    onDismiss?() // Call the dismissal callback
+                    onDismiss?()
                 }
             }
             .alert(isPresented: $showDayConfirmationAlert) {
@@ -459,13 +518,13 @@ struct DayDetailView: View {
             }
         }
     }
-    
+
     func selectedGoalForRecord(isHistorical: Bool) -> SelectedGoal? {
         if isHistorical {
             if let goal = dailyRecord.goal {
                 return SelectedGoal(
-                    id: dailyRecord.id, // Assuming the id is taken from dailyRecord
-                    name: "Historical Goal", // Provide an appropriate name for historical goals
+                    id: dailyRecord.id,
+                    name: "Historical Goal",
                     calorieGoal: goal.calorieGoal,
                     proteinGoal: goal.proteinGoal,
                     carbGoal: goal.carbGoal,
@@ -478,21 +537,21 @@ struct DayDetailView: View {
             return selectedGoal
         }
     }
-    
+
     func formattedDate(from dateString: String) -> String {
         let year = dateString.prefix(4)
         let month = dateString[dateString.index(dateString.startIndex, offsetBy: 5)..<dateString.index(dateString.startIndex, offsetBy: 7)]
         let day = dateString[dateString.index(dateString.startIndex, offsetBy: 8)..<dateString.index(dateString.startIndex, offsetBy: 10)]
-        
+
         let monthName = DateFormatter().monthSymbols[Int(month)! - 1]
-        
+
         return "\(monthName) \(day), \(year)"
     }
-    
+
     func fetchDailyRecord() {
         isLoading = true
         errorMessage = nil
-        
+
         getCurrentDaily { result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -504,7 +563,6 @@ struct DayDetailView: View {
                         self.drinks = record.drinks
                         self.manuals = record.manuals
                     } else {
-                        // Handle case where record is nil
                         self.foods = []
                         self.drinks = []
                         self.manuals = []
@@ -515,7 +573,7 @@ struct DayDetailView: View {
             }
         }
     }
-    
+
     private func fetchUserSelectedGoal() {
         getUserSelectedGoal { result in
             switch result {
@@ -524,9 +582,9 @@ struct DayDetailView: View {
                     self.selectedGoal = goal
                 }
             case .failure(let error):
-                if (error as NSError).code == 404 { // Assuming 404 is the error code for no goal found
+                if (error as NSError).code == 404 {
                     DispatchQueue.main.async {
-                        self.selectedGoal = nil // No goal found
+                        self.selectedGoal = nil
                     }
                 } else {
                     DispatchQueue.main.async {
@@ -536,38 +594,35 @@ struct DayDetailView: View {
             }
         }
     }
-    
+
     private func completeDailyRecord() {
         completeDay { result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(let response):
-                    print("Message: \(response.message)")
-                    print("New Record: \(response.newRecord)")
-                    // Handle the success, maybe update the UI or state
+                case .success(let timeUntilMidnight):
+                    print("Time until midnight: \(timeUntilMidnight / 1000) seconds")
+                    onCompleteDay?(timeUntilMidnight / 1000)
                 case .failure(let error):
                     print("Failed to complete day: \(error.localizedDescription)")
-                    // Handle the error, show an alert or log it
                 }
             }
         }
     }
-    
+
     func deleteArchived() {
         deleteArchivedRecord(date: dailyRecord.date) { success, message in
             DispatchQueue.main.async {
                 if success {
                     print("Archived record deleted successfully")
                     presentationMode.wrappedValue.dismiss()
-                    // Call any additional code if needed
                 } else {
                     print("Failed to delete archived record: \(message ?? "Unknown error")")
-                    // Handle error
                 }
             }
         }
     }
 }
+
 
 
 
