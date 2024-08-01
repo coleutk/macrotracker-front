@@ -269,7 +269,7 @@ struct HomeView: View {
                             }
                         }
                     }
-                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 100 : 60)
+                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 60 : 40)
                     
                     HStack {
                         NavigationLink(destination: NutritionLogView()) {
@@ -284,7 +284,7 @@ struct HomeView: View {
                         }
                         .buttonStyle(MyButtonStyle())
                         .offset(x: 35)
-                        .padding(.top, 5)
+                        .padding(.top, 10)
                         
                         Spacer()
                         
@@ -300,7 +300,7 @@ struct HomeView: View {
                         }
                         .buttonStyle(MyButtonStyle())
                         .offset(x: -16)
-                        .padding(.top, 5)
+                        .padding(.top, 10)
                         
                         Spacer()
                         
@@ -316,10 +316,11 @@ struct HomeView: View {
                         }
                         .buttonStyle(MyButtonStyle())
                         .offset(x: -52)
-                        .padding(.top, 5)
+                        .padding(.top, 10)
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, -10)
                     .background(Color(red: 44/255, green: 44/255, blue: 53/255))
-                    .frame(height: 5)
                 }
             }
             .onAppear {

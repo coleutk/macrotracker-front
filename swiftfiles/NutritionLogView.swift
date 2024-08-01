@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 struct NutritionLogView: View {
     @State private var selectedMonth = Calendar.current.component(.month, from: Date())
@@ -91,6 +92,7 @@ struct NutritionLogView: View {
                                             print("Time until midnight received: \(timeUntilMidnight) seconds") // Debug print
                                             self.timeRemaining = timeUntilMidnight
                                             UserDefaults.standard.set(timeUntilMidnight, forKey: "timeRemaining") // Save to UserDefaults
+                                            UserDefaults.standard.set(Date().addingTimeInterval(TimeInterval(timeUntilMidnight)), forKey: "endDate") // Save end date
                                             startTimer()
                                         })) {
                                             VStack(alignment: .leading) {
@@ -134,6 +136,7 @@ struct NutritionLogView: View {
             .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
                 checkAndInitializeRecords()
+                calculateTimeRemaining()
                 startTimer() // Start the timer on view appear
             }
         }
@@ -268,9 +271,18 @@ struct NutritionLogView: View {
             }
         }
     }
+
+    func calculateTimeRemaining() {
+        if let endDate = UserDefaults.standard.object(forKey: "endDate") as? Date {
+            let remaining = Int(endDate.timeIntervalSinceNow)
+            if remaining > 0 {
+                timeRemaining = remaining
+            } else {
+                unlockDailyRecord()
+            }
+        }
+    }
 }
-
-
 
 
 
