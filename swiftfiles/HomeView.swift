@@ -50,43 +50,40 @@ struct HomeView: View {
                 
                 VStack {
                     HStack {
-                        Button(action: {
-                            //isAddFoodSheetPresented.toggle()
-                        }) {
-                            ZStack {
-                                 if let goal = selectedGoal {
-                                     Text("\(goal.name)")
-                                         .font(.title)
-                                         .bold()
-                                         .padding(10)
-                                         .background(
-                                             RoundedRectangle(cornerRadius: 10)
-                                                 .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                         )
-                                 } else if selectedGoal == nil{
-                                     ZStack {
-                                         RoundedRectangle(cornerRadius: 10)
-                                             .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                             .frame(width: 300)
-                                             .frame(height: 100)
-                                         VStack {
-                                             Text("[No goal selected]")
-                                                 .font(.title)
-                                                 .bold()
-                                                 .padding(10)
-                                                 .padding(.bottom, -20)
-                                             Text("Create your goal in Profile!")
-                                                 .font(.title3)
-                                                 .padding(10)
-                                         }
-                                     }
-                                 }
-                             }
-                         }
-                         .buttonStyle(MyButtonStyle())
-                         .padding(.horizontal, 10)
+                        ZStack {
+                            if let goal = selectedGoal {
+                                Text("\(goal.name)")
+                                    .font(.title)
+                                    .foregroundColor(.white.opacity(0.70))
+                                    .bold()
+                                    .padding(10)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                    )
+                            } else if selectedGoal == nil{
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
+                                        .frame(width: 300)
+                                        .frame(height: 100)
+                                    VStack {
+                                        Text("[No goal selected]")
+                                            .font(.title)
+                                            .bold()
+                                            .padding(10)
+                                            .padding(.bottom, -20)
+                                        Text("Create your goal in Profile!")
+                                            .font(.title3)
+                                            .padding(10)
+                                    }
+                                }
+                            }
+                        }
+                        
+                        .padding(.horizontal, 10)
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 5)
                     
                     VStack(spacing: 20) {
                         Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
@@ -111,8 +108,10 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, 20)
+                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 50 : 10)
                     
                     Spacer()
+                        
                     
                     ZStack {
                         ProgressBar(progress: self.$calorieProgress, color: Color(red: 10/255, green: 211/255, blue: 255/255))
@@ -269,7 +268,9 @@ struct HomeView: View {
                             }
                         }
                     }
-                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 60 : 40)
+                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 60 : 30)
+
+                    Spacer()
                     
                     HStack {
                         NavigationLink(destination: NutritionLogView()) {
@@ -319,7 +320,7 @@ struct HomeView: View {
                         .padding(.top, 10)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.bottom, -10)
+                    .padding(.bottom, -14)
                     .background(Color(red: 44/255, green: 44/255, blue: 53/255))
                 }
             }
@@ -338,6 +339,7 @@ struct HomeView: View {
                 .foregroundColor(.white.opacity(0.70))
         }
     }
+    
     
     private func fetchUserSelectedGoal() {
         getUserSelectedGoal { result in
