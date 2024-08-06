@@ -54,59 +54,29 @@ struct NutritionLogView: View {
                         List {
                             // Filtered current daily record
                             if let dailyRecord = dailyRecord, dailyRecordMatchesSearch(dailyRecord) {
-                                if dailyRecord.locked ?? false {
-                                    VStack(alignment: .leading) {
-                                        let formattedDate = formattedDate(from: dailyRecord.date)
-                                        Text("\(formattedDate) (Tomorrow)")
-                                            .font(.headline)
-                                            .foregroundColor(.white.opacity(0.80))
-                                            .padding(.bottom, -2)
-                                        HStack {
-                                            if timeRemaining > 0 {
-                                                Text("Locked [\(formatTime(timeRemaining))]")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.red.opacity(0.80))
-                                                    .padding(.trailing, -5)
-                                                
-                                                Image(systemName: "lock")
-                                                    .resizable()
-                                                    .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 13, height: 13)
-                                                    .foregroundColor(.red.opacity(0.80))
-                                            }
+                                NavigationLink(destination: DayDetailView(
+                                    dailyRecord: dailyRecord,
+                                    needsRefresh: $needsRefresh,
+                                    isHistorical: false,
+                                    onRefreshHistoricalRecords: fetchHistoricalRecords,
+                                    onDismiss: {
+                                        self.fetchDailyRecord()
+                                    },
+                                    onCompleteDay: { 
+                                        self.fetchHistoricalRecords()
+                                        self.fetchDailyRecord() // Reload the current record to reflect new state
+                                    })) {
+                                        VStack(alignment: .leading) {
+                                            let formattedDate = formattedDate(from: dailyRecord.date)
+                                            
+                                            Text("\(formattedDate) (Today)")
+                                                .font(.headline)
+                                                .foregroundColor(.white.opacity(0.80))
                                         }
-                                        .padding(.bottom, -2)
-                                    }
-                                    .foregroundColor(Color.white.opacity(0.70))
-                                    .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
-                                } else {
-                                    NavigationLink(destination: DayDetailView(
-                                        dailyRecord: dailyRecord,
-                                        needsRefresh: $needsRefresh,
-                                        isHistorical: false,
-                                        onRefreshHistoricalRecords: fetchHistoricalRecords,
-                                        onDismiss: {
-                                            self.fetchDailyRecord()
-                                        },
-                                        onCompleteDay: { timeUntilMidnight in
-                                            print("Time until midnight received: \(timeUntilMidnight) seconds") // Debug print
-                                            self.timeRemaining = timeUntilMidnight
-                                            UserDefaults.standard.set(timeUntilMidnight, forKey: "timeRemaining") // Save to UserDefaults
-                                            UserDefaults.standard.set(Date().addingTimeInterval(TimeInterval(timeUntilMidnight)), forKey: "endDate") // Save end date
-                                            startTimer()
-                                        })) {
-                                            VStack(alignment: .leading) {
-                                                let formattedDate = formattedDate(from: dailyRecord.date)
-
-                                                Text("\(formattedDate) (Today)")
-                                                    .font(.headline)
-                                                    .foregroundColor(.white.opacity(0.80))
-                                            }
-                                            .foregroundColor(Color.white.opacity(0.70))
-                                            .padding(.vertical, 5)
+                                        .foregroundColor(Color.white.opacity(0.70))
+                                        .padding(.vertical, 5)
                                     }
                                     .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
-                                }
                             }
 
                             // Filtered historical records
@@ -135,9 +105,8 @@ struct NutritionLogView: View {
             }
             .navigationViewStyle(StackNavigationViewStyle())
             .onAppear {
-                checkAndInitializeRecords()
-                calculateTimeRemaining()
-                startTimer() // Start the timer on view appear
+                fetchDailyRecord()
+                fetchHistoricalRecords()
             }
         }
     }
@@ -190,31 +159,6 @@ struct NutritionLogView: View {
         return "\(monthName) \(day), \(year)"
     }
 
-    // Function to check and initialize records
-    func checkAndInitializeRecords() {
-        isLoading = true
-        errorMessage = nil
-
-        initializeDailyRecordIfEmpty { result in
-            DispatchQueue.main.async {
-                isLoading = false
-                switch result {
-                case .success(let response):
-                    if response.message == "Records already exist" {
-                        fetchDailyRecord()
-                        fetchHistoricalRecords()
-                    } else if let newRecord = response.newRecord {
-                        self.dailyRecord = newRecord
-                    }
-                case .failure(let error):
-                    self.errorMessage = "Failed to initialize records: \(error.localizedDescription)"
-                    fetchDailyRecord()
-                    fetchHistoricalRecords()
-                }
-            }
-        }
-    }
-
     // Function to filter historical records based on the search query
     func filteredHistoricalRecords() -> [DailyRecord] {
         if searchText.isEmpty {
@@ -232,54 +176,6 @@ struct NutritionLogView: View {
             return true
         } else {
             return formattedDate(from: record.date).lowercased().contains(searchText.lowercased())
-        }
-    }
-
-    // Timer functions
-    func startTimer() {
-        timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            if self.timeRemaining > 0 {
-                self.timeRemaining -= 1
-                UserDefaults.standard.set(self.timeRemaining, forKey: "timeRemaining") // Save to UserDefaults
-            } else {
-                timer?.invalidate()
-                unlockDailyRecord() // Call the function to unlock the daily record
-                self.fetchDailyRecord()
-            }
-        }
-    }
-
-    func formatTime(_ seconds: Int) -> String {
-        let hours = seconds / 3600
-        let minutes = (seconds % 3600) / 60
-        let seconds = seconds % 60
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
-    }
-
-    func unlockDailyRecord() {
-        // Call the API to unlock the daily record
-        unlockCurrentDailyRecord { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let response):
-                    print("Daily record unlocked: \(response)")
-                    self.fetchDailyRecord() // Refresh the daily record
-                case .failure(let error):
-                    print("Failed to unlock daily record: \(error.localizedDescription)")
-                }
-            }
-        }
-    }
-
-    func calculateTimeRemaining() {
-        if let endDate = UserDefaults.standard.object(forKey: "endDate") as? Date {
-            let remaining = Int(endDate.timeIntervalSinceNow)
-            if remaining > 0 {
-                timeRemaining = remaining
-            } else {
-                unlockDailyRecord()
-            }
         }
     }
 }
@@ -300,7 +196,7 @@ struct DayDetailView: View {
     var isHistorical: Bool
     var onRefreshHistoricalRecords: (() -> Void)?
     var onDismiss: (() -> Void)?
-    var onCompleteDay: ((Int) -> Void)?
+    var onCompleteDay: (() -> Void)?
 
     @State private var showDayConfirmationAlert = false
     @State private var currentAction: ActionType? = nil
@@ -314,7 +210,7 @@ struct DayDetailView: View {
     @State private var drinks: [DailyDrink] = []
     @State private var manuals: [DailyManual] = []
 
-    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil, onDismiss: (() -> Void)? = nil, onCompleteDay: ((Int) -> Void)? = nil) {
+    init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil, onDismiss: (() -> Void)? = nil, onCompleteDay: (() -> Void)? = nil) {
         self._dailyRecord = State(initialValue: dailyRecord)
         self._foods = State(initialValue: dailyRecord.foods)
         self._drinks = State(initialValue: dailyRecord.drinks)
@@ -611,15 +507,18 @@ struct DayDetailView: View {
         completeDay { result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(let timeUntilMidnight):
-                    print("Time until midnight: \(timeUntilMidnight / 1000) seconds")
-                    onCompleteDay?(timeUntilMidnight / 1000)
+                case .success:
+                    // Refresh both daily and historical records after completing the day
+                    onCompleteDay?()
+                    onRefreshHistoricalRecords?()
+                    onDismiss?()
                 case .failure(let error):
                     print("Failed to complete day: \(error.localizedDescription)")
                 }
             }
         }
     }
+
 
     func deleteArchived() {
         deleteArchivedRecord(date: dailyRecord.date) { success, message in
