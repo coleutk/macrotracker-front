@@ -493,9 +493,6 @@ func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Erro
     task.resume()
 }
 
-
-
-
 // Delete Drink from Daily Record
 func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
@@ -645,4 +642,162 @@ func deleteArchivedRecord(date: String, completion: @escaping (Bool, String?) ->
     task.resume()
 }
 
+// Delete Food from ArchivedRecord
+func deleteFoodFromArchived(recordId: String, foodInputId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
 
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/deleteFood/\(recordId)/\(foodInputId)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "DELETE"
+
+    let task = URLSession.shared.dataTask(with: request) { _, response, error in
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to delete food entry"])))
+            return
+        }
+
+        completion(.success(()))
+    }
+
+    task.resume()
+}
+
+// Get Specific Historical Record
+// Function to fetch a specific historical record by ID
+func fetchHistoricalRecord(id: String, completion: @escaping (Result<DailyRecord, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
+    let urlString = "http://localhost:3000/archivedRecords/\(id)"
+    guard let url = URL(string: urlString) else {
+        completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
+        return
+    }
+    
+    var request = URLRequest(url: url)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add authorization header
+    request.httpMethod = "GET"
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            print("HTTP Request Failed: \(error)")
+            completion(.failure(error))
+            return
+        }
+        
+        guard let data = data else {
+            print("No data received")
+            completion(.failure(NSError(domain: "No data", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+            return
+        }
+        
+        do {
+            if let record = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
+                print("Received JSON: \(record)") // Debug print
+                
+                if let id = record["_id"] as? String,
+                   let userId = record["user"] as? String,
+                   let date = record["date"] as? String,
+                   let calories = record["calories"] as? Int,
+                   let protein = record["protein"] as? Int,
+                   let carbs = record["carbs"] as? Int,
+                   let fat = record["fat"] as? Int,
+                   let foodArray = record["foods"] as? [[String: Any]],
+                   let drinkArray = record["drinks"] as? [[String: Any]],
+                   let manualArray = record["manuals"] as? [[String: Any]],
+                   let goalDict = record["goal"] as? [String: Any] {
+                    
+                    var foods: [DailyFood] = []
+                    var drinks: [DailyDrink] = []
+                    var manuals: [DailyManual] = []
+                    
+                    // Parse foods
+                    for foodWrapper in foodArray {
+                        if let food = foodWrapper["food"] as? [String: Any],
+                           let id = foodWrapper["_id"] as? String, // Grabbing id of the entry rather than the specific food
+                           let name = food["name"] as? String,
+                           let servings = foodWrapper["servings"] as? Float,
+                           let weightDict = food["weight"] as? [String: Any],
+                           let weightValue = weightDict["value"] as? Int,
+                           let weightUnit = weightDict["unit"] as? String,
+                           let calories = food["calories"] as? Int,
+                           let protein = food["protein"] as? Int,
+                           let carbs = food["carbs"] as? Int,
+                           let fat = food["fat"] as? Int {
+                            
+                            let weight = DailyWeight(value: weightValue, unit: weightUnit)
+                            let dailyFood = DailyFood(id: id, name: name, servings: servings, weight: weight, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                            foods.append(dailyFood)
+                        }
+                    }
+                    
+                    // Parse drinks
+                    for drinkWrapper in drinkArray {
+                        if let drink = drinkWrapper["drink"] as? [String: Any],
+                           let id = drinkWrapper["_id"] as? String, // Grabbing id of the entry rather than the specific drink
+                           let name = drink["name"] as? String,
+                           let servings = drinkWrapper["servings"] as? Float,
+                           let volumeDict = drink["volume"] as? [String: Any],
+                           let volumeValue = volumeDict["value"] as? Int,
+                           let volumeUnit = volumeDict["unit"] as? String,
+                           let calories = drink["calories"] as? Int,
+                           let protein = drink["protein"] as? Int,
+                           let carbs = drink["carbs"] as? Int,
+                           let fat = drink["fat"] as? Int {
+                            
+                            let volume = DailyVolume(value: volumeValue, unit: volumeUnit)
+                            let dailyDrink = DailyDrink(id: id, name: name, servings: servings, volume: volume, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                            drinks.append(dailyDrink)
+                        }
+                    }
+                    
+                    // Parse manuals
+                    for manualWrapper in manualArray {
+                        if let id = manualWrapper["_id"] as? String,
+                           let calories = manualWrapper["calories"] as? Int,
+                           let protein = manualWrapper["protein"] as? Int,
+                           let carbs = manualWrapper["carbs"] as? Int,
+                           let fat = manualWrapper["fat"] as? Int {
+                            
+                            let dailyManual = DailyManual(id: id, calories: calories, protein: protein, carbs: carbs, fat: fat)
+                            manuals.append(dailyManual)
+                        }
+                    }
+                    
+                    // Parse goal
+                    let goal = HistoricalGoal(
+                        calorieGoal: goalDict["calorieGoal"] as? Int ?? 0,
+                        proteinGoal: goalDict["proteinGoal"] as? Int ?? 0,
+                        carbGoal: goalDict["carbGoal"] as? Int ?? 0,
+                        fatGoal: goalDict["fatGoal"] as? Int ?? 0
+                    )
+                    
+                    let dailyRecord = DailyRecord(id: id, userId: userId, date: date, calories: calories, protein: protein, carbs: carbs, fat: fat, manuals: manuals, foods: foods, drinks: drinks, goal: goal)
+                    
+                    completion(.success(dailyRecord))
+                } else {
+                    completion(.failure(NSError(domain: "Invalid JSON", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON structure"])))
+                }
+            } else {
+                completion(.failure(NSError(domain: "Invalid JSON", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unable to parse JSON"])))
+            }
+        } catch {
+            print("Failed to parse JSON: \(error)")
+            completion(.failure(error))
+        }
+    }
+    
+    task.resume()
+}

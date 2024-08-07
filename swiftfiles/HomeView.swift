@@ -756,7 +756,7 @@ struct InventorySelectionSheet: View {
     private func filteredFoods() -> [Food] {
         if searchText.isEmpty {
             return foods
-        } else {
+        } else {    
             return foods.filter { $0.name.lowercased().contains(searchText.lowercased()) }
         }
     }

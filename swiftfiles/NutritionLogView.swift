@@ -11,10 +11,6 @@ struct NutritionLogView: View {
     @State private var needsRefresh = false
     @State private var searchText: String = "" // State to track the search query
 
-    // For Locked Timer
-    @State private var timeRemaining: Int = UserDefaults.standard.integer(forKey: "timeRemaining") // Retrieve from UserDefaults
-    @State private var timer: Timer?
-
     init(historicalRecords: [DailyRecord] = []) {
         self._historicalRecords = State(initialValue: historicalRecords)
     }
@@ -107,6 +103,12 @@ struct NutritionLogView: View {
             .onAppear {
                 fetchDailyRecord()
                 fetchHistoricalRecords()
+                
+                if needsRefresh {
+                    fetchHistoricalRecords()
+                    fetchDailyRecord()
+                    needsRefresh = false
+                }
             }
         }
     }
@@ -287,9 +289,9 @@ struct DayDetailView: View {
 
                     List {
                         ForEach(foods, id: \.id) { food in
-                            NavigationLink(destination: FoodDetailView(food: food, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
-                                self.foods.removeAll { $0.id == food.id }
+                            NavigationLink(destination: FoodDetailView(food: food, recordId: dailyRecord.id, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.needsRefresh = true
+                                self.fetchUpdatedRecord() // Immediately refresh after deletion
                             }, isHistorical: isHistorical)) {
                                 Text(food.name)
                                     .foregroundColor(.white.opacity(0.70))
@@ -299,7 +301,6 @@ struct DayDetailView: View {
 
                         ForEach(drinks, id: \.id) { drink in
                             NavigationLink(destination: DrinkDetailView(drink: drink, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
-                                self.drinks.removeAll { $0.id == drink.id }
                                 self.needsRefresh = true
                             }, isHistorical: isHistorical)) {
                                 Text(drink.name)
@@ -310,7 +311,6 @@ struct DayDetailView: View {
 
                         ForEach(manuals, id: \.id) { manual in
                             NavigationLink(destination: ManualDetailView(manual: manual, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
-                                self.manuals.removeAll { $0.id == manual.id }
                                 self.needsRefresh = true
                             }, isHistorical: isHistorical)) {
                                 Text("Manual Entry")
@@ -353,32 +353,79 @@ struct DayDetailView: View {
                         }
                     }
                 } else {
-                    VStack {
-                        Spacer()
-
-                        Button (action: {
-                            currentAction = .deleteDay
-                            showDayConfirmationAlert = true
-                        }) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .foregroundColor(Color(red: 61/255, green: 2/255, blue: 9/255))
-                                    .frame(width: 162, height: 45)
-                                    .opacity(0.70)
-
-                                HStack {
-                                    Text("Delete Day")
-                                        .font(.system(size: 16))
-                                        .bold()
-
-                                    Image(systemName: "trash")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 20, height: 20)
+                    GeometryReader { geometry in
+                        VStack {
+                            Spacer()
+                            
+                            HStack {
+                                Button(action: {
+                                    currentAction = .deleteDay
+                                    showDayConfirmationAlert = true
+                                }) {
+                                    ZStack {
+                                        Circle()
+                                            .foregroundColor(Color(red: 61/255, green: 2/255, blue: 9/255))
+                                            .frame(width: 50, height: 50) // Size of the circle
+                                            .opacity(0.70)
+                                        
+                                        Image(systemName: "trash")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 25, height: 25) // Size of the icon
+                                            .foregroundColor(.white.opacity(0.50))
+                                    }
+                                    .shadow(radius: 5) // Add some shadow for better visibility
                                 }
-                                .foregroundColor(.white.opacity(0.50))
+                                .padding(.leading, 20) // Add padding to position it away from the edges
+                                .padding(.bottom, -12)
+                                
+                                Spacer()
+                                
+                                Button(action: {
+                                    
+                                }) {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .foregroundColor(Color(red: 20/255, green: 20/255, blue: 30/255))
+                                            .frame(width: 46, height: 46)
+                                        
+                                        VStack {
+                                            Image(systemName: "pencil")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 23, height: 23)
+                                        }
+                                        .foregroundColor(.white.opacity(0.70))
+                                    }
+                                    .shadow(radius: 5) // Add some shadow for better visibility
+                                    .padding(.leading, 20) // Add padding to position it away from the edges
+                                    .padding(.trailing, 10)
+                                    .padding(.bottom, -12)
+                                }
+                                
+                                Button(action: {
+                                    
+                                }) {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .foregroundColor(Color(red: 20/255, green: 20/255, blue: 30/255))
+                                            .frame(width: 46, height: 46)
+                                        
+                                        VStack {
+                                            Image(systemName: "plus")
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 23, height: 23)
+                                        }
+                                        .foregroundColor(.white.opacity(0.70))
+                                    }
+                                    .shadow(radius: 5) // Add some shadow for better visibility
+                                    .padding(.trailing, 20) // Add padding to position it away from the edges
+                                    .padding(.bottom, -12)
+                                }
                             }
                         }
+                        .frame(width: geometry.size.width, height: geometry.size.height)
                     }
                 }
             }
@@ -386,9 +433,12 @@ struct DayDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 fetchUserSelectedGoal()
-
+                
                 if needsRefresh {
-                    fetchDailyRecord()
+                    fetchUpdatedRecord() // Ensure this is called to refresh the record data
+                    if !isHistorical {
+                        fetchDailyRecord()
+                    }
                     needsRefresh = false
                 }
             }
@@ -532,13 +582,29 @@ struct DayDetailView: View {
             }
         }
     }
+    
+    // New function to fetch the updated record
+    private func fetchUpdatedRecord() {
+        fetchHistoricalRecord(id: dailyRecord.id) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let updatedRecord):
+                    self.dailyRecord = updatedRecord
+                    self.foods = updatedRecord.foods
+                    self.drinks = updatedRecord.drinks
+                    self.manuals = updatedRecord.manuals
+                case .failure(let error):
+                    self.errorMessage = "Failed to refresh record: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
 }
-
-
 
 
 struct FoodDetailView: View {
     var food: DailyFood
+    var recordId: String // Accept record ID
     
     var selectedGoal: SelectedGoal?
     
@@ -548,6 +614,7 @@ struct FoodDetailView: View {
     @State private var alertMessage = ""
     var isHistorical: Bool // New parameter
 
+    @State private var dailyRecord: DailyRecord? // Add state to hold the updated record
 
     var body: some View {
         ZStack {
@@ -735,6 +802,39 @@ struct FoodDetailView: View {
                             .padding(.horizontal, 22)
                             .padding(.top, 20)
                     }
+                } else {
+                    Button(action: {
+                        deleteFoodFromArchived(recordId: recordId, foodInputId: food.id) { result in
+                            switch result {
+                            case .success:
+                                print("Food item deleted from archived!")
+                                
+                                // Set alert message
+                                alertMessage = "Deleted \(food.name)"
+                                // Show the alert
+                                showAlert = true
+                                
+                                // Notify the parent view to refresh
+                                onDelete()
+                                
+                            case .failure(let error):
+                                print("Failed to delete food item: \(error)")
+                                // Set alert message
+                                alertMessage = "Failed to delete food item: \(error.localizedDescription)"
+                                // Show the alert
+                                showAlert = true
+                            }
+                        }
+                    }) {
+                        Text("Delete \(food.name)")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
+                    }
                 }
             }
             .foregroundColor(.white.opacity(0.70))
@@ -743,7 +843,9 @@ struct FoodDetailView: View {
                     title: Text(alertMessage),
                     dismissButton: .default(Text("OK")) {
                         // Notify the parent view of the deletion
-                        onDelete()
+                        if !isHistorical {
+                            onDelete()
+                        }
                         // Dismiss the view
                         presentationMode.wrappedValue.dismiss()
                     }
@@ -951,6 +1053,19 @@ struct DrinkDetailView: View {
                             .padding(.horizontal, 22)
                             .padding(.top, 20)
                     }
+                } else {
+                    Button(action: {
+
+                    }) {
+                        Text("Delete \(drink.name)")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
+                    }
                 }
             }
             .foregroundColor(.white.opacity(0.70))
@@ -1075,6 +1190,20 @@ struct ManualDetailView: View {
                                 showAlert = true
                             }
                         }
+                    }) {
+                        Text("Delete Manual Entry")
+                            .foregroundColor(.white.opacity(0.70))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.red.opacity(0.50))
+                            .cornerRadius(15)
+                            .padding(.horizontal, 22)
+                            .padding(.top, 20)
+                    }
+                } else {
+                    // Delete Item Button
+                    Button(action: {
+                        
                     }) {
                         Text("Delete Manual Entry")
                             .foregroundColor(.white.opacity(0.70))
