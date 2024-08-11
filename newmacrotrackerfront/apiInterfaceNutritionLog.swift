@@ -13,10 +13,23 @@ struct HistoricalRecord: Identifiable, Codable {
 }
 
 struct HistoricalGoal: Codable {
-    let calorieGoal: Int
-    let proteinGoal: Int
-    let carbGoal: Int
-    let fatGoal: Int
+    var calorieGoal: Int
+    var proteinGoal: Int
+    var carbGoal: Int
+    var fatGoal: Int
+}
+
+extension HistoricalGoal {
+    func toSelectedGoal(withId id: String, name: String) -> SelectedGoal {
+        return SelectedGoal(
+            id: id,
+            name: name,
+            calorieGoal: self.calorieGoal,
+            proteinGoal: self.proteinGoal,
+            carbGoal: self.carbGoal,
+            fatGoal: self.fatGoal
+        )
+    }
 }
 
 struct DailyRecord: Codable {
@@ -728,6 +741,58 @@ func deleteManualFromArchived(recordId: String, manualInputId: String, completio
 
     task.resume()
 }
+
+// Add Food to Archived Record
+func addFoodToArchivedRecord(recordId: String, name: String, servings: Float, weightValue: Int, weightUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/addFood/\(recordId)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "POST"
+    
+    let body: [String: Any] = [
+        "name": name,
+        "servings": servings,
+        "weight": [
+            "value": weightValue,
+            "unit": weightUnit
+        ],
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fat": fats
+    ]
+    
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(false, "Error: \(error.localizedDescription)")
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            completion(false, "Invalid response")
+            return
+        }
+        
+        if httpResponse.statusCode == 200 {
+            completion(true, nil)
+        } else {
+            completion(false, "Error: Received HTTP status code \(httpResponse.statusCode)")
+        }
+    }
+    
+    task.resume()
+}
+
+
+
+
 
 // Get Specific Historical Record by ID
 func fetchHistoricalRecord(id: String, completion: @escaping (Result<DailyRecord, Error>) -> Void) {

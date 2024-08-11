@@ -186,6 +186,8 @@ struct NutritionLogView: View {
 
 struct DayDetailView: View {
     @Environment(\.presentationMode) var presentationMode
+    
+    @State private var isInventorySelectionSheetPresented = false
 
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -211,6 +213,11 @@ struct DayDetailView: View {
     @State private var foods: [DailyFood] = []
     @State private var drinks: [DailyDrink] = []
     @State private var manuals: [DailyManual] = []
+    
+    @State private var totalCalories: Int = 0
+    @State private var totalProtein: Int = 0
+    @State private var totalCarbs: Int = 0
+    @State private var totalFats: Int = 0
 
     init(dailyRecord: DailyRecord, needsRefresh: Binding<Bool>, isHistorical: Bool, onRefreshHistoricalRecords: (() -> Void)? = nil, onDismiss: (() -> Void)? = nil, onCompleteDay: (() -> Void)? = nil) {
         self._dailyRecord = State(initialValue: dailyRecord)
@@ -406,7 +413,7 @@ struct DayDetailView: View {
                                 }
                                 
                                 Button(action: {
-                                    
+                                    isInventorySelectionSheetPresented.toggle()
                                 }) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 10)
@@ -424,6 +431,20 @@ struct DayDetailView: View {
                                     .shadow(radius: 5) // Add some shadow for better visibility
                                     .padding(.trailing, 20) // Add padding to position it away from the edges
                                     .padding(.bottom, -12)
+                                }
+                                .sheet(isPresented: $isInventorySelectionSheetPresented, onDismiss: {
+                                    fetchUpdatedRecord()
+                                }) {
+                                    if let historicalGoal = dailyRecord.goal {
+                                        let convertedGoal = historicalGoal.toSelectedGoal(
+                                            withId: dailyRecord.id,
+                                            name: "Historical Goal"
+                                        )
+                                        InventorySelectionSheetArchived(
+                                            selectedGoal: convertedGoal,
+                                            recordId: dailyRecord.id
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -602,6 +623,489 @@ struct DayDetailView: View {
         }
     }
 }
+
+
+struct InventorySelectionSheetArchived: View {
+    @State private var selectedItem: Item = .Food
+    @State private var foods: [Food] = []
+    @State private var drinks: [Drink] = []
+    
+    // Search Bar State
+    @State private var searchText: String = ""
+    
+    @State private var isFoodInputSheetPresented = false
+    @State private var isDrinkInputSheetPresented = false
+    @State private var selectedFood: Food? = nil
+    @State private var selectedDrink: Drink? = nil
+    
+    var selectedGoal: SelectedGoal? // Add this line
+    
+    @State private var dailyRecord: DailyRecord? // Add state to hold the updated record
+    var recordId: String // Accept record ID
+    
+    class SheetMananger: ObservableObject{
+        enum Sheet{
+            case Food
+            case Drink
+        }
+        
+        @Published var showSheet = false
+        @Published var whichSheet: Sheet? = nil
+    }
+    
+    @StateObject var sheetManager = SheetMananger()
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color(red: 20/255, green: 20/255, blue: 30/255)
+                    .ignoresSafeArea()
+                
+                VStack {
+                    Picker("Item", selection: $selectedItem) {
+                        Text("Food").tag(Item.Food)
+                        Text("Drink").tag(Item.Drink)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                    .cornerRadius(10)
+                    .padding()
+                    .padding(.bottom, -10)
+                    
+                    // Search Bar
+                    HStack {
+                        TextField("Search", text: $searchText)
+                            .padding(10)
+                            .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                            .cornerRadius(10)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color(red: 44/255, green: 44/255, blue: 53/255), lineWidth: 2) // Set the border color and width
+                                    .padding(.horizontal)
+                            )
+                    }
+                    .padding(.bottom, 5)
+                    
+                    List {
+                        if selectedItem == .Food {
+                            ForEach(filteredFoods(), id: \.id) { food in
+                                Button(action: {
+                                    selectedFood = food
+                                    sheetManager.whichSheet = .Food
+                                    sheetManager.showSheet.toggle()
+                                }) {
+                                    Text(food.name)
+                                        .foregroundColor(.white.opacity(0.70))
+                                }
+                            }
+                            .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                        } else {
+                            ForEach(filteredDrinks(), id: \.id) { drink in
+                                Button(action: {
+                                    selectedDrink = drink
+                                    sheetManager.whichSheet = .Drink
+                                    sheetManager.showSheet.toggle()
+                                }) {
+                                    Text(drink.name)
+                                        .foregroundColor(.white.opacity(0.70))
+                                }
+                            }
+                            .listRowBackground(Color(red: 20/255, green: 20/255, blue: 30/255))
+                        }
+                    }
+                    .listStyle(PlainListStyle())
+                    .foregroundColor(.white)
+                    .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+                    .onAppear {
+                        loadFoods()
+                        loadDrinks()
+                    }
+                    .sheet(isPresented: $sheetManager.showSheet, content: {
+                        if let whichSheet = sheetManager.whichSheet {
+                            switch whichSheet {
+                            case .Food:
+                                if let selectedFood = selectedFood {
+                                    FoodInputSheetArchived(
+                                        food: bindingFood(for: selectedFood),
+                                        selectedGoal: selectedGoal,
+                                        recordId: recordId
+                                    )
+                                }
+                            case .Drink:
+                                if let selectedDrink = selectedDrink {
+//                                    DrinkInputSheet(
+//                                        drink: bindingDrink(for: selectedDrink),
+//                                        totalCalories: $totalCalories,
+//                                        totalProtein: $totalProtein,
+//                                        totalCarbs: $totalCarbs,
+//                                        totalFats: $totalFats,
+//                                        updateProgress: updateProgress,
+//                                        selectedGoal: selectedGoal
+//                                    )
+                                }
+                            }
+                        }
+                    })
+                }
+                .background(Color(red: 20/255, green: 20/255, blue: 30/255))
+            }
+        }
+    }
+
+    private func loadFoods() {
+        print("loadFoods called")
+        getAllFoods { result in
+            switch result {
+            case .success(let foods):
+                print("Foods loaded: \(foods)") // Debug print
+                self.foods = foods.sorted(by: { $0.id > $1.id })
+            case .failure(let error):
+                print("Failed to load foods: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func loadDrinks() {
+        print("loadDrinks called")
+        getAllDrinks { result in
+            switch result {
+            case .success(let drinks):
+                print("Drinks loaded: \(drinks)") // Debug print
+                self.drinks = drinks.sorted(by: { $0.id > $1.id })
+            case .failure(let error):
+                print("Failed to load drinks: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    private func bindingFood(for food: Food) -> Binding<Food> {
+        guard let index = foods.firstIndex(where: { $0.id == food.id }) else {
+            fatalError("Food not found")
+        }
+        return $foods[index]
+    }
+
+    private func bindingDrink(for drink: Drink) -> Binding<Drink> {
+        guard let index = drinks.firstIndex(where: { $0.id == drink.id }) else {
+            fatalError("Drink not found")
+        }
+        return $drinks[index]
+    }
+    
+    // Filtering functions
+    private func filteredFoods() -> [Food] {
+        if searchText.isEmpty {
+            return foods
+        } else {
+            return foods.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+    
+    private func filteredDrinks() -> [Drink] {
+        if searchText.isEmpty {
+            return drinks
+        } else {
+            return drinks.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+        }
+    }
+}
+
+
+
+// For User to input Food Item Consumption in Archived Records
+struct FoodInputSheetArchived: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    @Binding var food: Food
+
+    var selectedGoal: SelectedGoal?
+    var recordId: String // Add this to identify the archived record
+    
+    @State private var selectedUnit: String
+    @State private var servingSize: String
+    @State private var foodName: String
+    @State private var foodWeightValue: String
+    @State private var foodCalories: String
+    @State private var foodProtein: String
+    @State private var foodCarbs: String
+    @State private var foodFat: String
+
+    @FocusState private var isServingSizeFocused: Bool
+    @FocusState private var isWeightValueFocused: Bool
+    
+    @State private var message = ""
+    @State private var showAlert = false
+    
+    @State private var errorMessage = ""
+    @State private var showErrorAlert = false
+
+    init(food: Binding<Food>, selectedGoal: SelectedGoal?, recordId: String) {
+        _food = food
+        self.selectedGoal = selectedGoal
+        self.recordId = recordId
+        
+        _selectedUnit = State(initialValue: food.wrappedValue.weight.unit.rawValue)
+        _servingSize = State(initialValue: String(format: "%.2f", 1.0))
+        _foodName = State(initialValue: food.wrappedValue.name)
+        _foodWeightValue = State(initialValue: String(food.wrappedValue.weight.value))
+        _foodCalories = State(initialValue: String(food.wrappedValue.calories))
+        _foodProtein = State(initialValue: String(food.wrappedValue.protein))
+        _foodCarbs = State(initialValue: food.wrappedValue.carbs != nil ? String(food.wrappedValue.carbs!) : "")
+        _foodFat = State(initialValue: food.wrappedValue.fat != nil ? String(food.wrappedValue.fat!) : "")
+    }
+    
+    func recalculateMacronutrients() {
+        guard let foodWeightValue = Float(foodWeightValue) else { return }
+        
+        let weightFactor = foodWeightValue / Float(food.weight.value)
+        foodCalories = String(Int(Float(food.calories) * weightFactor))
+        foodProtein = String(Int(Float(food.protein) * weightFactor))
+        foodCarbs = String(Int(Float(food.carbs ?? 0) * weightFactor))
+        foodFat = String(Int(Float(food.fat ?? 0) * weightFactor))
+    }
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack {
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $foodName)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Serving", color: Color(.white))
+                    
+                    TextField("Serving Size", text: $servingSize)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isServingSizeFocused)
+                        .onSubmit {
+                            let newServingSize = Float(servingSize) ?? 1.0
+                            foodWeightValue = String(Float(food.weight.value) * newServingSize)
+                            recalculateMacronutrients()
+                        }
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Weight", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $foodWeightValue)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isWeightValueFocused)
+                        .onSubmit {
+                            guard let weightValue = Float(foodWeightValue), weightValue != 0 else { return }
+                            servingSize = String(format: "%.2f", weightValue / Float(food.weight.value))
+                            recalculateMacronutrients()
+                        }
+                    
+                    Text(selectedUnit)
+                        .padding(8)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .opacity(0.70)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $foodCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $foodProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        TextField("Enter Amount...", text: $foodCarbs)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
+                }
+                
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        TextField("Enter Amount...", text: $foodFat)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
+                }
+                
+                Button(action: {
+                    if (selectedGoal?.carbGoal != 0 && foodCarbs.isEmpty) || selectedGoal?.fatGoal != 0 && foodFat.isEmpty {
+                        var missingMacros: [String] = []
+                        if selectedGoal?.carbGoal != 0 && foodCarbs.isEmpty {
+                            missingMacros.append("carbs")
+                        }
+                        
+                        if selectedGoal?.fatGoal != 0 && foodFat.isEmpty {
+                            missingMacros.append("fat")
+                        }
+                        
+                        errorMessage = "The current food is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        showErrorAlert = true
+                    } else {
+                        guard let flooredWeightValue = Float(foodWeightValue) else { return }
+                        addFoodToArchivedRecord(
+                            recordId: recordId,
+                            name: food.name,
+                            servings: Float(servingSize) ?? 0,
+                            weightValue: Int(floor(flooredWeightValue)),
+                            weightUnit: selectedUnit,
+                            calories: Int(foodCalories) ?? 0,
+                            protein: Int(foodProtein) ?? 0,
+                            carbs: Int(foodCarbs) ?? 0,
+                            fats: Int(foodFat) ?? 0
+                        ) { success, error in
+                            DispatchQueue.main.async {
+                                if success {
+                                    message = "Food added to daily successfully!"
+                                } else {
+                                    message = error ?? "Failed to add food to daily."
+                                }
+                                showAlert = true
+                            }
+                        }
+                    }
+                }) {
+                    Text("Add to Archived Record")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+                .alert(isPresented: $showErrorAlert) {
+                    Alert(title: Text("Missing Values"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+                }
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("Result"),
+                        message: Text(message),
+                        dismissButton: .default(Text("OK")) {
+                            // Dismiss the view only if it's a success alert
+                            presentationMode.wrappedValue.dismiss()
+                            
+                        }
+                    )
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+        }
+    }
+}
+
+
+
+
+
+
 
 
 struct FoodDetailView: View {
