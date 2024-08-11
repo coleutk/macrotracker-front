@@ -300,8 +300,9 @@ struct DayDetailView: View {
                         }
 
                         ForEach(drinks, id: \.id) { drink in
-                            NavigationLink(destination: DrinkDetailView(drink: drink, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
+                            NavigationLink(destination: DrinkDetailView(drink: drink, recordId: dailyRecord.id, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.needsRefresh = true
+                                self.fetchUpdatedRecord()
                             }, isHistorical: isHistorical)) {
                                 Text(drink.name)
                                     .foregroundColor(.white.opacity(0.70))
@@ -310,8 +311,9 @@ struct DayDetailView: View {
                         }
 
                         ForEach(manuals, id: \.id) { manual in
-                            NavigationLink(destination: ManualDetailView(manual: manual, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
+                            NavigationLink(destination: ManualDetailView(manual: manual, recordId: dailyRecord.id, selectedGoal: selectedGoalForRecord(isHistorical: isHistorical), onDelete: {
                                 self.needsRefresh = true
+                                self.fetchUpdatedRecord()
                             }, isHistorical: isHistorical)) {
                                 Text("Manual Entry")
                                     .foregroundColor(.white.opacity(0.70))
@@ -858,6 +860,7 @@ struct FoodDetailView: View {
 
 struct DrinkDetailView: View {
     var drink: DailyDrink
+    var recordId: String // Accept record ID
     
     var selectedGoal: SelectedGoal?
     
@@ -866,6 +869,8 @@ struct DrinkDetailView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     var isHistorical: Bool // New parameter
+    
+    @State private var dailyRecord: DailyRecord? // Add state to hold the updated record
     
     var body: some View {
         ZStack {
@@ -1055,7 +1060,27 @@ struct DrinkDetailView: View {
                     }
                 } else {
                     Button(action: {
-
+                        deleteDrinkFromArchived(recordId: recordId, drinkInputId: drink.id) { result in
+                            switch result {
+                            case .success:
+                                print("Drink item deleted from archived!")
+                                
+                                // Set alert message
+                                alertMessage = "Deleted \(drink.name)"
+                                // Show the alert
+                                showAlert = true
+                                
+                                // Notify the parent view to refresh
+                                onDelete()
+                                
+                            case .failure(let error):
+                                print("Failed to delete food item: \(error)")
+                                // Set alert message
+                                alertMessage = "Failed to delete drink item: \(error.localizedDescription)"
+                                // Show the alert
+                                showAlert = true
+                            }
+                        }
                     }) {
                         Text("Delete \(drink.name)")
                             .foregroundColor(.white.opacity(0.70))
@@ -1088,6 +1113,7 @@ struct DrinkDetailView: View {
 
 struct ManualDetailView: View {
     var manual: DailyManual
+    var recordId: String // Accept record ID
     
     var selectedGoal: SelectedGoal?
     
@@ -1096,6 +1122,8 @@ struct ManualDetailView: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
     var isHistorical: Bool // New parameter
+    
+    @State private var dailyRecord: DailyRecord? // Add state to hold the updated record
     
     var body: some View {
         ZStack {
@@ -1203,7 +1231,27 @@ struct ManualDetailView: View {
                 } else {
                     // Delete Item Button
                     Button(action: {
-                        
+                        deleteManualFromArchived(recordId: recordId, manualInputId: manual.id) { result in
+                            switch result {
+                            case .success:
+                                print("Drink item deleted from archived!")
+                                
+                                // Set alert message
+                                alertMessage = "Deleted Manual Entry"
+                                // Show the alert
+                                showAlert = true
+                                
+                                // Notify the parent view to refresh
+                                onDelete()
+                                
+                            case .failure(let error):
+                                print("Failed to delete manual entry: \(error)")
+                                // Set alert message
+                                alertMessage = "Failed to delete manual entry: \(error.localizedDescription)"
+                                // Show the alert
+                                showAlert = true
+                            }
+                        }
                     }) {
                         Text("Delete Manual Entry")
                             .foregroundColor(.white.opacity(0.70))

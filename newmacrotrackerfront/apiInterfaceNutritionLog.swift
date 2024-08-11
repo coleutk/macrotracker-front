@@ -671,8 +671,65 @@ func deleteFoodFromArchived(recordId: String, foodInputId: String, completion: @
     task.resume()
 }
 
-// Get Specific Historical Record
-// Function to fetch a specific historical record by ID
+
+func deleteDrinkFromArchived(recordId: String, drinkInputId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/deleteDrink/\(recordId)/\(drinkInputId)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "DELETE"
+    
+    let task = URLSession.shared.dataTask(with: request) { _, response, error in
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to delete food entry"])))
+            return
+        }
+
+        completion(.success(()))
+    }
+
+    task.resume()
+}
+
+
+func deleteManualFromArchived(recordId: String, manualInputId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
+        return
+    }
+    
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/deleteManual/\(recordId)/\(manualInputId)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "DELETE"
+    
+    let task = URLSession.shared.dataTask(with: request) { _, response, error in
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to delete food entry"])))
+            return
+        }
+
+        completion(.success(()))
+    }
+
+    task.resume()
+}
+
+// Get Specific Historical Record by ID
 func fetchHistoricalRecord(id: String, completion: @escaping (Result<DailyRecord, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
         completion(.failure(NSError(domain: "", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])))
