@@ -791,7 +791,95 @@ func addFoodToArchivedRecord(recordId: String, name: String, servings: Float, we
 }
 
 
+// Add Drink to Archived Record
+func addDrinkToArchivedRecord(recordId: String, name: String, servings: Float, volumeValue: Int, volumeUnit: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/addDrink/\(recordId)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "POST"
+    
+    let body: [String: Any] = [
+        "name": name,
+        "servings": servings,
+        "volume": [
+            "value": volumeValue,
+            "unit": volumeUnit
+        ],
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fat": fats
+    ]
+    
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(false, "Error: \(error.localizedDescription)")
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            completion(false, "Invalid response")
+            return
+        }
+        
+        if httpResponse.statusCode == 200 {
+            completion(true, nil)
+        } else {
+            completion(false, "Error: Received HTTP status code \(httpResponse.statusCode)")
+        }
+    }
+    
+    task.resume()
+}
 
+// Add Manual Entry to Archived Record
+func addManualToArchivedRecord(recordId: String, calories: Int, protein: Int, carbs: Int, fats: Int, completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
+    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/addManual/\(recordId)")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "POST"
+    
+    let body: [String: Any] = [
+        "calories": calories,
+        "protein": protein,
+        "carbs": carbs,
+        "fat": fats
+    ]
+    
+    request.httpBody = try? JSONSerialization.data(withJSONObject: body, options: .fragmentsAllowed)
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(false, "Error: \(error.localizedDescription)")
+            return
+        }
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            completion(false, "Invalid response")
+            return
+        }
+        
+        if httpResponse.statusCode == 200 {
+            completion(true, nil)
+        } else {
+            completion(false, "Error: Received HTTP status code \(httpResponse.statusCode)")
+        }
+    }
+    
+    task.resume()
+}
 
 
 // Get Specific Historical Record by ID

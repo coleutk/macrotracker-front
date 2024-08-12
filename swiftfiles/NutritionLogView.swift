@@ -188,6 +188,11 @@ struct DayDetailView: View {
     @Environment(\.presentationMode) var presentationMode
     
     @State private var isInventorySelectionSheetPresented = false
+    @State private var isManualWriteSheetPresented = false
+    @State private var manualCalories = ""
+    @State private var manualProtein = ""
+    @State private var manualCarbs = ""
+    @State private var manualFats = ""
 
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -391,7 +396,7 @@ struct DayDetailView: View {
                                 Spacer()
                                 
                                 Button(action: {
-                                    
+                                    isManualWriteSheetPresented.toggle()
                                 }) {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 10)
@@ -410,6 +415,24 @@ struct DayDetailView: View {
                                     .padding(.leading, 20) // Add padding to position it away from the edges
                                     .padding(.trailing, 10)
                                     .padding(.bottom, -12)
+                                }
+                                .sheet(isPresented: $isManualWriteSheetPresented, onDismiss: {
+                                    fetchUpdatedRecord()
+                                }) {
+                                    if let historicalGoal = dailyRecord.goal {
+                                        let convertedGoal = historicalGoal.toSelectedGoal(
+                                            withId: dailyRecord.id,
+                                            name: "Historical Goal"
+                                        )
+                                        ManualWriteSheetArchived(
+                                            manualCalories: $manualCalories,
+                                            manualProtein: $manualProtein,
+                                            manualCarbs: $manualCarbs,
+                                            manualFats: $manualFats,
+                                            selectedGoal: convertedGoal,
+                                            recordId: dailyRecord.id
+                                        )
+                                    }
                                 }
                                 
                                 Button(action: {
@@ -735,15 +758,11 @@ struct InventorySelectionSheetArchived: View {
                                 }
                             case .Drink:
                                 if let selectedDrink = selectedDrink {
-//                                    DrinkInputSheet(
-//                                        drink: bindingDrink(for: selectedDrink),
-//                                        totalCalories: $totalCalories,
-//                                        totalProtein: $totalProtein,
-//                                        totalCarbs: $totalCarbs,
-//                                        totalFats: $totalFats,
-//                                        updateProgress: updateProgress,
-//                                        selectedGoal: selectedGoal
-//                                    )
+                                    DrinkInputSheetArchived(
+                                        drink: bindingDrink(for: selectedDrink),
+                                        selectedGoal: selectedGoal,
+                                        recordId: recordId
+                                    )
                                 }
                             }
                         }
@@ -821,7 +840,7 @@ struct FoodInputSheetArchived: View {
     @Binding var food: Food
 
     var selectedGoal: SelectedGoal?
-    var recordId: String // Add this to identify the archived record
+    var recordId: String // Identify the archived record
     
     @State private var selectedUnit: String
     @State private var servingSize: String
@@ -1010,7 +1029,7 @@ struct FoodInputSheetArchived: View {
                 
                 if selectedGoal?.fatGoal != 0 {
                     HStack {
-                        MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                         
                         TextField("Enter Amount...", text: $foodFat)
                             .padding(14)
@@ -1086,8 +1105,7 @@ struct FoodInputSheetArchived: View {
                 }
                 .alert(isPresented: $showAlert) {
                     Alert(
-                        title: Text("Result"),
-                        message: Text(message),
+                        title: Text("Food Added Successfully!"),
                         dismissButton: .default(Text("OK")) {
                             // Dismiss the view only if it's a success alert
                             presentationMode.wrappedValue.dismiss()
@@ -1103,9 +1121,463 @@ struct FoodInputSheetArchived: View {
 
 
 
+struct DrinkInputSheetArchived: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    @Binding var drink: Drink
+
+    var selectedGoal: SelectedGoal?
+    var recordId: String // Identify Archived Record
+    
+    @State private var selectedUnit: String
+    @State private var servingSize: String
+    @State private var drinkName: String
+    @State private var drinkVolumeValue: String
+    @State private var drinkCalories: String
+    @State private var drinkProtein: String
+    @State private var drinkCarbs: String
+    @State private var drinkFat: String
+    
+    @FocusState private var isServingSizeFocused: Bool
+    @FocusState private var isVolumeValueFocused: Bool
+    
+    @State private var message = ""
+    @State private var showAlert = false
+
+    @State private var errorMessage = ""
+    @State private var showErrorAlert = false
+    
+    init(drink: Binding<Drink>, selectedGoal: SelectedGoal?, recordId: String) {
+        _drink = drink
+        self.selectedGoal = selectedGoal
+        self.recordId = recordId
+        
+        _selectedUnit = State(initialValue: drink.wrappedValue.volume.unit.rawValue)
+        _servingSize = State(initialValue: String(format: "%.2f", 1.0))
+        _drinkName = State(initialValue: drink.wrappedValue.name)
+        _drinkVolumeValue = State(initialValue: String(drink.wrappedValue.volume.value))
+        _drinkCalories = State(initialValue: String(drink.wrappedValue.calories))
+        _drinkProtein = State(initialValue: String(drink.wrappedValue.protein))
+        _drinkCarbs = State(initialValue: drink.wrappedValue.carbs != nil ? String(drink.wrappedValue.carbs!) : "")
+        _drinkFat = State(initialValue: drink.wrappedValue.fat != nil ? String(drink.wrappedValue.fat!) : "")
+    }
+    
+    func recalculateMacronutrients() {
+        guard let drinkVolumeValue = Float(drinkVolumeValue) else { return }
+        
+        let volumeFactor = drinkVolumeValue / Float(drink.volume.value)
+        drinkCalories = String(Int(Float(drink.calories) * volumeFactor))
+        drinkProtein = String(Int(Float(drink.protein) * volumeFactor))
+        drinkCarbs = String(Int(Float(drink.carbs ?? 0) * volumeFactor))
+        drinkFat = String(Int(Float(drink.fat ?? 0) * volumeFactor))
+    }
+    
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack {
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Name", color: Color(.white))
+                    
+                    TextField("Type Here...", text: $drinkName)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Serving", color: Color(.white))
+                    
+                    TextField("Serving Size", text: $servingSize)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isServingSizeFocused)
+                        .onSubmit {
+                            let newServingSize = Float(servingSize) ?? 1.0
+                            drinkVolumeValue = String(Float(drink.volume.value) * newServingSize)
+                            recalculateMacronutrients()
+                        }
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Volume", color: Color(.white))
+                    
+                    TextField("Enter Amount...", text: $drinkVolumeValue)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .focused($isVolumeValueFocused)
+                        .onSubmit {
+                            guard let volumeValue = Float(drinkVolumeValue), volumeValue != 0 else { return }
+                            servingSize = String(format: "%.2f", volumeValue / Float(drink.volume.value))
+                            recalculateMacronutrients()
+                        }
+                    
+                    Text(selectedUnit)
+                        .padding(8)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .opacity(0.70)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $drinkCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
+                }
+                .padding(3)
+                
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $drinkProtein)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.70)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                        .disabled(true)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+                
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        TextField("Enter Amount...", text: $drinkCarbs)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
+                }
+                
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        TextField("Enter Amount...", text: $drinkFat)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .opacity(0.70)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                            .disabled(true)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
+                }
+                
+                Button(action: {
+                    if (selectedGoal?.carbGoal != 0 && drinkCarbs.isEmpty) || (selectedGoal?.fatGoal != 0 && drinkFat.isEmpty) {
+                        var missingMacros: [String] = []
+                        if selectedGoal?.carbGoal != 0 && drinkCarbs.isEmpty {
+                            missingMacros.append("carbs")
+                        }
+                        if selectedGoal?.fatGoal != 0 && drinkFat.isEmpty {
+                            missingMacros.append("fats")
+                        }
+                        errorMessage = "The current drink is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        showErrorAlert = true
+                    } else {
+                        guard let flooredVolumeValue = Float(drinkVolumeValue) else { return }
+                        addDrinkToArchivedRecord(
+                            recordId: recordId,
+                            name: drink.name,
+                            servings: Float(servingSize) ?? 0,
+                            volumeValue: Int(floor(flooredVolumeValue)),
+                            volumeUnit: selectedUnit,
+                            calories: Int(drinkCalories) ?? 0,
+                            protein: Int(drinkProtein) ?? 0,
+                            carbs: Int(drinkCarbs) ?? 0,
+                            fats: Int(drinkFat) ?? 0
+                        ) { success, error in
+                            DispatchQueue.main.async {
+                                if success {
+                                    message = "Drink added to daily successfully!"
+                                } else {
+                                    message = error ?? "Failed to add drink to archived record."
+                                }
+                                showAlert = true
+                            }
+                        }
+                    }
+                }) {
+                    Text("Add to Archived Record")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+                .alert(isPresented: $showErrorAlert) {
+                    Alert(title: Text("Missing Values"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+                }
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("Drink Added Successfully!"),
+                        dismissButton: .default(Text("OK")) {
+                            // Dismiss the view only if it's a success alert
+                            presentationMode.wrappedValue.dismiss()
+                            
+                        }
+                    )
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+        }
+    }
+}
 
 
+// ManualWriteSheet when click PENCIL ICON
+struct ManualWriteSheetArchived: View {
+    @Environment(\.presentationMode) var presentationMode
+    
+    @Binding var manualCalories: String
+    @Binding var manualProtein: String
+    @Binding var manualCarbs: String
+    @Binding var manualFats: String
 
+    @State private var message = ""
+    @State private var showAlert = false
+
+    var selectedGoal: SelectedGoal?
+    var recordId: String // Identify Archived Record
+
+    var body: some View {
+        ZStack {
+            Color(red: 20/255, green: 20/255, blue: 30/255)
+                .ignoresSafeArea()
+            VStack {
+                Text("Details:")
+                    .font(.title2)
+                    .bold()
+                    .foregroundColor(.white.opacity(0.70))
+
+                HStack {
+                    MacroDisplayVertical(nutrient: "Cals", color: Color(red: 10/255, green: 211/255, blue: 255/255))
+                    
+                    TextField("Enter Amount...", text: $manualCalories)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                }
+                .padding(3)
+
+                HStack {
+                    MacroDisplayVertical(nutrient: "Protein", color: Color(red: 46/255, green: 94/255, blue: 170/255))
+                    
+                    TextField("Enter Amount...", text: $manualProtein)
+                        .keyboardType(.numberPad)
+                        .padding(14)
+                        .frame(height: 60)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.trailing, 22)
+                        .padding(.leading, -10)
+                    
+                    Text("g")
+                        .padding(14)
+                        .frame(width: 80, height: 60)
+                        .background(Color.black.opacity(0.20))
+                        .cornerRadius(15)
+                        .padding(.leading, -20)
+                        .padding(.trailing, 22)
+                        .foregroundColor(.white.opacity(0.50))
+                }
+                .padding(3)
+
+                if selectedGoal?.carbGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Carbs", color: Color(red: 120/255, green: 255/255, blue: 214/255))
+                        
+                        TextField("Enter Amount...", text: $manualCarbs)
+                            .keyboardType(.numberPad)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
+                }
+                
+                if selectedGoal?.fatGoal != 0 {
+                    HStack {
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        
+                        TextField("Enter Amount...", text: $manualFats)
+                            .keyboardType(.numberPad)
+                            .padding(14)
+                            .frame(height: 60)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.trailing, 22)
+                            .padding(.leading, -10)
+                        
+                        Text("g")
+                            .padding(14)
+                            .frame(width: 80, height: 60)
+                            .background(Color.black.opacity(0.20))
+                            .cornerRadius(15)
+                            .padding(.leading, -20)
+                            .padding(.trailing, 22)
+                            .foregroundColor(.white.opacity(0.50))
+                    }
+                    .padding(3)
+                }
+
+                Button(action: {
+                    // Print input values for debugging
+                    print("Manual Entry - Calories: \(manualCalories), Protein: \(manualProtein), Carbs: \(manualCarbs), Fats: \(manualFats)")
+                    
+                    // Convert input values from String to Int
+                    let calories = Int(manualCalories) ?? 0
+                    let protein = Int(manualProtein) ?? 0
+                    let carbs = Int(manualCarbs) ?? 0
+                    let fats = Int(manualFats) ?? 0
+
+                    // Call the addManualToDaily function
+                    addManualToArchivedRecord(
+                        recordId: recordId,
+                        calories: calories,
+                        protein: protein,
+                        carbs: carbs,
+                        fats: fats
+                    )  { success, error in
+                        DispatchQueue.main.async {
+                            if success {
+                                message = "Manual added to daily successfully!"
+                            } else {
+                                message = error ?? "Failed to add manual to daily."
+                            }
+                            showAlert = true
+                        }
+                    }
+
+                    // Clear the text fields
+                    manualCalories = ""
+                    manualProtein = ""
+                    manualCarbs = ""
+                    manualFats = ""
+                }) {
+                    Text("Add to ArchivedRecord")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
+                .alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("ManualEntry Added Successfully!"),
+                        dismissButton: .default(Text("OK")) {
+                            // Dismiss the view only if it's a success alert
+                            presentationMode.wrappedValue.dismiss()
+                            
+                        }
+                    )
+                }
+            }
+            .foregroundColor(.white.opacity(0.70))
+        }
+    }
+}
 
 
 struct FoodDetailView: View {

@@ -979,7 +979,7 @@ struct FoodInputSheet: View {
                 
                 if selectedGoal?.fatGoal != 0 {
                     HStack {
-                        MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                         
                         TextField("Enter Amount...", text: $foodFat)
                             .padding(14)
@@ -1284,7 +1284,7 @@ struct DrinkInputSheet: View {
                 
                 if selectedGoal?.fatGoal != 0 {
                     HStack {
-                        MacroDisplayVertical(nutrient: "Fats", color: Color(red: 171/255, green: 169/255, blue: 195/255))
+                        MacroDisplayVertical(nutrient: "Fat", color: Color(red: 171/255, green: 169/255, blue: 195/255))
                         
                         TextField("Enter Amount...", text: $drinkFat)
                             .padding(14)
