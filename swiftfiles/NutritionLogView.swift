@@ -854,6 +854,8 @@ struct FoodInputSheetArchived: View {
     @FocusState private var isServingSizeFocused: Bool
     @FocusState private var isWeightValueFocused: Bool
     
+    @State private var eitherAlert = false
+    
     @State private var message = ""
     @State private var showAlert = false
     
@@ -1065,7 +1067,8 @@ struct FoodInputSheetArchived: View {
                             missingMacros.append("fat")
                         }
                         
-                        errorMessage = "The current food is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        message = "The current food is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        eitherAlert = true
                         showErrorAlert = true
                     } else {
                         guard let flooredWeightValue = Float(foodWeightValue) else { return }
@@ -1082,10 +1085,11 @@ struct FoodInputSheetArchived: View {
                         ) { success, error in
                             DispatchQueue.main.async {
                                 if success {
-                                    message = "Food added to daily successfully!"
+                                    message = ""
                                 } else {
-                                    message = error ?? "Failed to add food to daily."
+                                    message = error ?? "Failed to add food to archived."
                                 }
+                                eitherAlert = true
                                 showAlert = true
                             }
                         }
@@ -1100,16 +1104,14 @@ struct FoodInputSheetArchived: View {
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
                 }
-                .alert(isPresented: $showErrorAlert) {
-                    Alert(title: Text("Missing Values"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
-                }
-                .alert(isPresented: $showAlert) {
+                .alert(isPresented: $eitherAlert) {
                     Alert(
-                        title: Text("Food Added Successfully!"),
+                        title: Text(showErrorAlert ? "Missing Values" : "Food Added Successfully!"),
+                        message: Text(message),
                         dismissButton: .default(Text("OK")) {
-                            // Dismiss the view only if it's a success alert
-                            presentationMode.wrappedValue.dismiss()
-                            
+                            if !showErrorAlert {
+                                presentationMode.wrappedValue.dismiss()
+                            }
                         }
                     )
                 }
@@ -1140,6 +1142,8 @@ struct DrinkInputSheetArchived: View {
     
     @FocusState private var isServingSizeFocused: Bool
     @FocusState private var isVolumeValueFocused: Bool
+    
+    @State private var eitherAlert = false
     
     @State private var message = ""
     @State private var showAlert = false
@@ -1350,7 +1354,8 @@ struct DrinkInputSheetArchived: View {
                         if selectedGoal?.fatGoal != 0 && drinkFat.isEmpty {
                             missingMacros.append("fats")
                         }
-                        errorMessage = "The current drink is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        message = "The current drink is missing: \(missingMacros.joined(separator: ", ")). Please update these values in your inventory before adding."
+                        eitherAlert = true
                         showErrorAlert = true
                     } else {
                         guard let flooredVolumeValue = Float(drinkVolumeValue) else { return }
@@ -1367,10 +1372,11 @@ struct DrinkInputSheetArchived: View {
                         ) { success, error in
                             DispatchQueue.main.async {
                                 if success {
-                                    message = "Drink added to daily successfully!"
+                                    message = ""
                                 } else {
                                     message = error ?? "Failed to add drink to archived record."
                                 }
+                                eitherAlert = true
                                 showAlert = true
                             }
                         }
@@ -1385,16 +1391,14 @@ struct DrinkInputSheetArchived: View {
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
                 }
-                .alert(isPresented: $showErrorAlert) {
-                    Alert(title: Text("Missing Values"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
-                }
-                .alert(isPresented: $showAlert) {
+                .alert(isPresented: $eitherAlert) {
                     Alert(
-                        title: Text("Drink Added Successfully!"),
+                        title: Text(showErrorAlert ? "Missing Values" : "Drink Added Successfully!"),
+                        message: Text(message),
                         dismissButton: .default(Text("OK")) {
-                            // Dismiss the view only if it's a success alert
-                            presentationMode.wrappedValue.dismiss()
-                            
+                            if !showErrorAlert {
+                                presentationMode.wrappedValue.dismiss()
+                            }
                         }
                     )
                 }
@@ -1521,9 +1525,6 @@ struct ManualWriteSheetArchived: View {
                 }
 
                 Button(action: {
-                    // Print input values for debugging
-                    print("Manual Entry - Calories: \(manualCalories), Protein: \(manualProtein), Carbs: \(manualCarbs), Fats: \(manualFats)")
-                    
                     // Convert input values from String to Int
                     let calories = Int(manualCalories) ?? 0
                     let protein = Int(manualProtein) ?? 0
