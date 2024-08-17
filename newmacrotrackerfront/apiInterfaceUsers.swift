@@ -19,6 +19,8 @@ struct SelectedGoal: Identifiable, Codable {
     var fatGoal: Int
 }
 
+let baseURL = "https://macrotracker-back-860a4fde2f08.herokuapp.com"
+
 // Grab Selected Goal from User Details (USER)
 func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal?, Error>) -> Void) {
     guard let token = UserDefaults.standard.string(forKey: "token") else {
@@ -26,7 +28,7 @@ func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal?, Error>) 
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/users/me") else {
+    guard let url = URL(string: "\(baseURL)/users/me") else {
         completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
         return
     }
@@ -84,7 +86,7 @@ func getUserSelectedGoal(_ completion: @escaping (Result<SelectedGoal?, Error>) 
 
 // Sign Up User
 func userSignUp(username: String, email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
-    guard let url = URL(string: "http://localhost:3000/users/signup") else {
+    guard let url = URL(string: "\(baseURL)/users/signup") else {
         completion(false, "Invalid URL")
         return
     }
@@ -139,7 +141,7 @@ func userSignUp(username: String, email: String, password: String, completion: @
 
 // Log in User
 func userLogin(email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
-    guard let url = URL(string: "http://localhost:3000/users/login") else {
+    guard let url = URL(string: "\(baseURL)/users/login") else {
         completion(false, "Invalid URL")
         return
     }
@@ -189,7 +191,7 @@ func getUserDetails(_ completion: @escaping (Result<UserDetails, Error>) -> Void
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/users/me") else {
+    guard let url = URL(string: "\(baseURL)/users/me") else {
         completion(.failure(NSError(domain: "", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
         return
     }
@@ -237,7 +239,7 @@ func updateUserDetails (username: String, email: String, completion: @escaping (
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/users/updateUser")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/users/updateUser")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "PATCH"
@@ -288,7 +290,7 @@ func updateUserPassword(currentPassword: String, newPassword: String, confirmPas
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/users/updatePassword")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/users/updatePassword")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "PATCH"

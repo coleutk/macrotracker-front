@@ -134,7 +134,7 @@ struct SignUpView: View {
                 }
                 .padding(.bottom, 100)
                 .navigationDestination(isPresented: $showingHomeScreen) {
-                    HomeView(username: username)
+                    HomeView()
                 }
             }
         }

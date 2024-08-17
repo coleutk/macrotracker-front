@@ -88,7 +88,7 @@ struct LoginView: View {
                 }
                 .padding(.bottom, 100)
                 .navigationDestination(isPresented: $showingHomeScreen) {
-                    HomeView(username: "tempUsername") // Or pass a different identifier
+                    HomeView()
                 }
 
             }

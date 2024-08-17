@@ -37,7 +37,7 @@ func getAllDrinks(_ completion: @escaping (Result<[Drink], Error>) -> Void) {
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/drinks/")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/drinks/")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "GET"
@@ -104,7 +104,7 @@ func editDrink(_ drink: Drink, completion: @escaping (Result<Drink, Error>) -> V
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/drinks/\(drink.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/drinks/\(drink.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "PATCH"
@@ -172,7 +172,7 @@ func deleteDrink(_ drink: Drink, completion: @escaping (Result<Void, Error>) -> 
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/drinks/\(drink.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/drinks/\(drink.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -204,7 +204,7 @@ func addDrink(name: String, volumeValue: Int, volumeUnit: String, calories: Int,
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/drinks") else {
+    guard let url = URL(string: "\(baseURL)/drinks") else {
         return
     }
     

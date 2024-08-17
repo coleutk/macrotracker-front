@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct HomeView: View {
-    var username: String
     @State private var selectedGoal: SelectedGoal? = nil
     @State private var dailyRecord: DailyRecord? = nil
     @State private var foods: [Food] = []
@@ -1379,6 +1378,6 @@ struct DrinkInputSheet: View {
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeView(username: "cratik")
+        HomeView()
     }
 }

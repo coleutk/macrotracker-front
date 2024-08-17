@@ -24,7 +24,7 @@ func getAllGoals(_ completion: @escaping (Result<[Goal], Error>) -> Void) {
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/goals/")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/goals/")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "GET"
@@ -84,7 +84,7 @@ func editGoal(_ goal: Goal, completion: @escaping (Result<Goal, Error>) -> Void)
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/goals/\(goal.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/goals/\(goal.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "PATCH"
@@ -141,7 +141,7 @@ func deleteGoal(_ goal: Goal, selectedGoalId: String?, completion: @escaping (Re
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/goals/\(goal.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/goals/\(goal.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "DELETE"
@@ -177,7 +177,7 @@ func addGoal(name: String, calorieGoal: Int, proteinGoal: Int, carbGoal: Int, fa
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/goals") else {
+    guard let url = URL(string: "\(baseURL)/goals") else {
         return
     }
     
@@ -217,7 +217,7 @@ func makeNewSelectedGoal(goalId: String, name: String, calorieGoal: Int, protein
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/goal/makeSelectedGoal") else { // Hardcoded to update it for the specific user, fix this to do it for the user that is logged in (stored in backend under userId = )
+    guard let url = URL(string: "\(baseURL)/goal/makeSelectedGoal") else { // Hardcoded to update it for the specific user, fix this to do it for the user that is logged in (stored in backend under userId = )
         return
     }
     
@@ -260,7 +260,7 @@ func clearSelectedGoal(completion: @escaping (Bool, String?) -> Void) {
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/goals/clearSelectedGoal") else {
+    guard let url = URL(string: "\(baseURL)/goals/clearSelectedGoal") else {
         completion(false, "Invalid URL")
         return
     }

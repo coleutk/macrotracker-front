@@ -38,7 +38,7 @@ func getAllFoods(_ completion: @escaping (Result<[Food], Error>) -> Void) {
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/foods/")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/foods/")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "GET"
@@ -105,7 +105,7 @@ func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void)
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/foods/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "PATCH"
@@ -174,7 +174,7 @@ func deleteFood(_ food: Food, completion: @escaping (Result<Void, Error>) -> Voi
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/foods/\(food.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/foods/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
     request.httpMethod = "DELETE"
@@ -206,7 +206,7 @@ func addFood(name: String, weightValue: Int, weightUnit: String, calories: Int, 
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/foods") else {
+    guard let url = URL(string: "\(baseURL)/foods") else {
         return
     }
     

@@ -95,7 +95,7 @@ func getAllHistoricalRecords(_ completion: @escaping (Result<[DailyRecord], Erro
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add authorization header
     request.httpMethod = "GET"
@@ -224,7 +224,7 @@ func getCurrentDaily(_ completion: @escaping (Result<DailyRecord?, Error>) -> Vo
     }
     
     // Build request
-    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/currentDailyRecord")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/dailyRecords/currentDailyRecord")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add authorization header
     request.httpMethod = "GET"
@@ -347,7 +347,7 @@ func addFoodToDaily(name: String, servings: Float, weightValue: Int, weightUnit:
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/dailyRecords/addFood") else {
+    guard let url = URL(string: "\(baseURL)/dailyRecords/addFood") else {
         return
     }
     
@@ -393,7 +393,7 @@ func addDrinkToDaily(_id: String, name: String, servings: Float, volumeValue: In
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/dailyRecords/addDrink") else {
+    guard let url = URL(string: "\(baseURL)/dailyRecords/addDrink") else {
         return
     }
     
@@ -440,7 +440,7 @@ func addManualToDaily(_id: String, calories: Int, protein: Int, carbs: Int, fat:
         return
     }
     
-    guard let url = URL(string: "http://localhost:3000/dailyRecords/addManual") else {
+    guard let url = URL(string: "\(baseURL)/dailyRecords/addManual") else {
         return
     }
     
@@ -481,7 +481,7 @@ func deleteFoodInput(_ food: DailyFood, completion: @escaping (Result<Void, Erro
         return
     }
 
-    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteFoodInput/\(food.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/dailyRecords/deleteFoodInput/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -513,7 +513,7 @@ func deleteDrinkInput(_ drink: DailyDrink, completion: @escaping (Result<Void, E
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteDrinkInput/\(drink.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/dailyRecords/deleteDrinkInput/\(drink.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -545,7 +545,7 @@ func deleteManualInput(_ manual: DailyManual, completion: @escaping (Result<Void
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/dailyRecords/deleteManualInput/\(manual.id)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/dailyRecords/deleteManualInput/\(manual.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -578,7 +578,7 @@ func completeDay(completion: @escaping (Result<Void, Error>) -> Void) {
         return
     }
 
-    guard let url = URL(string: "http://localhost:3000/dailyRecords/completeDay") else {
+    guard let url = URL(string: "\(baseURL)/dailyRecords/completeDay") else {
         completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
         return
     }
@@ -617,7 +617,7 @@ func deleteArchivedRecord(date: String, completion: @escaping (Bool, String?) ->
         return
     }
 
-    guard let url = URL(string: "http://localhost:3000/archivedRecords/deleteArchivedRecord") else {
+    guard let url = URL(string: "\(baseURL)/archivedRecords/deleteArchivedRecord") else {
         completion(false, "Invalid URL")
         return
     }
@@ -662,7 +662,7 @@ func deleteFoodFromArchived(recordId: String, foodInputId: String, completion: @
         return
     }
 
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/deleteFood/\(recordId)/\(foodInputId)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords/deleteFood/\(recordId)/\(foodInputId)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -691,7 +691,7 @@ func deleteDrinkFromArchived(recordId: String, drinkInputId: String, completion:
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/deleteDrink/\(recordId)/\(drinkInputId)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords/deleteDrink/\(recordId)/\(drinkInputId)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -720,7 +720,7 @@ func deleteManualFromArchived(recordId: String, manualInputId: String, completio
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/deleteManual/\(recordId)/\(manualInputId)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords/deleteManual/\(recordId)/\(manualInputId)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "DELETE"
@@ -749,7 +749,7 @@ func addFoodToArchivedRecord(recordId: String, name: String, servings: Float, we
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/addFood/\(recordId)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords/addFood/\(recordId)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "POST"
@@ -798,7 +798,7 @@ func addDrinkToArchivedRecord(recordId: String, name: String, servings: Float, v
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/addDrink/\(recordId)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords/addDrink/\(recordId)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "POST"
@@ -846,7 +846,7 @@ func addManualToArchivedRecord(recordId: String, calories: Int, protein: Int, ca
         return
     }
     
-    var request = URLRequest(url: URL(string: "http://localhost:3000/archivedRecords/addManual/\(recordId)")!)
+    var request = URLRequest(url: URL(string: "\(baseURL)/archivedRecords/addManual/\(recordId)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "POST"
@@ -889,7 +889,7 @@ func fetchHistoricalRecord(id: String, completion: @escaping (Result<DailyRecord
         return
     }
     
-    let urlString = "http://localhost:3000/archivedRecords/\(id)"
+    let urlString = "\(baseURL)/archivedRecords/\(id)"
     guard let url = URL(string: urlString) else {
         completion(.failure(NSError(domain: "Invalid URL", code: -1, userInfo: nil)))
         return
