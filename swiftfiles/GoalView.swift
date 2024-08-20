@@ -137,6 +137,8 @@ struct EditGoalView: View {
     @State private var showAlert = false
     @State private var alertMessage = "Changes saved!"
     
+    @State private var showValidationError = false
+    
     @Binding var goal: Goal
     var selectedGoalId: String?
     var onSave: (() -> Void)?
@@ -184,6 +186,11 @@ struct EditGoalView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && goalName.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -198,6 +205,11 @@ struct EditGoalView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && goalCalories.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -212,6 +224,11 @@ struct EditGoalView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && goalProtein.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -295,41 +312,46 @@ struct EditGoalView: View {
                 
                 // Save Changes Button
                 Button(action: {
-                    // Save changes here
-                    goal.name = goalName
-                    goal.calorieGoal = Int(goalCalories) ?? goal.calorieGoal
-                    goal.proteinGoal = Int(goalProtein) ?? goal.proteinGoal
-                    
-                    // Update carb and fat goals if changed
-                    if goalCarbs.isEmpty || goalCarbs == "0" {
-                        goal.carbGoal = Int(addingCarbs) ?? 0
+                    if goalName.isEmpty || goalCalories.isEmpty || goalProtein.isEmpty {
+                        showValidationError = true
                     } else {
-                        goal.carbGoal = Int(goalCarbs) ?? goal.carbGoal
-                    }
-                    
-                    if goalFat.isEmpty || goalFat == "0" {
-                        goal.fatGoal = Int(addingFat) ?? 0
-                    } else {
-                        goal.fatGoal = Int(goalFat) ?? goal.fatGoal
-                    }
-                    
-                    // Call the editGoal function
-                    editGoal(goal) { result in
-                        switch result {
-                        case .success(let updatedGoal):
-                            onSave?()
-                            print("Changes saved: \(updatedGoal)")
-                            alertMessage = "Changes saved!"
-                            showAlert = true
-                            goal = updatedGoal // Update the goal with the returned updatedGoal
-                        case .failure(let error):
-                            print("Failed to save changes: \(error)")
-                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
-                            showAlert = true
+                        showValidationError = false
+                        // Save changes here
+                        goal.name = goalName
+                        goal.calorieGoal = Int(goalCalories) ?? goal.calorieGoal
+                        goal.proteinGoal = Int(goalProtein) ?? goal.proteinGoal
+                        
+                        // Update carb and fat goals if changed
+                        if goalCarbs.isEmpty || goalCarbs == "0" {
+                            goal.carbGoal = Int(addingCarbs) ?? 0
+                        } else {
+                            goal.carbGoal = Int(goalCarbs) ?? goal.carbGoal
                         }
+                        
+                        if goalFat.isEmpty || goalFat == "0" {
+                            goal.fatGoal = Int(addingFat) ?? 0
+                        } else {
+                            goal.fatGoal = Int(goalFat) ?? goal.fatGoal
+                        }
+                        
+                        // Call the editGoal function
+                        editGoal(goal) { result in
+                            switch result {
+                            case .success(let updatedGoal):
+                                onSave?()
+                                print("Changes saved: \(updatedGoal)")
+                                alertMessage = "Changes saved!"
+                                showAlert = true
+                                goal = updatedGoal // Update the goal with the returned updatedGoal
+                            case .failure(let error):
+                                print("Failed to save changes: \(error)")
+                                alertMessage = "Failed to save changes: \(error.localizedDescription)"
+                                showAlert = true
+                            }
+                        }
+                        
+                        presentationMode.wrappedValue.dismiss()
                     }
-                    
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Confirm Changes")
                         .foregroundColor(.white.opacity(0.70))
@@ -425,6 +447,8 @@ struct AddGoalSheet: View {
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
     
+    @State private var showValidationError = false
+    
     var body: some View {
         ZStack {
             Color(red: 20/255, green: 20/255, blue: 30/255)
@@ -444,6 +468,11 @@ struct AddGoalSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && goalName.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -458,6 +487,11 @@ struct AddGoalSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && goalCalories.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -472,6 +506,11 @@ struct AddGoalSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && goalProtein.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -533,11 +572,10 @@ struct AddGoalSheet: View {
                 .padding(3)
                 
                 Button(action: {
-                    
                     if goalName.isEmpty || goalCalories.isEmpty || goalProtein.isEmpty {
-                        showError = true
-                        errorMessage = "Name, Calories, and Protein are required."
+                        showValidationError = true
                     } else {
+                        showValidationError = false
                         
                         guard let goalCalories = Int(goalCalories),
                               let goalProtein = Int(goalProtein) else {
@@ -569,14 +607,6 @@ struct AddGoalSheet: View {
                         .padding(.horizontal, 22)
                         .padding(.top, 20)
                 }
-                
-                
-                if showError {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .padding(.top, 10)
-                }
-                
             }
             .foregroundColor(.white.opacity(0.70))
             

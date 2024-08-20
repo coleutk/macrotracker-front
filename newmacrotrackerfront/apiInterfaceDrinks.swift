@@ -145,19 +145,16 @@ func editDrink(_ drink: Drink, completion: @escaping (Result<Drink, Error>) -> V
             return
         }
         
-        guard let data = data else {
-            let error = NSError(domain: "DataError", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])
-            print("No data received")
+        guard let httpResponse = response as? HTTPURLResponse else {
+            let error = NSError(domain: "ResponseError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
             completion(.failure(error))
             return
         }
         
-        do {
-            let updatedDrink = try JSONDecoder().decode(Drink.self, from: data)
-            print("Data received and parsed: \(updatedDrink)")
-            completion(.success(updatedDrink))
-        } catch {
-            print("Error decoding response data: \(error)")
+        if httpResponse.statusCode == 200 {
+            completion(.success((drink)))  // Indicate success without a message
+        } else {
+            let error = NSError(domain: "HTTPError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP Error with code \(httpResponse.statusCode)"])
             completion(.failure(error))
         }
     }

@@ -314,6 +314,7 @@ struct EditFoodView: View {
     var onDelete: (() -> Void)? // Callback for deletion
     
     @State private var selectedUnit: String
+    @State private var showValidationError = false
     
     // Intermediate variables for TextField binding
     @State private var foodName: String
@@ -357,6 +358,11 @@ struct EditFoodView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodName.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -372,6 +378,11 @@ struct EditFoodView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodWeightValue.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -403,6 +414,11 @@ struct EditFoodView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodCalories.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -418,6 +434,11 @@ struct EditFoodView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodProtein.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -489,31 +510,36 @@ struct EditFoodView: View {
                 .padding(3)
                 
                 Button(action: {
-                    // Save changes here
-                    food.name = foodName
-                    food.weight.value = Int(foodWeightValue) ?? food.weight.value
-                    food.calories = Int(foodCalories) ?? food.calories
-                    food.protein = Int(foodProtein) ?? food.protein
-                    food.carbs = foodCarbs.flatMap { Int($0) }
-                    food.fat = foodFat.flatMap { Int($0) }
-                    
-                    // Call the editFood function
-                    editFood(food) { result in
-                        switch result {
-                        case .success(let updatedFood):
-                            onSave?()
-                            print("Changes saved: \(updatedFood)")
-                            alertMessage = "Changes saved!"
-                            showAlert = true
-                            food = updatedFood // Update the food with the returned updatedFood
-                        case .failure(let error):
-                            print("Failed to save changes: \(error)")
-                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
-                            showAlert = true
+                    if foodName.isEmpty || foodWeightValue.isEmpty || foodCalories.isEmpty || foodProtein.isEmpty {
+                        showValidationError = true
+                    } else {
+                        showValidationError = false
+                        // Save changes here
+                        food.name = foodName
+                        food.weight.value = Int(foodWeightValue) ?? food.weight.value
+                        food.calories = Int(foodCalories) ?? food.calories
+                        food.protein = Int(foodProtein) ?? food.protein
+                        food.carbs = foodCarbs.flatMap { Int($0) }
+                        food.fat = foodFat.flatMap { Int($0) }
+                        
+                        // Call the editFood function
+                        editFood(food) { result in
+                            switch result {
+                            case .success(let updatedFood):
+                                onSave?()
+                                print("Changes saved: \(updatedFood)")
+                                alertMessage = "Changes saved!"
+                                showAlert = true
+                                food = updatedFood // Update the food with the returned updatedFood
+                            case .failure(let error):
+                                print("Failed to save changes: \(error)")
+                                alertMessage = "Failed to save changes: \(error.localizedDescription)"
+                                showAlert = true
+                            }
                         }
+                        
+                        presentationMode.wrappedValue.dismiss()
                     }
-                    
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Confirm Changes")
                         .foregroundColor(.white.opacity(0.70))
@@ -559,7 +585,12 @@ struct EditFoodView: View {
             .padding(.bottom, 50)
         }
         .alert(isPresented: $showAlert) {
-            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
+            Alert(
+                title: Text("Changes Saved"),
+                dismissButton: .default(Text("OK")) {
+                    showAlert = false // Explicitly dismiss the alert here
+                }
+            )
         }
     }
 }
@@ -578,6 +609,7 @@ struct EditDrinkView: View {
     var onDelete: (() -> Void)? // Callback for deletion
     
     @State private var selectedUnit: String
+    @State private var showValidationError = false
     
     // Intermediate variables for TextField binding
     @State private var drinkName: String
@@ -622,6 +654,11 @@ struct EditDrinkView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkName.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -637,6 +674,11 @@ struct EditDrinkView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkVolumeValue.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -668,6 +710,11 @@ struct EditDrinkView: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkCalories.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -691,6 +738,11 @@ struct EditDrinkView: View {
                         .frame(width: 80, height: 60)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkProtein.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.leading, -20)
                         .padding(.trailing, 22)
                         .foregroundColor(.white.opacity(0.50))
@@ -754,31 +806,36 @@ struct EditDrinkView: View {
                 .padding(3)
                 
                 Button(action: {
-                    // Save changes here
-                    drink.name = drinkName
-                    drink.volume.value = Int(drinkVolumeValue) ?? drink.volume.value
-                    drink.calories = Int(drinkCalories) ?? drink.calories
-                    drink.protein = Int(drinkProtein) ?? drink.protein
-                    drink.carbs = drinkCarbs.flatMap { Int($0) }
-                    drink.fat = drinkFat.flatMap { Int($0) }
-                    
-                    // Call the editDrink function
-                    editDrink(drink) { result in
-                        switch result {
-                        case .success(let updatedDrink):
-                            onSave?()
-                            print("Changes saved: \(updatedDrink)")
-                            alertMessage = "Changes saved!"
-                            showAlert = true
-                            drink = updatedDrink // Update the drink with the returned updatedDrink
-                        case .failure(let error):
-                            print("Failed to save changes: \(error)")
-                            alertMessage = "Failed to save changes: \(error.localizedDescription)"
-                            showAlert = true
+                    if drinkName.isEmpty || drinkVolumeValue.isEmpty || drinkCalories.isEmpty || drinkProtein.isEmpty {
+                        showValidationError = true
+                    } else {
+                        showValidationError = false
+                        // Save changes here
+                        drink.name = drinkName
+                        drink.volume.value = Int(drinkVolumeValue) ?? drink.volume.value
+                        drink.calories = Int(drinkCalories) ?? drink.calories
+                        drink.protein = Int(drinkProtein) ?? drink.protein
+                        drink.carbs = drinkCarbs.flatMap { Int($0) }
+                        drink.fat = drinkFat.flatMap { Int($0) }
+                        
+                        // Call the editDrink function
+                        editDrink(drink) { result in
+                            switch result {
+                            case .success(let updatedDrink):
+                                onSave?()
+                                print("Changes saved: \(updatedDrink)")
+                                alertMessage = "Changes saved!"
+                                showAlert = true
+                                drink = updatedDrink // Update the drink with the returned updatedDrink
+                            case .failure(let error):
+                                print("Failed to save changes: \(error)")
+                                alertMessage = "Failed to save changes: \(error.localizedDescription)"
+                                showAlert = true
+                            }
                         }
+                        
+                        presentationMode.wrappedValue.dismiss()
                     }
-                    
-                    presentationMode.wrappedValue.dismiss()
                 }) {
                     Text("Confirm Changes")
                         .foregroundColor(.white.opacity(0.70))
@@ -824,7 +881,12 @@ struct EditDrinkView: View {
             .padding(.bottom, 50)
         }
         .alert(isPresented: $showAlert) {
-            Alert(title: Text("Changes Saved"), message: Text("Your changes have been saved."), dismissButton: .default(Text("OK")))
+            Alert(
+                title: Text("Changes Saved"),
+                dismissButton: .default(Text("OK")) {
+                    showAlert = false // Explicitly dismiss the alert here
+                }
+            )
         }
     }
 }
@@ -842,6 +904,7 @@ struct AddFoodSheet: View {
     @Binding var foods: [Food]
     
     @State private var selectedUnit: String = "g"
+    @State private var showValidationError = false
     
     var body: some View {
         ZStack {
@@ -862,6 +925,11 @@ struct AddFoodSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodName.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -876,6 +944,11 @@ struct AddFoodSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodWeightValue.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -905,6 +978,11 @@ struct AddFoodSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodCalories.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -919,6 +997,11 @@ struct AddFoodSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && foodProtein.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -980,25 +1063,31 @@ struct AddFoodSheet: View {
                 .padding(3)
                 
                 Button(action: {
-                    guard let foodWeightValue = Int(foodWeightValue),
-                          let foodCalories = Int(foodCalories),
-                          let foodProtein = Int(foodProtein) else {
-                        print("Invalid input")
-                        return
-                    }
-                    
-                    let foodCarbs = foodCarbs.isEmpty ? nil : Int(foodCarbs)
-                    let foodFats = foodFats.isEmpty ? nil : Int(foodFats)
-                    
-                    addFood(name: foodName, weightValue: foodWeightValue, weightUnit: selectedUnit, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats) { success, message in
-                        if success {
-                            print("Food created successfully")
-                        } else {
-                            print("Failed to create food: \(message ?? "Unknown error")")
+                    if foodName.isEmpty || foodWeightValue.isEmpty || foodCalories.isEmpty || foodProtein.isEmpty {
+                        showValidationError = true
+                    } else {
+                        showValidationError = false
+                        
+                        guard let foodWeightValue = Int(foodWeightValue),
+                              let foodCalories = Int(foodCalories),
+                              let foodProtein = Int(foodProtein) else {
+                            print("Invalid input")
+                            return
                         }
+                        
+                        let foodCarbs = foodCarbs.isEmpty ? nil : Int(foodCarbs)
+                        let foodFats = foodFats.isEmpty ? nil : Int(foodFats)
+                        
+                        addFood(name: foodName, weightValue: foodWeightValue, weightUnit: selectedUnit, calories: foodCalories, protein: foodProtein, carbs: foodCarbs, fats: foodFats) { success, message in
+                            if success {
+                                print("Food created successfully")
+                            } else {
+                                print("Failed to create food: \(message ?? "Unknown error")")
+                            }
+                        }
+                        
+                        isSheetPresented = false
                     }
-                    
-                    isSheetPresented = false
                 }) {
                     Text("Add Food")
                         .foregroundColor(.white.opacity(0.70))
@@ -1030,6 +1119,7 @@ struct AddDrinkSheet: View {
     @Binding var drinks: [Drink]
     
     @State private var selectedUnit: String = "mL"
+    @State private var showValidationError = false
     
     var body: some View {
         ZStack {
@@ -1050,6 +1140,11 @@ struct AddDrinkSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkName.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -1064,6 +1159,11 @@ struct AddDrinkSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkVolumeValue.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -1092,6 +1192,11 @@ struct AddDrinkSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkCalories.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                 }
@@ -1106,6 +1211,11 @@ struct AddDrinkSheet: View {
                         .frame(maxWidth: .infinity)
                         .background(Color.black.opacity(0.20))
                         .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(showValidationError && drinkProtein.isEmpty ? Color.red : Color.clear, lineWidth: 1)
+                                .opacity(0.60)
+                        )
                         .padding(.trailing, 22)
                         .padding(.leading, -10)
                     
@@ -1167,25 +1277,31 @@ struct AddDrinkSheet: View {
                 .padding(3)
                 
                 Button(action: {
-                    guard let drinkVolumeValue = Int(drinkVolumeValue),
-                          let drinkCalories = Int(drinkCalories),
-                          let drinkProtein = Int(drinkProtein) else {
-                        print("Invalid input")
-                        return
-                    }
-                    
-                    let drinkCarbs = drinkCarbs.isEmpty ? nil : Int(drinkCarbs)
-                    let drinkFats = drinkFats.isEmpty ? nil : Int(drinkFats)
-                    
-                    addDrink(name: drinkName, volumeValue: drinkVolumeValue, volumeUnit: selectedUnit, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats) { success, message in
-                        if success {
-                            print("Drink created successfully")
-                        } else {
-                            print("Failed to create goal: \(message ?? "Unknown error")")
+                    if drinkName.isEmpty || drinkVolumeValue.isEmpty || drinkCalories.isEmpty || drinkProtein.isEmpty {
+                        showValidationError = true
+                    } else {
+                        showValidationError = false
+                        
+                        guard let drinkVolumeValue = Int(drinkVolumeValue),
+                              let drinkCalories = Int(drinkCalories),
+                              let drinkProtein = Int(drinkProtein) else {
+                            print("Invalid input")
+                            return
                         }
+                        
+                        let drinkCarbs = drinkCarbs.isEmpty ? nil : Int(drinkCarbs)
+                        let drinkFats = drinkFats.isEmpty ? nil : Int(drinkFats)
+                        
+                        addDrink(name: drinkName, volumeValue: drinkVolumeValue, volumeUnit: selectedUnit, calories: drinkCalories, protein: drinkProtein, carbs: drinkCarbs, fats: drinkFats) { success, message in
+                            if success {
+                                print("Drink created successfully")
+                            } else {
+                                print("Failed to create goal: \(message ?? "Unknown error")")
+                            }
+                        }
+                        
+                        isSheetPresented = false
                     }
-                    
-                    isSheetPresented = false
                 }) {
                     Text("Add Drink")
                         .foregroundColor(.white.opacity(0.70))

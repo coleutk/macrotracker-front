@@ -107,7 +107,7 @@ func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void)
     // Build request
     var request = URLRequest(url: URL(string: "\(baseURL)/foods/\(food.id)")!)
     request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include the token
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
     request.httpMethod = "PATCH"
     
     // Create the array of objects as expected by the backend
@@ -146,25 +146,23 @@ func editFood(_ food: Food, completion: @escaping (Result<Food, Error>) -> Void)
             return
         }
         
-        guard let data = data else {
-            let error = NSError(domain: "DataError", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])
-            print("No data received")
+        guard let httpResponse = response as? HTTPURLResponse else {
+            let error = NSError(domain: "ResponseError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])
             completion(.failure(error))
             return
         }
         
-        do {
-            let updatedFood = try JSONDecoder().decode(Food.self, from: data)
-            print("Data received and parsed: \(updatedFood)")
-            completion(.success(updatedFood))
-        } catch {
-            print("Error decoding response data: \(error)")
+        if httpResponse.statusCode == 200 {
+            completion(.success((food)))  // Indicate success without a message
+        } else {
+            let error = NSError(domain: "HTTPError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP Error with code \(httpResponse.statusCode)"])
             completion(.failure(error))
         }
     }
     
     task.resume()
 }
+
 
 
 // Delete Food
