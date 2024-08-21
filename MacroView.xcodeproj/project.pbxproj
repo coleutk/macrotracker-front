@@ -51,12 +51,12 @@
 		2965B6202C2E03CA00DB870C /* apiInterfaceGoals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceGoals.swift; sourceTree = "<group>"; };
 		2965B6222C2E330000DB870C /* apiInterfaceUsers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceUsers.swift; sourceTree = "<group>"; };
 		2965B6242C2FC2F500DB870C /* apiInterfaceNutritionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = apiInterfaceNutritionLog.swift; sourceTree = "<group>"; };
-		29A4373C2C2279C000F73DBA /* newmacrotrackerfront.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = newmacrotrackerfront.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		29A4373C2C2279C000F73DBA /* MacroView.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacroView.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		29A437432C2279C200F73DBA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		29A437462C2279C200F73DBA /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		29A4374C2C2279C200F73DBA /* newmacrotrackerfrontTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = newmacrotrackerfrontTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		29A4374C2C2279C200F73DBA /* MacroViewTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacroViewTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		29A437502C2279C200F73DBA /* newmacrotrackerfrontTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = newmacrotrackerfrontTests.swift; sourceTree = "<group>"; };
-		29A437562C2279C200F73DBA /* newmacrotrackerfrontUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = newmacrotrackerfrontUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		29A437562C2279C200F73DBA /* MacroViewUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MacroViewUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		29A4375A2C2279C200F73DBA /* newmacrotrackerfrontUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = newmacrotrackerfrontUITests.swift; sourceTree = "<group>"; };
 		29A4375C2C2279C200F73DBA /* newmacrotrackerfrontUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = newmacrotrackerfrontUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		29A437692C227A0200F73DBA /* NutritionLogView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NutritionLogView.swift; path = swiftfiles/NutritionLogView.swift; sourceTree = SOURCE_ROOT; };
@@ -110,9 +110,9 @@
 		29A4373D2C2279C000F73DBA /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				29A4373C2C2279C000F73DBA /* newmacrotrackerfront.app */,
-				29A4374C2C2279C200F73DBA /* newmacrotrackerfrontTests.xctest */,
-				29A437562C2279C200F73DBA /* newmacrotrackerfrontUITests.xctest */,
+				29A4373C2C2279C000F73DBA /* MacroView.app */,
+				29A4374C2C2279C200F73DBA /* MacroViewTests.xctest */,
+				29A437562C2279C200F73DBA /* MacroViewUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -169,9 +169,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		29A4373B2C2279C000F73DBA /* newmacrotrackerfront */ = {
+		29A4373B2C2279C000F73DBA /* MacroView */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 29A437602C2279C200F73DBA /* Build configuration list for PBXNativeTarget "newmacrotrackerfront" */;
+			buildConfigurationList = 29A437602C2279C200F73DBA /* Build configuration list for PBXNativeTarget "MacroView" */;
 			buildPhases = (
 				29A437382C2279C000F73DBA /* Sources */,
 				29A437392C2279C000F73DBA /* Frameworks */,
@@ -181,14 +181,14 @@
 			);
 			dependencies = (
 			);
-			name = newmacrotrackerfront;
+			name = MacroView;
 			productName = newmacrotrackerfront;
-			productReference = 29A4373C2C2279C000F73DBA /* newmacrotrackerfront.app */;
+			productReference = 29A4373C2C2279C000F73DBA /* MacroView.app */;
 			productType = "com.apple.product-type.application";
 		};
-		29A4374B2C2279C200F73DBA /* newmacrotrackerfrontTests */ = {
+		29A4374B2C2279C200F73DBA /* MacroViewTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 29A437632C2279C200F73DBA /* Build configuration list for PBXNativeTarget "newmacrotrackerfrontTests" */;
+			buildConfigurationList = 29A437632C2279C200F73DBA /* Build configuration list for PBXNativeTarget "MacroViewTests" */;
 			buildPhases = (
 				29A437482C2279C200F73DBA /* Sources */,
 				29A437492C2279C200F73DBA /* Frameworks */,
@@ -199,14 +199,14 @@
 			dependencies = (
 				29A4374E2C2279C200F73DBA /* PBXTargetDependency */,
 			);
-			name = newmacrotrackerfrontTests;
+			name = MacroViewTests;
 			productName = newmacrotrackerfrontTests;
-			productReference = 29A4374C2C2279C200F73DBA /* newmacrotrackerfrontTests.xctest */;
+			productReference = 29A4374C2C2279C200F73DBA /* MacroViewTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		29A437552C2279C200F73DBA /* newmacrotrackerfrontUITests */ = {
+		29A437552C2279C200F73DBA /* MacroViewUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 29A437662C2279C200F73DBA /* Build configuration list for PBXNativeTarget "newmacrotrackerfrontUITests" */;
+			buildConfigurationList = 29A437662C2279C200F73DBA /* Build configuration list for PBXNativeTarget "MacroViewUITests" */;
 			buildPhases = (
 				29A437522C2279C200F73DBA /* Sources */,
 				29A437532C2279C200F73DBA /* Frameworks */,
@@ -217,9 +217,9 @@
 			dependencies = (
 				29A437582C2279C200F73DBA /* PBXTargetDependency */,
 			);
-			name = newmacrotrackerfrontUITests;
+			name = MacroViewUITests;
 			productName = newmacrotrackerfrontUITests;
-			productReference = 29A437562C2279C200F73DBA /* newmacrotrackerfrontUITests.xctest */;
+			productReference = 29A437562C2279C200F73DBA /* MacroViewUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -246,7 +246,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 29A437372C2279C000F73DBA /* Build configuration list for PBXProject "newmacrotrackerfront" */;
+			buildConfigurationList = 29A437372C2279C000F73DBA /* Build configuration list for PBXProject "MacroView" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -259,9 +259,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				29A4373B2C2279C000F73DBA /* newmacrotrackerfront */,
-				29A4374B2C2279C200F73DBA /* newmacrotrackerfrontTests */,
-				29A437552C2279C200F73DBA /* newmacrotrackerfrontUITests */,
+				29A4373B2C2279C000F73DBA /* MacroView */,
+				29A4374B2C2279C200F73DBA /* MacroViewTests */,
+				29A437552C2279C200F73DBA /* MacroViewUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -337,12 +337,12 @@
 /* Begin PBXTargetDependency section */
 		29A4374E2C2279C200F73DBA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 29A4373B2C2279C000F73DBA /* newmacrotrackerfront */;
+			target = 29A4373B2C2279C000F73DBA /* MacroView */;
 			targetProxy = 29A4374D2C2279C200F73DBA /* PBXContainerItemProxy */;
 		};
 		29A437582C2279C200F73DBA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 29A4373B2C2279C000F73DBA /* newmacrotrackerfront */;
+			target = 29A4373B2C2279C000F73DBA /* MacroView */;
 			targetProxy = 29A437572C2279C200F73DBA /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -479,6 +479,7 @@
 				DEVELOPMENT_TEAM = K99LUFU8B2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -491,10 +492,14 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cole.newmacrotrackerfront;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -510,6 +515,7 @@
 				DEVELOPMENT_TEAM = K99LUFU8B2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -522,9 +528,13 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cole.newmacrotrackerfront;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -544,7 +554,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/newmacrotrackerfront.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/newmacrotrackerfront";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MacroView.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MacroView";
 			};
 			name = Debug;
 		};
@@ -564,7 +574,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/newmacrotrackerfront.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/newmacrotrackerfront";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MacroView.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MacroView";
 			};
 			name = Release;
 		};
@@ -607,7 +617,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		29A437372C2279C000F73DBA /* Build configuration list for PBXProject "newmacrotrackerfront" */ = {
+		29A437372C2279C000F73DBA /* Build configuration list for PBXProject "MacroView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				29A4375E2C2279C200F73DBA /* Debug */,
@@ -616,7 +626,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		29A437602C2279C200F73DBA /* Build configuration list for PBXNativeTarget "newmacrotrackerfront" */ = {
+		29A437602C2279C200F73DBA /* Build configuration list for PBXNativeTarget "MacroView" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				29A437612C2279C200F73DBA /* Debug */,
@@ -625,7 +635,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		29A437632C2279C200F73DBA /* Build configuration list for PBXNativeTarget "newmacrotrackerfrontTests" */ = {
+		29A437632C2279C200F73DBA /* Build configuration list for PBXNativeTarget "MacroViewTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				29A437642C2279C200F73DBA /* Debug */,
@@ -634,7 +644,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		29A437662C2279C200F73DBA /* Build configuration list for PBXNativeTarget "newmacrotrackerfrontUITests" */ = {
+		29A437662C2279C200F73DBA /* Build configuration list for PBXNativeTarget "MacroViewUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				29A437672C2279C200F73DBA /* Debug */,

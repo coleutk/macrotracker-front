@@ -19,9 +19,9 @@ struct WelcomeView: View {
                     .scale(1.35)
                     .foregroundColor(Color(red: 20/255, green: 20/255, blue: 30/255))
                 
-                VStack (alignment: .leading){
-                    Text("Welcome to MacroTracker!")
-                        .font(.largeTitle)
+                VStack (alignment: .center){
+                    Text("Welcome to MacroView!")
+                        .font(.title)
                         .foregroundColor(.white.opacity(0.20))
                         .bold()
                     

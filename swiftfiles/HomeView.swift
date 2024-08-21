@@ -84,8 +84,8 @@ struct HomeView: View {
                     }
                     .padding(.bottom, 5)
                     
-                    VStack(spacing: 20) {
-                        Grid(alignment: .leading, horizontalSpacing: 20, verticalSpacing: 20) {
+                    VStack() {
+                        Grid() {
                             GridRow {
                                 if let goal = selectedGoal {
                                     NutrientView(nutrient: "Calories", curValue: Int(totalCalories), goalValue: goal.calorieGoal, color: Color(red: 10/255, green: 211/255, blue: 255/255))
@@ -114,19 +114,19 @@ struct HomeView: View {
                     
                     ZStack {
                         ProgressBar(progress: self.$calorieProgress, color: Color(red: 10/255, green: 211/255, blue: 255/255))
-                            .frame(width: 325.0, height: 325.0)
+                            .frame(width: UIScreen.main.bounds.width * 0.80, height: UIScreen.main.bounds.width * 0.80)
                             .padding(15.0)
                             .animation(.easeInOut(duration: 2.0), value: calorieProgress)
                         
                         ProgressBar(progress: self.$proteinProgress, color: Color(red: 46/255, green: 94/255, blue: 170/255))
-                            .frame(width: 239.0, height: 239.0)
+                            .frame(width: UIScreen.main.bounds.width * 0.60, height: UIScreen.main.bounds.width * 0.60)
                             .padding(15.0)
                             .animation(.easeInOut(duration: 2.0), value: proteinProgress)
                         
                         if let goal = selectedGoal {
                             if(goal.carbGoal != 0) {
                                 ProgressBar(progress: self.$carbProgress, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                    .frame(width: 153.0, height: 153.0)
+                                    .frame(width: UIScreen.main.bounds.width * 0.40, height: UIScreen.main.bounds.width * 0.40)
                                     .padding(15.0)
                                     .animation(.easeInOut(duration: 2.0), value: carbProgress)
                             } else {
@@ -135,7 +135,7 @@ struct HomeView: View {
                             
                             if(goal.fatGoal != 0) {
                                 ProgressBar(progress: self.$fatProgress, color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                                    .frame(width: 67.0, height: 67.0)
+                                    .frame(width: UIScreen.main.bounds.width * 0.20, height: UIScreen.main.bounds.width * 0.20)
                                     .padding(15.0)
                                     .animation(.easeInOut(duration: 2.0), value: fatProgress)
                             }
@@ -225,19 +225,37 @@ struct HomeView: View {
                     Spacer()
                     
                     HStack {
-                        NavigationLink(destination: NutritionLogView()) {
-                            VStack {
-                                Image(systemName: "calendar")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 25, height: 25)
-                                Text("Nutrition Log")
-                                    .font(.system(size: 15))
+                        
+                        if selectedGoal != nil {
+                            NavigationLink(destination: NutritionLogView()) {
+                                VStack {
+                                    Image(systemName: "calendar")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 25, height: 25)
+                                    Text("Nutrition Log")
+                                        .font(.system(size: 15))
+                                }
                             }
+                            .buttonStyle(MyButtonStyle())
+                            .offset(x: 35)
+                            .padding(.top, 10)
+                        } else {
+                            NavigationLink(destination: NutritionLogView()) {
+                                VStack {
+                                    Image(systemName: "calendar")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 25, height: 25)
+                                    Text("Nutrition Log")
+                                        .font(.system(size: 15))
+                                }
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            .disabled(true)
+                            .offset(x: 35)
+                            .padding(.top, 10)
                         }
-                        .buttonStyle(MyButtonStyle())
-                        .offset(x: 35)
-                        .padding(.top, 10)
                         
                         Spacer()
                         
