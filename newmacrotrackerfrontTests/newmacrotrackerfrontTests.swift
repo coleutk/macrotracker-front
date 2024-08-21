@@ -6,9 +6,9 @@
 //
 
 import XCTest
-@testable import newmacrotrackerfront
+@testable import MacroView
 
-final class newmacrotrackerfrontTests: XCTestCase {
+final class MacroViewTests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.

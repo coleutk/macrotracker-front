@@ -275,7 +275,7 @@ struct HomeView: View {
                         
                         Spacer()
                         
-                        NavigationLink(destination: ProfileView(username: "cratik")) {
+                        NavigationLink(destination: ProfileView()) {
                             VStack {
                                 Image(systemName: "person.circle.fill")
                                     .resizable()

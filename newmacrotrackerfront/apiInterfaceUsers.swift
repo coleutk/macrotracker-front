@@ -333,5 +333,32 @@ func updateUserPassword(currentPassword: String, newPassword: String, confirmPas
     task.resume()
 }
 
+// Function to delete a user by ID
+func deleteUserAccount(completion: @escaping (Bool, String?) -> Void) {
+    guard let token = UserDefaults.standard.string(forKey: "token") else {
+        completion(false, "User not authenticated")
+        return
+    }
+    
+    var request = URLRequest(url: URL(string: "\(baseURL)/users/deleteUser")!)
+    request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+    request.httpMethod = "DELETE"
+    
+    let task = URLSession.shared.dataTask(with: request) { data, response, error in
+        if let error = error {
+            completion(false, error.localizedDescription)
+            return
+        }
+        
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+            completion(true, "User deleted successfully")
+        } else {
+            completion(false, "Failed to delete user")
+        }
+    }
+    
+    task.resume()
+}
 
 

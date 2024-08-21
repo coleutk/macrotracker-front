@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ProfileView: View {
-    var username: String
     @State private var selectedGoal: SelectedGoal? = nil
     @State private var errorMessage: String? = nil
     @State private var showLogoutAlert = false
@@ -159,6 +158,9 @@ struct EditProfileView: View {
     @State private var alertMessage: String? = nil
     @State private var showAlert = false
     
+    @State private var showDeleteConfirmation = false
+    @State private var isDeleted = false
+    
     var body: some View {
         ZStack {
             Color(red: 20/255, green: 20/255, blue: 30/255)
@@ -289,6 +291,23 @@ struct EditProfileView: View {
                         .foregroundColor(.red)
                         .padding()
                 }
+                
+                Button(action: {
+                    // Save changes here
+                    alertMessage = "Account Deleted Successfully!"
+                    showAlert = true
+                    showDeleteConfirmation = true
+                    //presentationMode.wrappedValue.dismiss()
+                }) {
+                    Text("Delete Account")
+                        .foregroundColor(.white.opacity(0.70))
+                        .padding(14)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.50))
+                        .cornerRadius(15)
+                        .padding(.horizontal, 22)
+                        .padding(.top, 20)
+                }
             }
             .foregroundColor(.white.opacity(0.70))
             .padding(.top, -90)
@@ -296,14 +315,56 @@ struct EditProfileView: View {
         .onAppear {
             fetchUserDetails()
         }
-        .alert(isPresented: $showAlert) { // Show confirmation alert
-            Alert(
-                title: Text(alertMessage ?? ""),
-                dismissButton: .default(Text("OK")) {
-                    // Dismiss the view if needed
-                    presentationMode.wrappedValue.dismiss()
+        .alert(isPresented: $showAlert) { // Show general confirmation alert
+            if !showDeleteConfirmation {
+                return Alert(
+                    title: Text(alertMessage ?? ""),
+                    dismissButton: .default(Text("OK")) {
+                        // Dismiss the view if needed
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                )
+            } else {
+                return Alert(
+                    title: Text("Delete Account"),
+                    message: Text("Are you sure you want to delete your account? This action cannot be undone."),
+                    primaryButton: .destructive(Text("Delete")) {
+                        deleteAccount()
+                        logout()
+                        isDeleted = true
+                        showAlert = false
+                        showDeleteConfirmation = false
+                    },
+                    secondaryButton: .cancel()
+                )
+            }
+        }
+        .navigationDestination(isPresented: $isDeleted) {
+            WelcomeView()
+        }
+    }
+    
+    private func logout() {
+        UserDefaults.standard.removeObject(forKey: "token")
+        UserDefaults.standard.synchronize()
+    }
+    
+    private func deleteAccount() {
+        deleteUserAccount { success, error in
+            DispatchQueue.main.async {
+                if success {
+                    // Clear the user session and log out
+                    UserDefaults.standard.removeObject(forKey: "token")
+                    UserDefaults.standard.synchronize()
+                    
+                    alertMessage = "Account deleted successfully!"
+                    showAlert = true
+                } else {
+                    // Show an error message
+                    alertMessage = error ?? "Failed to delete account."
+                    showAlert = true
                 }
-            )
+            }
         }
     }
     
@@ -362,6 +423,6 @@ struct EditProfileView: View {
 
 struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        ProfileView(username: "cratik")
+        ProfileView()
     }
 }
