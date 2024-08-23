@@ -47,12 +47,14 @@ struct HomeView: View {
                 Color(red: 20/255, green: 20/255, blue: 30/255)
                     .ignoresSafeArea()
                 
+                
                 VStack {
+                    
                     HStack {
                         ZStack {
                             if let goal = selectedGoal {
                                 Text("\(goal.name)")
-                                    .font(.title)
+                                    .font(.title2)
                                     .foregroundColor(.white.opacity(0.70))
                                     .bold()
                                     .padding(10)
@@ -107,26 +109,25 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 50 : 10)
                     
                     Spacer()
                         
                     
                     ZStack {
                         ProgressBar(progress: self.$calorieProgress, color: Color(red: 10/255, green: 211/255, blue: 255/255))
-                            .frame(width: UIScreen.main.bounds.width * 0.80, height: UIScreen.main.bounds.width * 0.80)
+                            .frame(width: UIScreen.main.bounds.width * 0.75, height: UIScreen.main.bounds.width * 0.75)
                             .padding(15.0)
                             .animation(.easeInOut(duration: 2.0), value: calorieProgress)
                         
                         ProgressBar(progress: self.$proteinProgress, color: Color(red: 46/255, green: 94/255, blue: 170/255))
-                            .frame(width: UIScreen.main.bounds.width * 0.60, height: UIScreen.main.bounds.width * 0.60)
+                            .frame(width: UIScreen.main.bounds.width * 0.55, height: UIScreen.main.bounds.width * 0.55)
                             .padding(15.0)
                             .animation(.easeInOut(duration: 2.0), value: proteinProgress)
                         
                         if let goal = selectedGoal {
                             if(goal.carbGoal != 0) {
                                 ProgressBar(progress: self.$carbProgress, color: Color(red: 120/255, green: 255/255, blue: 214/255))
-                                    .frame(width: UIScreen.main.bounds.width * 0.40, height: UIScreen.main.bounds.width * 0.40)
+                                    .frame(width: UIScreen.main.bounds.width * 0.35, height: UIScreen.main.bounds.width * 0.35)
                                     .padding(15.0)
                                     .animation(.easeInOut(duration: 2.0), value: carbProgress)
                             } else {
@@ -135,13 +136,14 @@ struct HomeView: View {
                             
                             if(goal.fatGoal != 0) {
                                 ProgressBar(progress: self.$fatProgress, color: Color(red: 171/255, green: 169/255, blue: 195/255))
-                                    .frame(width: UIScreen.main.bounds.width * 0.20, height: UIScreen.main.bounds.width * 0.20)
+                                    .frame(width: UIScreen.main.bounds.width * 0.15, height: UIScreen.main.bounds.width * 0.15)
                                     .padding(15.0)
                                     .animation(.easeInOut(duration: 2.0), value: fatProgress)
                             }
                         }
                     }
-                    .padding(.bottom, 20)
+                    
+                    Spacer()
                     
                     VStack {
                         HStack {
@@ -152,13 +154,13 @@ struct HomeView: View {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 10)
                                                 .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: UIScreen.main.bounds.width * 0.135, height: UIScreen.main.bounds.width * 0.135)
                                             
                                             VStack {
                                                 Image(systemName: "pencil")
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 25, height: 25)
+                                                    .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.width * 0.07)
                                             }
                                             .foregroundColor(.white.opacity(0.70))
                                         }
@@ -191,13 +193,13 @@ struct HomeView: View {
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 10)
                                                 .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: UIScreen.main.bounds.width * 0.135, height: UIScreen.main.bounds.width * 0.135)
                                             
                                             VStack {
                                                 Image(systemName: "plus")
                                                     .resizable()
                                                     .aspectRatio(contentMode: .fit)
-                                                    .frame(width: 25, height: 25)
+                                                    .frame(width: UIScreen.main.bounds.width * 0.07, height: UIScreen.main.bounds.width * 0.07)
                                             }
                                             .foregroundColor(.white.opacity(0.70))
                                         }
@@ -220,7 +222,7 @@ struct HomeView: View {
                             
                         }
                     }
-                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? 60 : 30)
+                    .padding(.bottom, (selectedGoal?.carbGoal == 0 && selectedGoal?.fatGoal == 0) ? UIScreen.main.bounds.width * 0.08 : UIScreen.main.bounds.width * 0.03)
 
                     Spacer()
                     
@@ -239,7 +241,7 @@ struct HomeView: View {
                             }
                             .buttonStyle(MyButtonStyle())
                             .offset(x: 35)
-                            .padding(.top, 10)
+                            .padding(.top, 4)
                         } else {
                             NavigationLink(destination: NutritionLogView()) {
                                 VStack {
@@ -254,7 +256,7 @@ struct HomeView: View {
                             .buttonStyle(MyButtonStyle())
                             .disabled(true)
                             .offset(x: 35)
-                            .padding(.top, 10)
+                            .padding(.top, 4)
                         }
                         
                         Spacer()
@@ -271,7 +273,7 @@ struct HomeView: View {
                         }
                         .buttonStyle(MyButtonStyle())
                         .offset(x: -16)
-                        .padding(.top, 10)
+                        .padding(.top, 4)
                         
                         Spacer()
                         
@@ -287,12 +289,13 @@ struct HomeView: View {
                         }
                         .buttonStyle(MyButtonStyle())
                         .offset(x: -52)
-                        .padding(.top, 10)
+                        .padding(.top, 4)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.bottom, -14)
                     .background(Color(red: 44/255, green: 44/255, blue: 53/255))
                 }
+                
+                Spacer()
             }
             .onAppear {
                 fetchUserSelectedGoal()
@@ -319,7 +322,7 @@ struct HomeView: View {
                     self.selectedGoal = goal
                 }
             case .failure(let error):
-                if (error as NSError).code == 404 { // Assuming 404 is the error code for no goal found
+                if (error as NSError).code == 404 {
                     DispatchQueue.main.async {
                         self.selectedGoal = nil // No goal found
                     }
@@ -364,11 +367,13 @@ struct NutrientView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                    .frame(width: 100, height: 25) // Outer colored rounded rectangle
+                    .frame(width: UIScreen.main.bounds.width * 0.26, height: UIScreen.main.bounds.width * 0.07)
+                    //.frame(width: 100, height: 25) // Outer colored rounded rectangle
 
                 RoundedRectangle(cornerRadius: 10)
                     .strokeBorder(color.opacity(0.70), lineWidth: 2) // Hollow inner rounded rectangle
-                    .frame(width: 98, height: 23) // Adjusted size to fit inside the outer rectangle
+                    .frame(width: UIScreen.main.bounds.width * 0.26, height: UIScreen.main.bounds.width * 0.07)
+                    //.frame(width: 98, height: 23) // Adjusted size to fit inside the outer rectangle
 
 
                 HStack {

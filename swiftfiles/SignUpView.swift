@@ -10,6 +10,7 @@ struct SignUpView: View {
     @State private var wrongPassword = 0
     @State private var showingHomeScreen = false
     @State private var errorMessage = ""
+    @State private var isPasswordVisible = false
     
     var body: some View {
         NavigationStack {
@@ -22,26 +23,27 @@ struct SignUpView: View {
                         Circle()
                             .scale(1.7)
                             .foregroundColor(Color(red: 44/255, green: 44/255, blue: 53/255))
-                            .position(x: geometry.size.width / 2, y: geometry.size.height * 1.2)
+                            .position(x: geometry.size.width / 2, y: geometry.size.height * 1.3)
                         
                         Circle()
                             .scale(1.35)
                             .foregroundColor(Color(red: 67/255, green: 67/255, blue: 75/255))
-                            .position(x: geometry.size.width / 2, y: geometry.size.height * 1.2)
+                            .position(x: geometry.size.width / 2, y: geometry.size.height * 1.3)
                     }
                 }
                 
                 VStack(alignment: .leading) {
                     Text("Create")
                         .font(.largeTitle)
-                        .foregroundColor(.white.opacity(0.20))
+                        .foregroundColor(.white.opacity(0.40))
                         .bold()
                     Text("Account")
                         .font(.largeTitle)
-                        .foregroundColor(.white.opacity(0.20))
+                        .foregroundColor(.white.opacity(0.40))
                         .bold()
                         .padding(.bottom, 15)
                     
+                    // Username Field
                     HStack {
                         Image(systemName: "person")
                             .resizable()
@@ -50,15 +52,21 @@ struct SignUpView: View {
                             .padding(.leading, 10)
                             .foregroundColor(Color.white.opacity(0.10))
                         
-                        TextField("Username", text: $username)
-                            .foregroundColor(.white.opacity(0.90))
-                            .padding(.leading, 1)
+                        ZStack(alignment: .leading) {
+                            if username.isEmpty {
+                                Text("Username")
+                                    .foregroundColor(.white.opacity(0.35))
+                            }
+                            TextField("", text: $username)
+                                .foregroundColor(.white.opacity(0.90))
+                        }
                     }
-                    .frame(width: 300, height: 50)
+                    .frame(width: UIScreen.main.bounds.width * 0.76, height: UIScreen.main.bounds.width * 0.13)
                     .background(Color.black.opacity(0.30))
                     .cornerRadius(15)
                     .border(Color.red, width: CGFloat(wrongUsername))
                     
+                    // Email Field
                     HStack {
                         Image(systemName: "envelope")
                             .resizable()
@@ -67,15 +75,21 @@ struct SignUpView: View {
                             .padding(.leading, 10)
                             .foregroundColor(Color.white.opacity(0.10))
                         
-                        TextField("E-Mail", text: $email)
-                            .foregroundColor(.white.opacity(0.90))
-                            .padding(.leading, 1)
+                        ZStack(alignment: .leading) {
+                            if email.isEmpty {
+                                Text("E-Mail")
+                                    .foregroundColor(.white.opacity(0.35))
+                            }
+                            TextField("", text: $email)
+                                .foregroundColor(.white.opacity(0.90))
+                        }
                     }
-                    .frame(width: 300, height: 50)
+                    .frame(width: UIScreen.main.bounds.width * 0.76, height: UIScreen.main.bounds.width * 0.13)
                     .background(Color.black.opacity(0.30))
                     .cornerRadius(15)
                     .border(Color.red, width: CGFloat(wrongEmail))
                     
+                    // Password Field
                     HStack {
                         Image(systemName: "lock")
                             .resizable()
@@ -84,15 +98,35 @@ struct SignUpView: View {
                             .padding(.leading, 10)
                             .foregroundColor(Color.white.opacity(0.10))
                         
-                        SecureField("Password", text: $password)
-                            .foregroundColor(.white.opacity(0.90))
-                            .padding(.leading, 1)
+                        ZStack(alignment: .leading) {
+                            if password.isEmpty {
+                                Text("Password")
+                                    .foregroundColor(.white.opacity(0.35))
+                            }
+                            
+                            if isPasswordVisible {
+                                TextField("", text: $password)
+                                    .foregroundColor(.white.opacity(0.90))
+                            } else {
+                                SecureField("", text: $password)
+                                    .foregroundColor(.white.opacity(0.90))
+                            }
+                        }
+                        
+                        Button(action: {
+                            isPasswordVisible.toggle()
+                        }) {
+                            Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                                .foregroundColor(Color.white.opacity(0.30))
+                                .padding(.trailing, 8)
+                        }
                     }
-                    .frame(width: 300, height: 50)
+                    .frame(width: UIScreen.main.bounds.width * 0.76, height: UIScreen.main.bounds.width * 0.13)
                     .background(Color.black.opacity(0.30))
                     .cornerRadius(15)
                     .border(Color.red, width: CGFloat(wrongPassword))
                     
+                    // Confirm Password Field
                     HStack {
                         Image(systemName: "lock")
                             .resizable()
@@ -101,16 +135,35 @@ struct SignUpView: View {
                             .padding(.leading, 10)
                             .foregroundColor(Color.white.opacity(0.10))
                         
-                        SecureField("Confirm Password", text: $confirmPassword)
-                            .foregroundColor(.white.opacity(0.90))
-                            .padding(.leading, 1)
+                        ZStack(alignment: .leading) {
+                            if confirmPassword.isEmpty {
+                                Text("Confirm Password")
+                                    .foregroundColor(.white.opacity(0.35))
+                            }
+                            
+                            if isPasswordVisible {
+                                TextField("", text: $confirmPassword)
+                                    .foregroundColor(.white.opacity(0.90))
+                            } else {
+                                SecureField("", text: $confirmPassword)
+                                    .foregroundColor(.white.opacity(0.90))
+                            }
+                        }
+                        
+                        Button(action: {
+                            isPasswordVisible.toggle()
+                        }) {
+                            Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                                .foregroundColor(Color.white.opacity(0.30))
+                                .padding(.trailing, 8)
+                        }
                     }
-                    .frame(width: 300, height: 50)
+                    .frame(width: UIScreen.main.bounds.width * 0.76, height: UIScreen.main.bounds.width * 0.13)
                     .background(Color.black.opacity(0.30))
                     .cornerRadius(15)
                     .border(Color.red, width: CGFloat(wrongPassword))
                     
-                    
+                    // Sign Up Button
                     Button(action: {
                         registerUser(username: username, email: email, password: password)
                     }) {
@@ -121,14 +174,15 @@ struct SignUpView: View {
                             .cornerRadius(15)
                             .bold()
                     }
-                    .frame(width: 300, height: 50)
+                    .frame(width: UIScreen.main.bounds.width * 0.76, height: UIScreen.main.bounds.width * 0.13)
                     .padding(.top, 15)
                     
+                    // Error Message
                     if !errorMessage.isEmpty {
                         Text(errorMessage)
                             .foregroundColor(.red)
                             .padding(.top, 10)
-                            .frame(width: 300, alignment: .leading)
+                            .frame(width: UIScreen.main.bounds.width * 0.76, height: UIScreen.main.bounds.width * 0.13)
                             .fixedSize(horizontal: false, vertical: true) // Allow text to wrap
                     }
                 }
@@ -140,7 +194,6 @@ struct SignUpView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-    
     
     func registerUser(username: String, email: String, password: String) {
         if !username.isEmpty && !email.isEmpty && !password.isEmpty && !confirmPassword.isEmpty {
